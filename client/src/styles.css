@@ -1,8 +1,5 @@
 /* Modern UI Redesign - Clean, Harmonious, Professional */
 
-/* Import Modern Font - Inter */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 /* Import Tailwind CSS using v4 syntax */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/preflight" layer(base);
@@ -17,7 +14,7 @@
 /* Modern Color Palette - Inspired by Notion, Linear, and Vercel */
 :root {
   /* Modern Font */
-  --modern-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --modern-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   
   /* Transitions */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);

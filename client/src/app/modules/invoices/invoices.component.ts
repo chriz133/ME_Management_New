@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { Invoice } from '../../core/models/invoice.model';
 import { ToastService } from '../../core/services/toast.service';
@@ -12,20 +13,63 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-invoices',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, CardModule, TagModule, TooltipModule],
+  imports: [
+    CommonModule, 
+    TableModule, 
+    ButtonModule, 
+    CardModule, 
+    TagModule, 
+    TooltipModule,
+    InputTextModule
+  ],
   template: `
-    <div class="invoices-page">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">
-            <i class="pi pi-file-edit mr-3"></i>Rechnungen
-          </h1>
-          <p class="page-subtitle">Überblick über alle Rechnungen aus firmaDB</p>
+    <div class="invoices-page p-4">
+      <div class="page-header mb-4">
+        <div class="flex justify-content-between align-items-center">
+          <div>
+            <h1 class="page-title m-0 mb-2">
+              <i class="pi pi-file-edit mr-2"></i>Rechnungen
+            </h1>
+            <p class="page-subtitle text-600 m-0">Überblick über alle Rechnungen aus firmaDB</p>
+          </div>
+          <div class="flex gap-2">
+            <p-button 
+              icon="pi pi-refresh" 
+              [rounded]="true"
+              [outlined]="true"
+              (onClick)="loadInvoices()"
+              pTooltip="Aktualisieren"
+            />
+          </div>
         </div>
       </div>
 
       <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-3">
+            <div class="flex justify-content-between align-items-center">
+              <div>
+                <h3 class="m-0 mb-1">
+                  <i class="pi pi-list mr-2"></i>Rechnungsliste
+                </h3>
+                <p class="text-600 m-0 text-sm">{{invoices.length}} Rechnungen gefunden</p>
+              </div>
+              <span class="p-input-icon-left">
+                <i class="pi pi-search"></i>
+                <input 
+                  pInputText 
+                  type="text" 
+                  (input)="dt.filterGlobal($any($event.target).value, 'contains')" 
+                  placeholder="Suchen..." 
+                  class="p-inputtext-sm"
+                />
+              </span>
+            </div>
+          </div>
+        </ng-template>
+
         <p-table
+          #dt
           [value]="invoices"
           [loading]="loading"
           [paginator]="true"
@@ -34,39 +78,82 @@ import { ToastService } from '../../core/services/toast.service';
           currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Einträgen"
           [rowsPerPageOptions]="[10, 25, 50, 100]"
           [rowHover]="true"
+          [globalFilterFields]="['invoiceId', 'customer.fullName', 'type']"
           dataKey="invoiceId"
-          styleClass="p-datatable-sm"
+          styleClass="p-datatable-sm p-datatable-striped"
+          responsiveLayout="scroll"
         >
           <ng-template pTemplate="header">
             <tr>
-              <th pSortableColumn="invoiceId">ID <p-sortIcon field="invoiceId"/></th>
-              <th pSortableColumn="createdAt">Erstellt <p-sortIcon field="createdAt"/></th>
+              <th pSortableColumn="invoiceId" style="width: 80px;">
+                <div class="flex align-items-center">
+                  ID 
+                  <p-sortIcon field="invoiceId"/>
+                </div>
+              </th>
+              <th pSortableColumn="createdAt">
+                <div class="flex align-items-center">
+                  Erstellt 
+                  <p-sortIcon field="createdAt"/>
+                </div>
+              </th>
               <th>Kunde</th>
-              <th>Startdatum</th>
-              <th>Enddatum</th>
+              <th>Zeitraum</th>
               <th>Typ</th>
+              <th>Anzahlung</th>
               <th class="text-right">Betrag</th>
-              <th class="text-center">Aktionen</th>
+              <th class="text-center" style="width: 100px;">Aktionen</th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-invoice>
             <tr>
-              <td><span class="font-bold text-primary">{{invoice.invoiceId}}</span></td>
-              <td>{{ invoice.createdAt | date:'dd.MM.yyyy' }}</td>
               <td>
-                <div *ngIf="invoice.customer" class="flex align-items-center gap-2">
-                  <i class="pi pi-user text-600"></i>
-                  <span>{{ invoice.customer.fullName }}</span>
+                <p-tag [value]="invoice.invoiceId.toString()" severity="info" [rounded]="true" />
+              </td>
+              <td>
+                <div class="flex align-items-center gap-2">
+                  <i class="pi pi-calendar text-600"></i>
+                  <span>{{ invoice.createdAt | date:'dd.MM.yyyy' }}</span>
                 </div>
               </td>
-              <td>{{ invoice.startedAt | date:'dd.MM.yyyy' }}</td>
-              <td>{{ invoice.finishedAt | date:'dd.MM.yyyy' }}</td>
               <td>
-                <p-tag [value]="invoice.type" [severity]="invoice.type === 'D' ? 'success' : 'info'" />
+                <div *ngIf="invoice.customer" class="flex align-items-center gap-2">
+                  <i class="pi pi-user text-primary"></i>
+                  <span class="font-semibold">{{ invoice.customer.fullName }}</span>
+                </div>
+                <span *ngIf="!invoice.customer" class="text-400">Kein Kunde</span>
+              </td>
+              <td>
+                <div class="flex flex-column gap-1">
+                  <span class="text-sm">
+                    <i class="pi pi-arrow-right text-green-500 text-xs"></i>
+                    {{ invoice.startedAt | date:'dd.MM.yyyy' }}
+                  </span>
+                  <span class="text-sm">
+                    <i class="pi pi-arrow-left text-red-500 text-xs"></i>
+                    {{ invoice.finishedAt | date:'dd.MM.yyyy' }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <p-tag 
+                  [value]="getTypeLabel(invoice.type)" 
+                  [severity]="getTypeSeverity(invoice.type)" 
+                  [rounded]="true"
+                />
+              </td>
+              <td>
+                <div class="flex flex-column gap-1">
+                  <span class="text-sm font-semibold">{{ invoice.depositAmount | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+                  <span class="text-xs text-600">{{ invoice.depositPaidOn | date:'dd.MM.yyyy' }}</span>
+                </div>
               </td>
               <td class="text-right">
-                <span class="font-bold">{{ invoice.totalAmount | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+                <div class="flex flex-column align-items-end">
+                  <span class="font-bold text-lg text-primary">{{ invoice.totalAmount | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+                  <span class="text-xs text-600">{{invoice.positions?.length || 0}} Positionen</span>
+                </div>
               </td>
               <td class="text-center">
                 <p-button
@@ -76,6 +163,7 @@ import { ToastService } from '../../core/services/toast.service';
                   severity="info"
                   (onClick)="viewInvoice(invoice)"
                   pTooltip="Details anzeigen"
+                  tooltipPosition="left"
                 />
               </td>
             </tr>
@@ -84,14 +172,23 @@ import { ToastService } from '../../core/services/toast.service';
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="8">
-                <div class="p-empty-state">
-                  <div class="p-empty-state-icon">
-                    <i class="pi pi-file-edit"></i>
-                  </div>
-                  <h3 class="p-empty-state-title">Keine Rechnungen gefunden</h3>
-                  <p class="p-empty-state-message">
-                    Es sind keine Rechnungen in der Datenbank vorhanden.
+                <div class="flex flex-column align-items-center justify-content-center py-5">
+                  <i class="pi pi-file-edit text-6xl text-400 mb-3"></i>
+                  <h3 class="text-900 font-semibold mb-2">Keine Rechnungen gefunden</h3>
+                  <p class="text-600 m-0">
+                    Es wurden keine Rechnungen in der Datenbank gefunden.
                   </p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="loadingbody">
+            <tr>
+              <td colspan="8">
+                <div class="flex align-items-center justify-content-center py-4">
+                  <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                  <span class="ml-3 text-lg">Lade Daten...</span>
                 </div>
               </td>
             </tr>
@@ -100,7 +197,56 @@ import { ToastService } from '../../core/services/toast.service';
       </p-card>
     </div>
   `,
-  styles: []
+  styles: [`
+    .invoices-page {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .page-subtitle {
+      font-size: 0.95rem;
+    }
+
+    :host ::ng-deep {
+      .p-datatable .p-datatable-thead > tr > th {
+        background-color: var(--surface-50);
+        font-weight: 600;
+        padding: 1rem;
+      }
+
+      .p-datatable .p-datatable-tbody > tr > td {
+        padding: 0.75rem 1rem;
+      }
+
+      .p-datatable .p-datatable-tbody > tr:hover {
+        background-color: var(--primary-50);
+      }
+
+      .p-card .p-card-body {
+        padding: 0;
+      }
+
+      .p-card .p-card-content {
+        padding: 0;
+      }
+    }
+  `]
 })
 export class InvoicesComponent implements OnInit {
   private readonly invoiceService = inject(InvoiceService);
@@ -119,6 +265,7 @@ export class InvoicesComponent implements OnInit {
       next: (data: Invoice[]) => {
         this.invoices = data;
         this.loading = false;
+        this.toastService.success('Erfolg', `${data.length} Rechnungen geladen`);
       },
       error: () => {
         this.toastService.error('Fehler', 'Rechnungen konnten nicht geladen werden');
@@ -128,6 +275,14 @@ export class InvoicesComponent implements OnInit {
   }
 
   viewInvoice(invoice: Invoice): void {
-    this.toastService.info('Info', `Rechnung ${invoice.invoiceId} Details`);
+    this.toastService.info('Info', `Rechnung #${invoice.invoiceId} - ${invoice.customer?.fullName || 'Unbekannt'}`);
+  }
+
+  getTypeLabel(type?: string): string {
+    return type === 'D' ? 'Dienstleistung' : type === 'B' ? 'Bauleistung' : 'Unbekannt';
+  }
+
+  getTypeSeverity(type?: string): 'success' | 'info' | 'warn' {
+    return type === 'D' ? 'success' : type === 'B' ? 'info' : 'warn';
   }
 }

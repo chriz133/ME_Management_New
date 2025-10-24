@@ -4,7 +4,6 @@ import { LayoutComponent } from './shared/components/layout/layout.component';
 import { DashboardComponent } from './modules/dashboard/dashboard.component';
 import { CustomersComponent } from './modules/customers/customers.component';
 import { InvoicesComponent } from './modules/invoices/invoices.component';
-import { OffersComponent } from './modules/offers/offers.component';
 import { SettingsComponent } from './modules/settings/settings.component';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -34,10 +33,6 @@ export const routes: Routes = [
       {
         path: 'invoices',
         component: InvoicesComponent
-      },
-      {
-        path: 'offers',
-        component: OffersComponent
       },
       {
         path: 'settings',
