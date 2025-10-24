@@ -133,7 +133,7 @@ import { TransactionService } from '../../core/services/transaction.service';
                 </div>
                 <h2 class="text-2xl font-bold text-900 mb-3">Geschäftsverwaltungssystem</h2>
                 <p class="text-600 line-height-3 mb-4 mx-auto" style="max-width: 600px;">
-                  Verwalten Sie Ihre Rechnungen, Verträge und Kunden effizient und professionell.
+                  Verwalten Sie Ihre Rechnungen, Angebote und Kunden effizient und professionell.
                   Das System ist verbunden mit der firmaDB Datenbank und zeigt alle aktuellen Geschäftsdaten an.
                 </p>
                 <div class="flex gap-3 justify-content-center flex-wrap">
@@ -148,6 +148,13 @@ import { TransactionService } from '../../core/services/transaction.service';
                     icon="pi pi-file-edit"
                     routerLink="/invoices"
                     severity="success"
+                    [outlined]="true"
+                  />
+                  <p-button
+                    label="Angebote anzeigen"
+                    icon="pi pi-file-check"
+                    routerLink="/contracts"
+                    severity="help"
                     [outlined]="true"
                   />
                 </div>
@@ -189,6 +196,21 @@ import { TransactionService } from '../../core/services/transaction.service';
                   <div class="action-content flex-1">
                     <div class="action-title font-semibold text-900">Rechnungen</div>
                     <div class="action-desc text-600 text-sm">{{stats.invoices}} Rechnungen ansehen</div>
+                  </div>
+                  <i class="pi pi-chevron-right text-400"></i>
+                </div>
+              </div>
+
+              <p-divider />
+
+              <div class="action-item cursor-pointer p-3 border-round hover:bg-primary-50 transition-colors transition-duration-150" routerLink="/contracts">
+                <div class="flex align-items-center gap-3">
+                  <div class="action-icon bg-orange-500 text-white p-3 border-round">
+                    <i class="pi pi-file-check text-xl"></i>
+                  </div>
+                  <div class="action-content flex-1">
+                    <div class="action-title font-semibold text-900">Angebote</div>
+                    <div class="action-desc text-600 text-sm">{{stats.contracts}} Angebote ansehen</div>
                   </div>
                   <i class="pi pi-chevron-right text-400"></i>
                 </div>

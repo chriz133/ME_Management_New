@@ -131,6 +131,7 @@ using (var scope = app.Services.CreateScope())
                             PasswordHash VARCHAR(255) NOT NULL,
                             DisplayName VARCHAR(200),
                             Email VARCHAR(200),
+                            Role VARCHAR(50) NOT NULL DEFAULT 'User',
                             CreatedAt DATETIME(6) NOT NULL,
                             LastLoginAt DATETIME(6) NULL,
                             INDEX IX_Users_Username (Username)
@@ -143,7 +144,7 @@ using (var scope = app.Services.CreateScope())
                 }
             }
             
-            // Seed default admin user if needed
+            // Seed default users if needed
             if (!context.Users.Any())
             {
                 // Create default admin user (username: admin, password: admin)
@@ -153,11 +154,23 @@ using (var scope = app.Services.CreateScope())
                     PasswordHash = AuthService.HashPassword("admin"),
                     DisplayName = "Administrator",
                     Email = "admin@me-management.de",
+                    Role = "Admin",
+                    CreatedAt = DateTime.UtcNow
+                });
+                
+                // Create default normal user (username: user, password: user)
+                context.Users.Add(new User
+                {
+                    Username = "user",
+                    PasswordHash = AuthService.HashPassword("user"),
+                    DisplayName = "Normal User",
+                    Email = "user@me-management.de",
+                    Role = "User",
                     CreatedAt = DateTime.UtcNow
                 });
                 
                 context.SaveChanges();
-                Console.WriteLine("Default admin user created");
+                Console.WriteLine("Default users created (admin/admin and user/user)");
             }
         }
     }

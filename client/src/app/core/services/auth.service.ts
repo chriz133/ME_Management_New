@@ -47,11 +47,40 @@ export class AuthService {
           const user: User = {
             username: response.username,
             displayName: response.displayName,
+            role: response.role,
             token: response.token
           };
           this.setUser(user);
         })
       );
+  }
+
+  /**
+   * Check if current user is Admin
+   */
+  isAdmin(): boolean {
+    return this.currentUserValue?.role === 'Admin';
+  }
+
+  /**
+   * Check if current user is User (or Admin)
+   */
+  isUser(): boolean {
+    return this.currentUserValue?.role === 'User' || this.currentUserValue?.role === 'Admin';
+  }
+
+  /**
+   * Check if current user can delete (Admin only)
+   */
+  canDelete(): boolean {
+    return this.isAdmin();
+  }
+
+  /**
+   * Check if current user can edit (User or Admin)
+   */
+  canEdit(): boolean {
+    return this.isUser() || this.isAdmin();
   }
 
   /**

@@ -6,6 +6,8 @@ import { CustomersComponent } from './modules/customers/customers.component';
 import { CustomerDetailComponent } from './modules/customers/customer-detail/customer-detail.component';
 import { InvoicesComponent } from './modules/invoices/invoices.component';
 import { InvoiceDetailComponent } from './modules/invoices/invoice-detail/invoice-detail.component';
+import { ContractsComponent } from './modules/contracts/contracts.component';
+import { ContractDetailComponent } from './modules/contracts/contract-detail/contract-detail.component';
 import { SettingsComponent } from './modules/settings/settings.component';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -43,6 +45,14 @@ export const routes: Routes = [
       {
         path: 'invoices/:id',
         component: InvoiceDetailComponent
+      },
+      {
+        path: 'contracts',
+        component: ContractsComponent
+      },
+      {
+        path: 'contracts/:id',
+        component: ContractDetailComponent
       },
       {
         path: 'settings',

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.BusinessObjects.DTOs;
+using Server.BusinessObjects.Entities;
 using Server.DataAccess;
 
 namespace Server.Api.Controllers;
@@ -134,4 +135,77 @@ public class ContractsController : ControllerBase
             return StatusCode(500, new { message = "Error fetching contract", error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Update contract acceptance status (requires User or Admin role)
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult> UpdateContract(int id, [FromBody] UpdateContractRequest request)
+    {
+        try
+        {
+            var contract = await _context.ContractsDb.FindAsync(id);
+            if (contract == null)
+            {
+                return NotFound(new { message = $"Contract with ID {id} not found" });
+            }
+
+            contract.Accepted = request.Accepted;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Contract {ContractId} updated by user", id);
+            return Ok(new { message = "Contract updated successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating contract {ContractId}", id);
+            return StatusCode(500, new { message = "Error updating contract", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete contract (requires Admin role only)
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> DeleteContract(int id)
+    {
+        try
+        {
+            var contract = await _context.ContractsDb
+                .Include(c => c.ContractPositions)
+                .FirstOrDefaultAsync(c => c.ContractId == id);
+                
+            if (contract == null)
+            {
+                return NotFound(new { message = $"Contract with ID {id} not found" });
+            }
+
+            // Remove contract positions first
+            if (contract.ContractPositions != null)
+            {
+                _context.ContractPositions.RemoveRange(contract.ContractPositions);
+            }
+            
+            _context.ContractsDb.Remove(contract);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Contract {ContractId} deleted by admin", id);
+            return Ok(new { message = "Contract deleted successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting contract {ContractId}", id);
+            return StatusCode(500, new { message = "Error deleting contract", error = ex.Message });
+        }
+    }
+}
+
+/// <summary>
+/// Request model for updating contract
+/// </summary>
+public class UpdateContractRequest
+{
+    public bool Accepted { get; set; }
 }
