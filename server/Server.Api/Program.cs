@@ -119,10 +119,42 @@ using (var scope = app.Services.CreateScope())
     {
         if (context.Database.CanConnect())
         {
-            Console.WriteLine("Successfully connected to MySQL database");
+            Console.WriteLine("Successfully connected to MySQL database (firmaDB)");
             
-            // Check if Users table exists and seed default admin user if needed
-            if (context.Database.EnsureCreated() || !context.Users.Any())
+            // Try to ensure Users table exists without affecting existing firmaDB tables
+            try
+            {
+                // Check if Users table exists by querying it
+                var userExists = context.Users.Any();
+                Console.WriteLine("Users table exists");
+            }
+            catch
+            {
+                // Users table doesn't exist, try to create it
+                Console.WriteLine("Users table not found, attempting to create...");
+                try
+                {
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS Users (
+                            Id INT AUTO_INCREMENT PRIMARY KEY,
+                            Username VARCHAR(100) NOT NULL UNIQUE,
+                            PasswordHash VARCHAR(255) NOT NULL,
+                            DisplayName VARCHAR(200),
+                            Email VARCHAR(200),
+                            CreatedAt DATETIME(6) NOT NULL,
+                            LastLoginAt DATETIME(6) NULL,
+                            INDEX IX_Users_Username (Username)
+                        )");
+                    Console.WriteLine("Users table created");
+                }
+                catch (Exception createEx)
+                {
+                    Console.WriteLine($"Could not create Users table: {createEx.Message}");
+                }
+            }
+            
+            // Seed default admin user if needed
+            if (!context.Users.Any())
             {
                 // Create default admin user (username: admin, password: admin)
                 context.Users.Add(new User
