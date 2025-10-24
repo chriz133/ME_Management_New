@@ -11,8 +11,6 @@ import { InvoiceCreateComponent } from './modules/invoices/invoice-create/invoic
 import { ContractsComponent } from './modules/contracts/contracts.component';
 import { ContractDetailComponent } from './modules/contracts/contract-detail/contract-detail.component';
 import { ContractCreateComponent } from './modules/contracts/contract-create/contract-create.component';
-import { PositionsComponent } from './modules/positions/positions.component';
-import { PositionCreateComponent } from './modules/positions/position-create.component';
 import { TransactionsComponent } from './modules/transactions/transactions.component';
 import { TransactionCreateComponent } from './modules/transactions/transaction-create.component';
 import { SettingsComponent } from './modules/settings/settings.component';
@@ -72,14 +70,6 @@ export const routes: Routes = [
       {
         path: 'contracts/:id',
         component: ContractDetailComponent
-      },
-      {
-        path: 'positions',
-        component: PositionsComponent
-      },
-      {
-        path: 'positions/create',
-        component: PositionCreateComponent
       },
       {
         path: 'transactions',

@@ -61,11 +61,6 @@ export class SidebarComponent implements OnInit {
             command: () => this.router.navigate(['/contracts'])
           },
           {
-            label: 'Positionen',
-            icon: 'pi pi-list',
-            command: () => this.router.navigate(['/positions'])
-          },
-          {
             label: 'Transaktionen',
             icon: 'pi pi-money-bill',
             command: () => this.router.navigate(['/transactions'])

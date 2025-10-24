@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.BusinessObjects.DTOs;
-using Server.BusinessObjects.Entities;
 using Server.DataAccess;
 
 namespace Server.Api.Controllers;
@@ -22,7 +21,7 @@ public class PositionsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all positions
+    /// Get all positions (for selection in contracts/invoices)
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PositionDto>>> GetPositions()
@@ -78,44 +77,6 @@ public class PositionsController : ControllerBase
         {
             _logger.LogError(ex, "Error fetching position {PositionId}", id);
             return StatusCode(500, new { message = "Error fetching position", error = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Create a new position (requires Admin or User role)
-    /// </summary>
-    [HttpPost]
-    [Authorize(Roles = "Admin,User")]
-    public async Task<ActionResult<PositionDto>> CreatePosition([FromBody] CreatePositionRequest request)
-    {
-        try
-        {
-            var position = new PositionEntity
-            {
-                Text = request.Text,
-                Price = (double)request.Price,
-                Unit = request.Unit
-            };
-
-            _context.PositionsDb.Add(position);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Position {PositionId} created", position.PositionId);
-
-            var positionDto = new PositionDto
-            {
-                PositionId = position.PositionId,
-                Text = position.Text,
-                Price = position.Price,
-                Unit = position.Unit
-            };
-
-            return CreatedAtAction(nameof(GetPosition), new { id = position.PositionId }, positionDto);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating position");
-            return StatusCode(500, new { message = "Error creating position", error = ex.Message });
         }
     }
 }

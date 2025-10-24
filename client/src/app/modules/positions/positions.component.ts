@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -14,6 +14,7 @@ import { Position } from '../../core/models/position.model';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     CardModule,
     TableModule,
     ButtonModule,
@@ -25,15 +26,20 @@ import { Position } from '../../core/models/position.model';
       <p-card>
         <ng-template pTemplate="header">
           <div class="card-header">
-            <h2><i class="pi pi-list"></i> Positionen</h2>
+            <h2><i class="pi pi-list"></i> Positionen (Katalog)</h2>
             <div class="header-actions">
               <p-button
-                label="Neu erstellen"
-                icon="pi pi-plus"
-                (onClick)="navigateToCreate()" />
+                label="Aktualisieren"
+                icon="pi pi-refresh"
+                (onClick)="loadPositions()" />
             </div>
           </div>
         </ng-template>
+
+        <div class="info-message">
+          <i class="pi pi-info-circle"></i>
+          <span>Positionen werden dynamisch bei der Erstellung von Angeboten und Rechnungen erstellt.</span>
+        </div>
 
         <div class="table-controls">
           <span class="p-input-icon-left">
@@ -105,6 +111,22 @@ import { Position } from '../../core/models/position.model';
       margin-bottom: 1rem;
     }
 
+    .info-message {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      background-color: var(--blue-50);
+      border-left: 4px solid var(--blue-500);
+      border-radius: 4px;
+      color: var(--blue-900);
+    }
+
+    .info-message i {
+      font-size: 1.2rem;
+    }
+
     .text-center {
       text-align: center;
       padding: 2rem;
@@ -112,7 +134,6 @@ import { Position } from '../../core/models/position.model';
   `]
 })
 export class PositionsComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly positionService = inject(PositionService);
 
   positions: Position[] = [];
@@ -135,9 +156,5 @@ export class PositionsComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-
-  navigateToCreate(): void {
-    this.router.navigate(['/positions/create']);
   }
 }
