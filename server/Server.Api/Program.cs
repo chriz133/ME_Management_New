@@ -9,9 +9,9 @@ using Server.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure database context with SQLite
+// Configure database context with SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=memanagement.db"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configure repositories
 builder.Services.AddScoped<IRepository<Customer>, Repository<Customer>>();
