@@ -20,18 +20,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     Console.WriteLine("Using MySQL database");
 });
 
-// Configure repositories
-builder.Services.AddScoped<IRepository<Customer>, Repository<Customer>>();
-builder.Services.AddScoped<IRepository<Position>, Repository<Position>>();
-builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
-builder.Services.AddScoped<IOfferRepository, OfferRepository>();
-
 // Configure business services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
-builder.Services.AddScoped<IOfferService, OfferService>();
-builder.Services.AddScoped<IPdfService, PdfService>();
 
 // Configure JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
