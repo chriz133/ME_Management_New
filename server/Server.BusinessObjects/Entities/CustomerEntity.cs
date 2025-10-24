@@ -49,5 +49,10 @@ namespace Server.BusinessObjects.Entities
         // Navigation property
         [ForeignKey("AddressId")]
         public virtual Address? Address { get; set; }
+
+        // Collections
+        public virtual ICollection<ContractEntity>? Contracts { get; set; }
+        public virtual ICollection<InvoiceEntity>? Invoices { get; set; }
+        public virtual ICollection<PersonEntity>? Persons { get; set; }
     }
 }

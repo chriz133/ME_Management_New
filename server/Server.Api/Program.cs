@@ -164,6 +164,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// IMPORTANT: UseCors must be called before UseAuthentication and UseAuthorization
 app.UseCors("AllowAngularApp");
 
 app.UseAuthentication();

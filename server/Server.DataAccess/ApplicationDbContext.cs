@@ -25,6 +25,16 @@ public class ApplicationDbContext : DbContext
     public DbSet<Offer> Offers => Set<Offer>();
     public DbSet<OfferLineItem> OfferLineItems => Set<OfferLineItem>();
 
+    // firmaDB entities (MySQL schema mapping)
+    public DbSet<Address> Addresses => Set<Address>();
+    public DbSet<CustomerEntity> CustomersDb => Set<CustomerEntity>();
+    public DbSet<ContractEntity> ContractsDb => Set<ContractEntity>();
+    public DbSet<PersonEntity> Persons => Set<PersonEntity>();
+    public DbSet<PositionEntity> PositionsDb => Set<PositionEntity>();
+    public DbSet<InvoiceEntity> InvoicesDb => Set<InvoiceEntity>();
+    public DbSet<InvoicePosition> InvoicePositions => Set<InvoicePosition>();
+    public DbSet<FinanceEntity> Finances => Set<FinanceEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -172,6 +182,107 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Position)
                 .WithMany()
                 .HasForeignKey(e => e.PositionId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure firmaDB entities (MySQL schema)
+        // These entities map to existing tables and should not modify data
+        
+        modelBuilder.Entity<Address>(entity =>
+        {
+            entity.ToTable("address");
+            entity.HasKey(e => e.AddressId);
+        });
+
+        modelBuilder.Entity<CustomerEntity>(entity =>
+        {
+            entity.ToTable("customer");
+            entity.HasKey(e => e.CustomerId);
+            
+            entity.HasOne(e => e.Address)
+                .WithMany()
+                .HasForeignKey(e => e.AddressId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<PersonEntity>(entity =>
+        {
+            entity.ToTable("person");
+            entity.HasKey(e => e.PersonId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany(c => c.Persons)
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Address)
+                .WithMany()
+                .HasForeignKey(e => e.AddressId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<PositionEntity>(entity =>
+        {
+            entity.ToTable("position");
+            entity.HasKey(e => e.PositionId);
+        });
+
+        modelBuilder.Entity<ContractEntity>(entity =>
+        {
+            entity.ToTable("contract");
+            entity.HasKey(e => e.ContractId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany(c => c.Contracts)
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Person)
+                .WithMany(p => p.Contracts)
+                .HasForeignKey(e => e.PersonId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Position)
+                .WithMany(p => p.Contracts)
+                .HasForeignKey(e => e.PositionId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<InvoiceEntity>(entity =>
+        {
+            entity.ToTable("invoice");
+            entity.HasKey(e => e.InvoiceId);
+            
+            entity.HasOne(e => e.Customer)
+                .WithMany(c => c.Invoices)
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            entity.HasOne(e => e.Contract)
+                .WithMany(c => c.Invoices)
+                .HasForeignKey(e => e.ContractId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<InvoicePosition>(entity =>
+        {
+            entity.ToTable("invoice_position");
+            entity.HasKey(e => e.InvoicePositionId);
+            
+            entity.HasOne(e => e.Invoice)
+                .WithMany(i => i.InvoicePositions)
+                .HasForeignKey(e => e.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FinanceEntity>(entity =>
+        {
+            entity.ToTable("finance");
+            entity.HasKey(e => e.FinanceId);
+            
+            entity.HasOne(e => e.Invoice)
+                .WithMany(i => i.FinanceRecords)
+                .HasForeignKey(e => e.InvoiceId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
     }

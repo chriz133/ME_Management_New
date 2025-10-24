@@ -31,9 +31,13 @@ namespace Server.BusinessObjects.Entities
         public bool? Paid { get; set; }
 
         // Navigation properties
+        [ForeignKey("ContractId")]
+        public virtual ContractEntity? Contract { get; set; }
+
         [ForeignKey("CustomerId")]
         public virtual CustomerEntity? Customer { get; set; }
 
         public virtual ICollection<InvoicePosition>? InvoicePositions { get; set; }
+        public virtual ICollection<FinanceEntity>? FinanceRecords { get; set; }
     }
 }
