@@ -1,0 +1,12 @@
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/bin/Debug/net8.0/Server.BusinessObjects.deps.json
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/bin/Debug/net8.0/Server.BusinessObjects.dll
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/bin/Debug/net8.0/Server.BusinessObjects.pdb
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/Server.BusinessObjects.GeneratedMSBuildEditorConfig.editorconfig
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/Server.BusinessObjects.AssemblyInfoInputs.cache
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/Server.BusinessObjects.AssemblyInfo.cs
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/Server.BusinessObjects.csproj.CoreCompileInputs.cache
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/Server.BusinessObjects.sourcelink.json
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/Server.BusinessObjects.dll
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/refint/Server.BusinessObjects.dll
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/Server.BusinessObjects.pdb
+/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessObjects/obj/Debug/net8.0/ref/Server.BusinessObjects.dll
