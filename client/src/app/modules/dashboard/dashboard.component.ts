@@ -1,139 +1,208 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
 
 /**
  * Dashboard component - main landing page after login
+ * Professional dashboard with PrimeNG components
  */
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, CardModule],
+  imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule],
   template: `
-    <div class="container mx-auto max-w-7xl">
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-          Dashboard
-        </h1>
-        <p class="text-gray-600">Übersicht über Ihre Geschäftsaktivitäten</p>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Kunden Card -->
-        <div class="stat-card rounded-2xl p-6 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 transform translate-x-8 -translate-y-8 opacity-10">
-            <div class="w-full h-full rounded-full" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-          </div>
-          <div class="relative z-10">
-            <div class="flex items-start justify-between mb-4">
-              <div class="stat-card-icon">
-                <i class="pi pi-users text-2xl text-white"></i>
-              </div>
-            </div>
-            <div class="text-gray-600 text-sm font-medium mb-1">Kunden</div>
-            <div class="text-3xl font-bold text-gray-800 mb-2">-</div>
-            <div class="text-xs text-gray-500"><i class="pi pi-arrow-up text-green-500 mr-1"></i>Alle Kunden anzeigen</div>
-          </div>
-        </div>
-        
-        <!-- Rechnungen Card -->
-        <div class="stat-card rounded-2xl p-6 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 transform translate-x-8 -translate-y-8 opacity-10">
-            <div class="w-full h-full rounded-full" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
-          </div>
-          <div class="relative z-10">
-            <div class="flex items-start justify-between mb-4">
-              <div class="stat-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <i class="pi pi-file text-2xl text-white"></i>
-              </div>
-            </div>
-            <div class="text-gray-600 text-sm font-medium mb-1">Rechnungen</div>
-            <div class="text-3xl font-bold text-gray-800 mb-2">-</div>
-            <div class="text-xs text-gray-500"><i class="pi pi-arrow-up text-green-500 mr-1"></i>Alle Rechnungen anzeigen</div>
-          </div>
-        </div>
-        
-        <!-- Angebote Card -->
-        <div class="stat-card rounded-2xl p-6 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 transform translate-x-8 -translate-y-8 opacity-10">
-            <div class="w-full h-full rounded-full" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
-          </div>
-          <div class="relative z-10">
-            <div class="flex items-start justify-between mb-4">
-              <div class="stat-card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <i class="pi pi-book text-2xl text-white"></i>
-              </div>
-            </div>
-            <div class="text-gray-600 text-sm font-medium mb-1">Angebote</div>
-            <div class="text-3xl font-bold text-gray-800 mb-2">-</div>
-            <div class="text-xs text-gray-500"><i class="pi pi-arrow-up text-green-500 mr-1"></i>Alle Angebote anzeigen</div>
-          </div>
-        </div>
-        
-        <!-- Offene Rechnungen Card -->
-        <div class="stat-card rounded-2xl p-6 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 transform translate-x-8 -translate-y-8 opacity-10">
-            <div class="w-full h-full rounded-full" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
-          </div>
-          <div class="relative z-10">
-            <div class="flex items-start justify-between mb-4">
-              <div class="stat-card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                <i class="pi pi-dollar text-2xl text-white"></i>
-              </div>
-            </div>
-            <div class="text-gray-600 text-sm font-medium mb-1">Offene Rechnungen</div>
-            <div class="text-3xl font-bold text-gray-800 mb-2">-</div>
-            <div class="text-xs text-gray-500"><i class="pi pi-arrow-right text-orange-500 mr-1"></i>Details anzeigen</div>
-          </div>
+    <div class="dashboard">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="pi pi-home mr-3"></i>Dashboard
+          </h1>
+          <p class="page-subtitle">Übersicht über Ihre Geschäftsaktivitäten</p>
         </div>
       </div>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <p-card styleClass="h-full">
-          <div class="text-center py-12">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6" 
-                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-              <i class="pi pi-chart-line text-4xl text-white"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-3">Willkommen im ME Management System</h2>
-            <p class="text-gray-600 max-w-md mx-auto">Internes Geschäftsverwaltungssystem für Rechnungen, Angebote und Kundenverwaltung</p>
-          </div>
-        </p-card>
 
-        <p-card styleClass="h-full">
-          <h3 class="text-xl font-bold text-gray-800 mb-4"><i class="pi pi-bolt mr-2 text-yellow-500"></i>Schnellaktionen</h3>
-          <div class="flex flex-col gap-3">
-            <button class="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all text-left border border-gray-200">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <i class="pi pi-user-plus text-white"></i>
-              </div>
+      <div class="grid">
+        <div class="col-12 md:col-6 lg:col-3">
+          <div class="stat-card bg-blue-100">
+            <div class="flex justify-content-between align-items-start">
               <div>
-                <div class="font-semibold text-gray-800">Neuer Kunde</div>
-                <div class="text-xs text-gray-500">Kunden hinzufügen</div>
+                <span class="stat-label">Kunden</span>
+                <div class="stat-value text-blue-600">-</div>
+                <span class="stat-info text-blue-500">
+                  <i class="pi pi-arrow-up mr-1"></i>Gesamt
+                </span>
               </div>
-            </button>
-            
-            <button class="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all text-left border border-gray-200">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <i class="pi pi-file-plus text-white"></i>
+              <div class="stat-icon bg-blue-500">
+                <i class="pi pi-users"></i>
               </div>
-              <div>
-                <div class="font-semibold text-gray-800">Neue Rechnung</div>
-                <div class="text-xs text-gray-500">Rechnung erstellen</div>
-              </div>
-            </button>
-            
-            <button class="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-all text-left border border-gray-200">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <i class="pi pi-book text-white"></i>
-              </div>
-              <div>
-                <div class="font-semibold text-gray-800">Neues Angebot</div>
-                <div class="text-xs text-gray-500">Angebot erstellen</div>
-              </div>
-            </button>
+            </div>
           </div>
-        </p-card>
+        </div>
+
+        <div class="col-12 md:col-6 lg:col-3">
+          <div class="stat-card bg-green-100">
+            <div class="flex justify-content-between align-items-start">
+              <div>
+                <span class="stat-label">Rechnungen</span>
+                <div class="stat-value text-green-600">-</div>
+                <span class="stat-info text-green-500">
+                  <i class="pi pi-arrow-up mr-1"></i>Alle Rechnungen
+                </span>
+              </div>
+              <div class="stat-icon bg-green-500">
+                <i class="pi pi-file"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6 lg:col-3">
+          <div class="stat-card bg-orange-100">
+            <div class="flex justify-content-between align-items-start">
+              <div>
+                <span class="stat-label">Angebote</span>
+                <div class="stat-value text-orange-600">-</div>
+                <span class="stat-info text-orange-500">
+                  <i class="pi pi-arrow-up mr-1"></i>Aktive Angebote
+                </span>
+              </div>
+              <div class="stat-icon bg-orange-500">
+                <i class="pi pi-book"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6 lg:col-3">
+          <div class="stat-card bg-cyan-100">
+            <div class="flex justify-content-between align-items-start">
+              <div>
+                <span class="stat-label">Offen</span>
+                <div class="stat-value text-cyan-600">-</div>
+                <span class="stat-info text-cyan-500">
+                  <i class="pi pi-arrow-right mr-1"></i>Ausstehend
+                </span>
+              </div>
+              <div class="stat-icon bg-cyan-500">
+                <i class="pi pi-dollar"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid mt-4">
+        <div class="col-12 lg:col-8">
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="px-3 pt-3">
+                <h3 class="card-title">
+                  <i class="pi pi-chart-line mr-2"></i>Willkommen im ME Management System
+                </h3>
+              </div>
+            </ng-template>
+            <div class="welcome-content">
+              <div class="text-center py-5">
+                <div class="welcome-icon mb-4">
+                  <i class="pi pi-building"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-900 mb-3">Geschäftsverwaltungssystem</h2>
+                <p class="text-600 line-height-3 mb-4">
+                  Verwalten Sie Ihre Rechnungen, Angebote und Kunden effizient und professionell.
+                  Nutzen Sie die Navigationselemente zur Linken, um zu den verschiedenen Bereichen zu gelangen.
+                </p>
+                <div class="flex gap-3 justify-content-center flex-wrap">
+                  <p-button
+                    label="Neue Rechnung"
+                    icon="pi pi-plus"
+                    routerLink="/invoices"
+                    severity="primary"
+                  />
+                  <p-button
+                    label="Neues Angebot"
+                    icon="pi pi-plus"
+                    routerLink="/offers"
+                    severity="success"
+                    [outlined]="true"
+                  />
+                  <p-button
+                    label="Neuer Kunde"
+                    icon="pi pi-plus"
+                    routerLink="/customers"
+                    severity="info"
+                    [outlined]="true"
+                  />
+                </div>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+        <div class="col-12 lg:col-4">
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="px-3 pt-3">
+                <h3 class="card-title">
+                  <i class="pi pi-bolt mr-2"></i>Schnellaktionen
+                </h3>
+              </div>
+            </ng-template>
+            <div class="quick-actions">
+              <div class="action-item" routerLink="/customers">
+                <div class="action-icon bg-blue-500">
+                  <i class="pi pi-user-plus"></i>
+                </div>
+                <div class="action-content">
+                  <div class="action-title">Neuer Kunde</div>
+                  <div class="action-desc">Kunden hinzufügen</div>
+                </div>
+                <i class="pi pi-chevron-right text-400"></i>
+              </div>
+
+              <p-divider />
+
+              <div class="action-item" routerLink="/invoices">
+                <div class="action-icon bg-green-500">
+                  <i class="pi pi-file-plus"></i>
+                </div>
+                <div class="action-content">
+                  <div class="action-title">Neue Rechnung</div>
+                  <div class="action-desc">Rechnung erstellen</div>
+                </div>
+                <i class="pi pi-chevron-right text-400"></i>
+              </div>
+
+              <p-divider />
+
+              <div class="action-item" routerLink="/offers">
+                <div class="action-icon bg-orange-500">
+                  <i class="pi pi-book"></i>
+                </div>
+                <div class="action-content">
+                  <div class="action-title">Neues Angebot</div>
+                  <div class="action-desc">Angebot erstellen</div>
+                </div>
+                <i class="pi pi-chevron-right text-400"></i>
+              </div>
+
+              <p-divider />
+
+              <div class="action-item" routerLink="/invoices">
+                <div class="action-icon bg-cyan-500">
+                  <i class="pi pi-download"></i>
+                </div>
+                <div class="action-content">
+                  <div class="action-title">PDF Export</div>
+                  <div class="action-desc">Dokumente exportieren</div>
+                </div>
+                <i class="pi pi-chevron-right text-400"></i>
+              </div>
+            </div>
+          </p-card>
+        </div>
       </div>
     </div>
   `,
