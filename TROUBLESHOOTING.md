@@ -83,7 +83,7 @@ Connection string:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=yourpassword;AllowPublicKeyRetrieval=True"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```
@@ -108,7 +108,7 @@ Update `server/Server.Api/appsettings.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=192.168.0.88;Port=3306;Database=memanagement;User=root;Password=yourpassword;AllowPublicKeyRetrieval=True"
+    "DefaultConnection": "Server=192.168.0.88;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```
@@ -116,20 +116,20 @@ Update `server/Server.Api/appsettings.json`:
 Replace:
 - `192.168.0.88` with your MySQL server IP
 - `root` with your MySQL username
-- `yourpassword` with your MySQL password
+- `your_secure_password` with your actual MySQL password
 
 #### Option 3: Use Docker MySQL
 
 Run MySQL in Docker:
 ```bash
-docker run --name mysql-memanagement -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=memanagement -p 3306:3306 -d mysql:8.0
+docker run --name mysql-memanagement -e MYSQL_ROOT_PASSWORD=your_secure_password -e MYSQL_DATABASE=memanagement -p 3306:3306 -d mysql:8.0
 ```
 
 Connection string:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=rootpassword;AllowPublicKeyRetrieval=True"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```

@@ -89,7 +89,7 @@ cd server
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=yourpassword;AllowPublicKeyRetrieval=True"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```

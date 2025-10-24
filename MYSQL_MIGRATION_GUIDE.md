@@ -19,7 +19,7 @@ Edit `server/Server.Api/appsettings.json` and update the connection string:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=yourpassword;AllowPublicKeyRetrieval=True"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```
@@ -29,7 +29,7 @@ Replace:
 - `3306` with your MySQL port (if different)
 - `memanagement` with your actual database name
 - `root` with your MySQL username
-- `yourpassword` with your MySQL password
+- `your_secure_password` with your actual MySQL password
 
 ### Step 2: Ensure Database Exists
 
@@ -156,7 +156,7 @@ On first run, the application creates a default admin user:
 Additional connection string parameters:
 
 ```
-Server=localhost;Port=3306;Database=memanagement;User=root;Password=yourpassword;AllowPublicKeyRetrieval=True;SSL Mode=None;ConnectionTimeout=30
+Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True;SSL Mode=None;ConnectionTimeout=30
 ```
 
 - `AllowPublicKeyRetrieval=True`: Required for some MySQL configurations
