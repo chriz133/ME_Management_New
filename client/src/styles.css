@@ -1,5 +1,7 @@
-/* Tailwind CSS v4 import */
-@import "tailwindcss";
+/* Import Tailwind CSS using the new v4 syntax */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/preflight" layer(base);
+@import "tailwindcss/utilities" layer(utilities);
 
 /* PrimeIcons */
 @import "primeicons/primeicons.css";
