@@ -1,0 +1,51 @@
+.customers-main {
+    position: relative;
+    top: 0;
+    left: 15em;
+    height: 100%;
+    width: calc(100% - 15em);
+    background-color: #ffffff;
+    /*display: flex;*/
+    flex-wrap: wrap;
+    /*justify-content: center;*/
+    /*align-items: center;*/
+}
+
+.customers-title{
+    padding-left: 2em;
+    display: flex;
+    align-items: center;
+    width: calc(100vw - 17em);
+    height: 5em;
+    color: white;
+    text-align: left;
+    background-color: rgba(44, 44, 44, 0.88);
+}
+
+.customers-btn-panel{
+    /*height: calc(100% - 5em);*/
+    width: 100%;
+    height: 5.1em;
+    border-bottom: #646464 2px solid;
+    display: flex;
+    align-items: center;
+}
+
+.customers-btn {
+    margin-left: 2em !important;
+}
+
+
+.customers-field{
+    position: relative;
+    top: 0;
+    width: 100%;
+    height: calc(100vh - 10.2em);
+    background-color: #ffffff;
+}
+
+.customers-link{
+    text-decoration: none;
+}
+
+

@@ -1,0 +1,140 @@
+.finances-main{
+    /*position: relative;*/
+    /*top: 0;*/
+    /*!*left: 15em;*!*/
+    /*height: 100%;*/
+    /*!*width: calc(100% - 15em);*!*/
+    /*background-color: #ff0000;*/
+
+    position: relative;
+    top: 0;
+    left: 15em;
+    height: 100%;
+    width: calc(100% - 15em);
+    /*background-color: #ff0000;*/
+}
+
+.finance-container{
+    position: relative;
+    top: 0;
+    width: 100%;
+    /*height: calc(100vh - 10.2em);*/
+    /*height: 100%;*/
+    background-color: #ffffff;
+}
+
+.finance-header{
+    /*margin-top: 3rem;*/
+    /*position: relative;*/
+    /*!*background-color: chocolate;*!*/
+    /*width: 10rem;*/
+    /*height: 3rem;*/
+    /*left: calc(100% - 10rem - 5%);*/
+    /*display: flex;*/
+    /*justify-content: right;*/
+    /*align-items: center; */
+
+    margin-top: 3rem;
+    position: relative;
+    /*background-color: chocolate;*/
+    width: 90%;
+    height: 3rem;
+    left: 5%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    row-gap: 50rem;
+    column-gap: 10%;
+}
+
+.finance-header > p {
+    width: 100%;
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+
+.finance-overview{
+    position: relative;
+    /*background-color: chocolate;*/
+    width: 90%;
+    height: 30%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5em;
+    display: flex;
+    column-gap: .1rem;
+    /*transform: translate(15%);*/
+}
+
+.finance-field{
+    position: relative;
+    padding-left: 1rem;
+    width: 40rem;
+    height: 11rem;
+    border: rgba(178, 178, 178, 0.42) 1px solid;
+}
+
+.minus {
+    background-color: rgba(222, 95, 133, 0.2);
+    color: red;
+}
+
+.plus {
+    background-color: rgba(103, 218, 175, 0.2);
+    color: green;
+}
+
+.finance-field > h3 {
+    font-size: 2rem;
+    margin: 0;
+    padding: 0;
+}
+
+.finance-icon{
+    /*position: relative;*/
+    position: absolute;
+    width: 28% !important;
+    height: 100% !important;
+    left: calc(100% - 28%);
+    /*top: -54.5%;*/
+    top: 0%;
+    /*background-color: rgba(32, 203, 138, 0.68);*/
+    /*font-size: 1px !important;*/
+    color: #ffffff;
+    /*color: #20cb8a;*/
+}
+
+.in{
+    background-color: rgba(32, 203, 138, 0.68);
+}
+
+.out{
+    background-color: rgba(206, 19, 75, 0.68);
+}
+
+.bill-icon{
+    background-color: rgba(88, 19, 206, 0.68);
+    /*top: -62.5%;*/
+    /*top: 0%;*/
+}
+
+.finance-list{
+    width: 90%;
+    margin-top: 5rem;
+}
+
+.table-in{
+    background-color: #67daaf !important;
+}
+
+.table-out{
+    background-color: #dc5e84 !important;
+}
+
+.finance-list-footer{
+    background-color: #20cb8a;
+    width: 100%;
+    border-top: 2px solid black;
+}
+

@@ -1,0 +1,13 @@
+
+
+.main-window{
+    top: 0;
+    left: 15em;
+    width: calc(100% - 15em);
+    height: 100vh;
+    position: relative;
+}
+
+body {
+    background-color: rgb(255, 255, 255);
+}
