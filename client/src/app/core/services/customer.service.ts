@@ -31,4 +31,8 @@ export class CustomerService {
   getCustomerInvoices(id: number): Observable<Invoice[]> {
     return this.http.get<Invoice[]>(`${this.apiUrl}/${id}/invoices`);
   }
+
+  create(customer: Partial<Customer>): Observable<Customer> {
+    return this.http.post<Customer>(this.apiUrl, customer);
+  }
 }

@@ -21,4 +21,8 @@ export class InvoiceService {
   getById(id: number): Observable<Invoice> {
     return this.http.get<Invoice>(`${this.apiUrl}/${id}`);
   }
+
+  create(invoice: any): Observable<Invoice> {
+    return this.http.post<Invoice>(this.apiUrl, invoice);
+  }
 }

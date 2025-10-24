@@ -21,4 +21,8 @@ export class PositionService {
   getById(id: number): Observable<Position> {
     return this.http.get<Position>(`${this.apiUrl}/${id}`);
   }
+
+  create(position: Partial<Position>): Observable<Position> {
+    return this.http.post<Position>(this.apiUrl, position);
+  }
 }

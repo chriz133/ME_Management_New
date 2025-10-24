@@ -35,6 +35,11 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
           <div class="flex gap-2">
             <p-button 
+              label="Neu erstellen"
+              icon="pi pi-plus" 
+              (onClick)="navigateToCreate()"
+            />
+            <p-button 
               icon="pi pi-refresh" 
               [rounded]="true"
               [outlined]="true"
@@ -286,5 +291,9 @@ export class InvoicesComponent implements OnInit {
 
   getTypeSeverity(type?: string): 'success' | 'info' | 'warn' {
     return type === 'D' ? 'success' : type === 'B' ? 'info' : 'warn';
+  }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/invoices/create']);
   }
 }

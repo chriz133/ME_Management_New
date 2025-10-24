@@ -55,7 +55,10 @@ import { Contract } from '../../../core/models/contract.model';
                   <p class="subtitle">Erstellt am {{ contract.createdAt | date: 'dd.MM.yyyy' }}</p>
                 </div>
               </div>
-              <div>
+              <div class="header-actions">
+                <button pButton label="Rechnung erstellen" icon="pi pi-file-invoice" 
+                        class="p-button-success" (click)="createInvoiceFromContract()" 
+                        [style]="{'margin-right': '1rem'}"></button>
                 <p-tag *ngIf="contract.accepted" value="Akzeptiert" severity="success" icon="pi pi-check" [style]="{'font-size': '1rem'}"></p-tag>
                 <p-tag *ngIf="!contract.accepted" value="Offen" severity="warn" icon="pi pi-clock" [style]="{'font-size': '1rem'}"></p-tag>
               </div>
@@ -173,6 +176,12 @@ import { Contract } from '../../../core/models/contract.model';
     }
 
     .header-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header-actions {
       display: flex;
       align-items: center;
       gap: 1rem;
@@ -347,5 +356,13 @@ export class ContractDetailComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/contracts']);
+  }
+
+  createInvoiceFromContract() {
+    if (this.contract) {
+      this.router.navigate(['/invoices/create'], { 
+        queryParams: { contractId: this.contract.contractId } 
+      });
+    }
   }
 }

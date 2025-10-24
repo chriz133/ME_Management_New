@@ -21,4 +21,12 @@ export class ContractService {
   getById(id: number): Observable<Contract> {
     return this.http.get<Contract>(`${this.apiUrl}/${id}`);
   }
+
+  create(contract: any): Observable<Contract> {
+    return this.http.post<Contract>(this.apiUrl, contract);
+  }
+
+  convertToInvoice(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/convert-to-invoice`);
+  }
 }

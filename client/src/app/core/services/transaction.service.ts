@@ -21,4 +21,8 @@ export class TransactionService {
   getById(id: number): Observable<Transaction> {
     return this.http.get<Transaction>(`${this.apiUrl}/${id}`);
   }
+
+  create(transaction: Partial<Transaction>): Observable<Transaction> {
+    return this.http.post<Transaction>(this.apiUrl, transaction);
+  }
 }

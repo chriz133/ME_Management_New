@@ -48,6 +48,8 @@ import { Contract } from '../../core/models/contract.model';
               </div>
             </div>
             <div class="header-actions">
+              <button pButton label="Neu erstellen" icon="pi pi-plus" (click)="navigateToCreate()" 
+                      class="p-button-primary" [style]="{'margin-right': '1rem'}"></button>
               <button pButton icon="pi pi-refresh" (click)="loadContracts()" 
                       class="p-button-text" label="Aktualisieren"></button>
             </div>
@@ -309,6 +311,10 @@ export class ContractsComponent implements OnInit {
       summary: 'Info', 
       detail: 'Bearbeitungsfunktion noch nicht implementiert' 
     });
+  }
+
+  navigateToCreate() {
+    this.router.navigate(['/contracts/create']);
   }
 
   deleteContract(contract: Contract) {

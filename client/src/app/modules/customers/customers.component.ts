@@ -37,6 +37,11 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
           <div class="flex gap-2">
             <p-button 
+              label="Neu erstellen"
+              icon="pi pi-plus" 
+              (onClick)="navigateToCreate()"
+            />
+            <p-button 
               icon="pi pi-refresh" 
               [rounded]="true"
               [outlined]="true"
@@ -265,5 +270,9 @@ export class CustomersComponent implements OnInit {
   viewCustomer(customer: Customer): void {
     this.router.navigate(["/customers", customer.customerId]);
     this.toastService.info('Info', `Kunde: ${customer.fullName}`);
+  }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/customers/create']);
   }
 }
