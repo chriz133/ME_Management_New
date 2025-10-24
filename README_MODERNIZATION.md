@@ -75,6 +75,7 @@ The frontend is built using Angular 20 with PrimeNG UI components and Tailwind C
 
 - .NET 8 SDK or later
 - Node.js 18+ and npm
+- SQL Server or SQL Server LocalDB
 - Any modern web browser
 
 ### Running the Backend
@@ -84,12 +85,30 @@ The frontend is built using Angular 20 with PrimeNG UI components and Tailwind C
 cd server
 ```
 
-2. Build the solution:
+2. Update the connection string in `Server.Api/appsettings.json` to point to your SQL Server instance (or use the default LocalDB):
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+  }
+}
+```
+
+3. Apply database migrations:
 ```bash
+cd Server.Api
+dotnet ef database update
+```
+
+This will create the database and all necessary tables.
+
+4. Build the solution:
+```bash
+cd ..
 dotnet build
 ```
 
-3. Run the API:
+5. Run the API:
 ```bash
 cd Server.Api
 dotnet run
@@ -97,7 +116,7 @@ dotnet run
 
 The API will start on `http://localhost:5000` by default.
 
-**Note:** The database will be automatically created on first run with a default admin user:
+**Note:** On first run, the application will automatically seed a default admin user:
 - Username: `admin`
 - Password: `admin`
 
