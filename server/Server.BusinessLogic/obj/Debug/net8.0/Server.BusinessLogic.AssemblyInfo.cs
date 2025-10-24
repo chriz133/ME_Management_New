@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Server.BusinessLogic")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+25ab74ba23fccb637b16ced55e4fee9ec02a4fb2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10b4c4965240e657f4cf6bc80d73ae64f6432e17")]
 [assembly: System.Reflection.AssemblyProductAttribute("Server.BusinessLogic")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Server.BusinessLogic")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
