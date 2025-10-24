@@ -6,8 +6,7 @@ import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, ToastModule, TooltipModule],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  templateUrl: './app.html'
 })
 export class App {
   title = 'ME Management';

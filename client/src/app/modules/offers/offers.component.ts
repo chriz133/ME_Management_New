@@ -111,13 +111,13 @@ export class OffersComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status: string): string {
-    const map: Record<string, string> = {
+  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    const map: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast'> = {
       'Draft': 'secondary',
       'Sent': 'info',
       'Accepted': 'success',
       'Rejected': 'danger',
-      'Expired': 'warning'
+      'Expired': 'warn'
     };
     return map[status] || 'secondary';
   }

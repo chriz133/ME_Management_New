@@ -111,13 +111,13 @@ export class InvoicesComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status: string): string {
-    const map: Record<string, string> = {
+  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    const map: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast'> = {
       'Draft': 'secondary',
       'Sent': 'info',
       'Paid': 'success',
       'Overdue': 'danger',
-      'Cancelled': 'warning'
+      'Cancelled': 'warn'
     };
     return map[status] || 'secondary';
   }
