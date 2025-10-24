@@ -1,23 +1,17 @@
-export interface Invoice {
-  invoiceId: number;
+export interface Contract {
+  contractId: number;
   createdAt: Date;
+  accepted: boolean;
   customerId: number;
-  startedAt: Date;
-  finishedAt: Date;
-  depositAmount: number;
-  depositPaidOn: Date;
-  type?: string;
   customer?: Customer;
-  positions?: InvoicePosition[];
-  totalAmount: number;
+  positions?: ContractPosition[];
 }
 
-export interface InvoicePosition {
-  invoicePositionId: number;
+export interface ContractPosition {
+  contractPositionId: number;
   amount: number;
   positionId: number;
   position?: Position;
-  lineTotal: number;
 }
 
 export interface Position {

@@ -4,112 +4,94 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { Invoice } from '../../core/models/invoice.model';
 import { ToastService } from '../../core/services/toast.service';
 
-/**
- * Invoices list component with PDF download
- */
 @Component({
   selector: 'app-invoices',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, CardModule, TagModule],
+  imports: [CommonModule, TableModule, ButtonModule, CardModule, TagModule, TooltipModule],
   template: `
-    <div class="container mx-auto max-w-7xl">
-      <div class="flex justify-between items-center mb-8">
+    <div class="invoices-page">
+      <div class="page-header">
         <div>
-          <h1 class="text-4xl font-bold bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent mb-2">
-            Rechnungen
+          <h1 class="page-title">
+            <i class="pi pi-file-edit mr-3"></i>Rechnungen
           </h1>
-          <p class="text-gray-600">Verwalten Sie Ihre Rechnungen und laden Sie PDFs herunter</p>
+          <p class="page-subtitle">Überblick über alle Rechnungen aus firmaDB</p>
         </div>
-        <p-button 
-          label="Neue Rechnung" 
-          icon="pi pi-plus" 
-          (onClick)="createInvoice()"
-          [style]="{'background': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', 'border': 'none', 'padding': '0.75rem 1.5rem'}"
-        />
       </div>
-      
+
       <p-card>
-        <p-table 
-          [value]="invoices" 
+        <p-table
+          [value]="invoices"
           [loading]="loading"
-          [paginator]="true" 
+          [paginator]="true"
           [rows]="10"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Einträgen"
+          [rowsPerPageOptions]="[10, 25, 50, 100]"
+          [rowHover]="true"
+          dataKey="invoiceId"
           styleClass="p-datatable-sm"
         >
           <ng-template pTemplate="header">
             <tr>
-              <th>Rechnungsnr.</th>
+              <th pSortableColumn="invoiceId">ID <p-sortIcon field="invoiceId"/></th>
+              <th pSortableColumn="createdAt">Erstellt <p-sortIcon field="createdAt"/></th>
               <th>Kunde</th>
-              <th>Datum</th>
-              <th>Fälligkeitsdatum</th>
-              <th>Netto</th>
-              <th>Brutto</th>
-              <th>Status</th>
+              <th>Startdatum</th>
+              <th>Enddatum</th>
+              <th>Typ</th>
+              <th class="text-right">Betrag</th>
               <th class="text-center">Aktionen</th>
             </tr>
           </ng-template>
+
           <ng-template pTemplate="body" let-invoice>
             <tr>
-              <td><span class="font-semibold text-pink-700">{{ invoice.invoiceNumber }}</span></td>
-              <td><span class="font-medium">{{ invoice.customerName }}</span></td>
+              <td><span class="font-bold text-primary">{{invoice.invoiceId}}</span></td>
+              <td>{{ invoice.createdAt | date:'dd.MM.yyyy' }}</td>
               <td>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-calendar text-gray-400 text-sm"></i>
-                  <span>{{ invoice.invoiceDate | date:'dd.MM.yyyy' }}</span>
+                <div *ngIf="invoice.customer" class="flex align-items-center gap-2">
+                  <i class="pi pi-user text-600"></i>
+                  <span>{{ invoice.customer.fullName }}</span>
                 </div>
               </td>
+              <td>{{ invoice.startedAt | date:'dd.MM.yyyy' }}</td>
+              <td>{{ invoice.finishedAt | date:'dd.MM.yyyy' }}</td>
               <td>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-clock text-gray-400 text-sm"></i>
-                  <span>{{ invoice.dueDate | date:'dd.MM.yyyy' }}</span>
-                </div>
+                <p-tag [value]="invoice.type" [severity]="invoice.type === 'D' ? 'success' : 'info'" />
               </td>
-              <td>
-                <span class="font-medium text-gray-700">{{ invoice.netTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+              <td class="text-right">
+                <span class="font-bold">{{ invoice.totalAmount | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
               </td>
-              <td>
-                <span class="font-bold text-gray-900">{{ invoice.grossTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
-              </td>
-              <td>
-                <p-tag [value]="invoice.status" [severity]="getStatusSeverity(invoice.status)" />
-              </td>
-              <td>
-                <div class="flex gap-2 justify-center">
-                  <p-button 
-                    icon="pi pi-file-pdf" 
-                    [text]="true" 
-                    [rounded]="true"
-                    severity="danger"
-                    pTooltip="PDF herunterladen"
-                    tooltipPosition="top"
-                    (onClick)="downloadPdf(invoice)"
-                  />
-                  <p-button 
-                    icon="pi pi-pencil" 
-                    [text]="true" 
-                    [rounded]="true"
-                    severity="info"
-                    pTooltip="Bearbeiten"
-                    tooltipPosition="top"
-                    (onClick)="editInvoice(invoice)"
-                  />
-                </div>
+              <td class="text-center">
+                <p-button
+                  icon="pi pi-eye"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="info"
+                  (onClick)="viewInvoice(invoice)"
+                  pTooltip="Details anzeigen"
+                />
               </td>
             </tr>
           </ng-template>
+
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="8" class="text-center py-12">
-                <div class="flex flex-col items-center gap-4">
-                  <i class="pi pi-file text-6xl text-gray-300"></i>
-                  <div>
-                    <p class="text-lg font-semibold text-gray-700 mb-2">Keine Rechnungen gefunden</p>
-                    <p class="text-sm text-gray-500">Erstellen Sie Ihre erste Rechnung</p>
+              <td colspan="8">
+                <div class="p-empty-state">
+                  <div class="p-empty-state-icon">
+                    <i class="pi pi-file-edit"></i>
                   </div>
+                  <h3 class="p-empty-state-title">Keine Rechnungen gefunden</h3>
+                  <p class="p-empty-state-message">
+                    Es sind keine Rechnungen in der Datenbank vorhanden.
+                  </p>
                 </div>
               </td>
             </tr>
@@ -125,7 +107,7 @@ export class InvoicesComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   invoices: Invoice[] = [];
-  loading = false;
+  loading = true;
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -134,38 +116,18 @@ export class InvoicesComponent implements OnInit {
   loadInvoices(): void {
     this.loading = true;
     this.invoiceService.getAll().subscribe({
-      next: (data) => {
+      next: (data: Invoice[]) => {
         this.invoices = data;
         this.loading = false;
       },
-      error: (error) => {
-        this.toastService.error('Fehler beim Laden der Rechnungen');
+      error: () => {
+        this.toastService.error('Fehler', 'Rechnungen konnten nicht geladen werden');
         this.loading = false;
       }
     });
   }
 
-  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
-    const map: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast'> = {
-      'Draft': 'secondary',
-      'Sent': 'info',
-      'Paid': 'success',
-      'Overdue': 'danger',
-      'Cancelled': 'warn'
-    };
-    return map[status] || 'secondary';
-  }
-
-  downloadPdf(invoice: Invoice): void {
-    this.invoiceService.downloadPdf(invoice.id, invoice.invoiceNumber);
-    this.toastService.success('PDF wird heruntergeladen...');
-  }
-
-  createInvoice(): void {
-    this.toastService.info('Erstellen-Dialog noch nicht implementiert');
-  }
-
-  editInvoice(invoice: Invoice): void {
-    this.toastService.info('Bearbeiten-Dialog noch nicht implementiert');
+  viewInvoice(invoice: Invoice): void {
+    this.toastService.info('Info', `Rechnung ${invoice.invoiceId} Details`);
   }
 }

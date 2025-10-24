@@ -61,61 +61,50 @@ import { ToastService } from '../../core/services/toast.service';
         >
           <ng-template pTemplate="header">
             <tr>
-              <th pSortableColumn="id">ID <p-sortIcon field="id"/></th>
-              <th pSortableColumn="name">Name <p-sortIcon field="name"/></th>
-              <th>Email</th>
-              <th>Telefon</th>
+              <th pSortableColumn="customerId">ID <p-sortIcon field="customerId"/></th>
+              <th pSortableColumn="fullName">Name <p-sortIcon field="fullName"/></th>
+              <th>Adresse</th>
               <th>Ort</th>
-              <th class="text-center" style="width: 180px;">Aktionen</th>
+              <th>UID</th>
+              <th class="text-center" style="width: 120px;">Aktionen</th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-customer>
             <tr>
               <td>
-                <span class="font-bold text-primary">{{customer.id}}</span>
+                <span class="font-bold text-primary">{{customer.customerId}}</span>
               </td>
               <td>
                 <div class="flex align-items-center gap-2">
                   <i class="pi pi-user text-600"></i>
-                  <span class="font-semibold">{{ customer.name }}</span>
+                  <span class="font-semibold">{{ customer.fullName }}</span>
                 </div>
               </td>
               <td>
                 <div class="flex align-items-center gap-2">
-                  <i class="pi pi-envelope text-600"></i>
-                  <span>{{ customer.email }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="flex align-items-center gap-2">
-                  <i class="pi pi-phone text-600"></i>
-                  <span>{{ customer.phone }}</span>
+                  <i class="pi pi-home text-600"></i>
+                  <span>{{ customer.address }} {{ customer.nr }}</span>
                 </div>
               </td>
               <td>
                 <div class="flex align-items-center gap-2">
                   <i class="pi pi-map-marker text-600"></i>
-                  <span>{{ customer.city }}</span>
+                  <span>{{ customer.plz }} {{ customer.city }}</span>
                 </div>
+              </td>
+              <td>
+                <span>{{ customer.uid }}</span>
               </td>
               <td class="text-center">
                 <div class="flex gap-2 justify-content-center">
                   <p-button
-                    icon="pi pi-pencil"
+                    icon="pi pi-eye"
                     [rounded]="true"
                     [text]="true"
-                    severity="success"
-                    (onClick)="editCustomer(customer)"
-                    pTooltip="Bearbeiten"
-                  />
-                  <p-button
-                    icon="pi pi-trash"
-                    [rounded]="true"
-                    [text]="true"
-                    severity="danger"
-                    (onClick)="deleteCustomer(customer)"
-                    pTooltip="Löschen"
+                    severity="info"
+                    (onClick)="viewCustomer(customer)"
+                    pTooltip="Details anzeigen"
                   />
                 </div>
               </td>
@@ -179,11 +168,7 @@ export class CustomersComponent implements OnInit {
     this.toastService.info('Info', 'Kunde erstellen - Funktion noch nicht implementiert');
   }
 
-  editCustomer(customer: Customer): void {
-    this.toastService.info('Info', `Kunde ${customer.name} bearbeiten - Funktion noch nicht implementiert`);
-  }
-
-  deleteCustomer(customer: Customer): void {
-    this.toastService.info('Info', `Kunde ${customer.name} löschen - Funktion noch nicht implementiert`);
+  viewCustomer(customer: Customer): void {
+    this.toastService.info('Info', `Kunde ${customer.fullName} Details`);
   }
 }
