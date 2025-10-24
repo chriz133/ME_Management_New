@@ -1,3 +1,6 @@
+/* Import Modern Font - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 /* Import Tailwind CSS using the new v4 syntax */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/preflight" layer(base);
@@ -9,7 +12,19 @@
 /* PrimeFlex for Grid System */
 @import "primeflex/primeflex.css";
 
-/* Global application styles with PrimeNG theme integration */
+/* CSS Custom Properties for Modern Theme */
+:root {
+  --modern-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Global application styles with modern font */
 @layer base {
   * {
     margin: 0;
@@ -18,18 +33,117 @@
   }
 
   body {
-    font-family: var(--font-family);
+    font-family: var(--modern-font);
     background-color: var(--surface-ground);
     color: var(--text-color);
     line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   html, body {
     height: 100%;
   }
+
+  /* Smooth transitions for all interactive elements */
+  button, a, input, textarea, select {
+    transition: all var(--transition-fast);
+  }
+}
+
+/* Modern Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 @layer components {
+  /* === Modern Animation Classes === */
+  .animate-fade-in {
+    animation: fadeIn var(--transition-medium) ease-out;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft var(--transition-medium) ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight var(--transition-medium) ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn var(--transition-medium) ease-out;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Staggered Animation Delays */
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
   /* === Layout Components === */
   .app-layout {
     min-height: 100vh;
@@ -43,6 +157,7 @@
     border-right: 1px solid var(--surface-border);
     display: flex;
     flex-direction: column;
+    animation: slideInLeft 0.4s ease-out;
   }
 
   .sidebar-header {
@@ -57,12 +172,18 @@
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast);
+  }
+
+  .app-logo:hover {
+    transform: scale(1.05) rotate(5deg);
   }
 
   .app-title {
@@ -70,12 +191,14 @@
     font-weight: 700;
     color: var(--text-color);
     margin: 0;
+    letter-spacing: -0.025em;
   }
 
   .app-subtitle {
     font-size: 0.75rem;
     color: var(--text-color-secondary);
     margin: 0;
+    font-weight: 500;
   }
 
   .main-content {
@@ -89,6 +212,7 @@
     border-radius: 0 !important;
     border: none !important;
     border-bottom: 1px solid var(--surface-border) !important;
+    animation: slideInRight 0.4s ease-out;
   }
 
   .user-info {
@@ -98,6 +222,13 @@
     padding: 0.5rem 1rem;
     background: var(--surface-50);
     border-radius: var(--border-radius);
+    transition: all var(--transition-fast);
+  }
+
+  .user-info:hover {
+    background: var(--surface-100);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
   }
 
   .user-name {
@@ -109,6 +240,7 @@
   .user-role {
     font-size: 0.75rem;
     color: var(--text-color-secondary);
+    font-weight: 500;
   }
 
   .content-area {
@@ -125,17 +257,34 @@
     justify-content: center;
     background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
     padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-page::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pulse 8s ease-in-out infinite;
   }
 
   .login-container {
     width: 100%;
     max-width: 450px;
+    animation: scaleIn 0.5s ease-out;
+    position: relative;
+    z-index: 1;
   }
 
   .login-brand {
     text-align: center;
     margin-bottom: 2rem;
     color: white;
+    animation: fadeIn 0.6s ease-out;
   }
 
   .brand-icon {
@@ -150,18 +299,25 @@
     justify-content: center;
     font-size: 2.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-medium);
+  }
+
+  .brand-icon:hover {
+    transform: scale(1.1) rotate(10deg);
   }
 
   .login-brand h1 {
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 800;
     margin: 0 0 0.5rem 0;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.05em;
   }
 
   .login-brand p {
     font-size: 1.125rem;
-    opacity: 0.9;
+    opacity: 0.95;
+    font-weight: 500;
   }
 
   .login-form {
@@ -188,10 +344,13 @@
   .dashboard {
     max-width: 1400px;
     margin: 0 auto;
+    animation: fadeIn 0.5s ease-out;
   }
 
   .page-header {
     margin-bottom: 2rem;
+    animation: slideInLeft 0.4s ease-out;
+  }
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -199,24 +358,39 @@
 
   .page-title {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--text-color);
     margin: 0 0 0.5rem 0;
     display: flex;
     align-items: center;
+    letter-spacing: -0.025em;
   }
 
   .page-subtitle {
     font-size: 1rem;
     color: var(--text-color-secondary);
     margin: 0;
+    font-weight: 500;
   }
 
   .stat-card {
     padding: 1.5rem;
     border-radius: var(--border-radius);
     height: 100%;
+    transition: all var(--transition-fast);
+    animation: scaleIn 0.4s ease-out;
+    animation-fill-mode: both;
   }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 100ms; }
+  .stat-card:nth-child(2) { animation-delay: 200ms; }
+  .stat-card:nth-child(3) { animation-delay: 300ms; }
+  .stat-card:nth-child(4) { animation-delay: 400ms; }
 
   .stat-label {
     font-size: 0.875rem;
@@ -228,14 +402,16 @@
 
   .stat-value {
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 800;
     margin: 0.5rem 0;
+    letter-spacing: -0.025em;
   }
 
   .stat-info {
     font-size: 0.875rem;
     display: flex;
     align-items: center;
+    font-weight: 500;
   }
 
   .stat-icon {
@@ -247,19 +423,26 @@
     justify-content: center;
     color: white;
     font-size: 1.5rem;
+    transition: transform var(--transition-fast);
+  }
+
+  .stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(5deg);
   }
 
   .card-title {
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-color);
     margin: 0;
     display: flex;
     align-items: center;
+    letter-spacing: -0.025em;
   }
 
   .welcome-content {
     padding: 1rem 0;
+    animation: fadeIn 0.6s ease-out 0.3s both;
   }
 
   .welcome-icon {
@@ -267,12 +450,18 @@
     height: 80px;
     margin: 0 auto;
     border-radius: 50%;
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
+    transition: transform var(--transition-medium);
+    box-shadow: var(--shadow-md);
+  }
+
+  .welcome-icon:hover {
+    transform: scale(1.1) rotate(10deg);
   }
 
   .quick-actions {
@@ -286,7 +475,14 @@
     gap: 1rem;
     padding: 0.75rem 0;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-fast);
+    border-radius: var(--border-radius);
+    padding-left: 0.5rem;
+  }
+
+  .action-item:hover {
+    background: var(--surface-50);
+    transform: translateX(4px);
   }
 
   .action-item:hover {
@@ -376,11 +572,20 @@
   }
 
   .p-card {
-    box-shadow: var(--card-shadow) !important;
+    box-shadow: var(--shadow-md) !important;
+    transition: all var(--transition-fast) !important;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .p-card:hover {
+    box-shadow: var(--shadow-lg) !important;
+    transform: translateY(-2px);
   }
 
   .p-card .p-card-header {
     border-bottom: 1px solid var(--surface-border) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
   }
 
   .p-card .p-card-content {
@@ -388,14 +593,17 @@
   }
 
   .p-panel {
-    box-shadow: var(--card-shadow) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: none !important;
+    animation: scaleIn 0.4s ease-out;
   }
 
   .p-panel .p-panel-header {
     background: var(--surface-overlay) !important;
     border: 1px solid var(--surface-border) !important;
     border-bottom: none !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
   }
 
   .p-panel .p-panel-content {
@@ -405,16 +613,42 @@
 
   .p-button {
     font-weight: 600 !important;
+    font-family: var(--modern-font) !important;
+    letter-spacing: -0.025em !important;
+    transition: all var(--transition-fast) !important;
+  }
+
+  .p-button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  .p-button:active {
+    transform: translateY(0);
   }
 
   .p-button-primary {
-    background: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600)) !important;
+    border-color: var(--primary-500) !important;
   }
 
   .p-button-primary:hover {
-    background: var(--primary-600) !important;
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700)) !important;
     border-color: var(--primary-600) !important;
+  }
+
+  .p-inputtext, .p-password input {
+    font-family: var(--modern-font) !important;
+    transition: all var(--transition-fast) !important;
+  }
+
+  .p-inputtext:focus, .p-password input:focus {
+    box-shadow: 0 0 0 2px var(--primary-200) !important;
+    border-color: var(--primary-500) !important;
+  }
+
+  .p-datatable {
+    animation: fadeIn 0.5s ease-out;
   }
 
   .p-datatable .p-datatable-header {
@@ -422,12 +656,16 @@
     border: 1px solid var(--surface-border) !important;
     border-bottom: none !important;
     padding: 1.25rem 1.5rem !important;
+    font-weight: 700 !important;
   }
 
   .p-datatable .p-datatable-thead > tr > th {
-    background: var(--primary-color) !important;
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600)) !important;
     color: white !important;
     border: none !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
+    font-family: var(--modern-font) !important;
     font-weight: 600 !important;
   }
 

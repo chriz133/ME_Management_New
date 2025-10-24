@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "CDw/DDdcxIk=",
+  "dgSpecHash": "Re/I7Dhtqho=",
   "success": true,
   "projectFilePath": "/home/runner/work/ME_Management_New/ME_Management_New/server/Server.BusinessLogic/Server.BusinessLogic.csproj",
   "expectedPackageFiles": [
@@ -37,6 +37,8 @@
     "/home/runner/.nuget/packages/microsoft.identitymodel.tokens/7.1.2/microsoft.identitymodel.tokens.7.1.2.nupkg.sha512",
     "/home/runner/.nuget/packages/microsoft.sqlserver.server/1.0.0/microsoft.sqlserver.server.1.0.0.nupkg.sha512",
     "/home/runner/.nuget/packages/microsoft.win32.systemevents/6.0.0/microsoft.win32.systemevents.6.0.0.nupkg.sha512",
+    "/home/runner/.nuget/packages/mysqlconnector/2.3.5/mysqlconnector.2.3.5.nupkg.sha512",
+    "/home/runner/.nuget/packages/pomelo.entityframeworkcore.mysql/8.0.2/pomelo.entityframeworkcore.mysql.8.0.2.nupkg.sha512",
     "/home/runner/.nuget/packages/questpdf/2024.10.3/questpdf.2024.10.3.nupkg.sha512",
     "/home/runner/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.6/sqlitepclraw.bundle_e_sqlite3.2.1.6.nupkg.sha512",
     "/home/runner/.nuget/packages/sqlitepclraw.core/2.1.6/sqlitepclraw.core.2.1.6.nupkg.sha512",

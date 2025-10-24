@@ -9,22 +9,37 @@ using Server.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure database context - Using SQLite for cross-platform compatibility
-// For SQL Server on Windows, update connection string in appsettings.json to:
-// "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
-// and change UseSqlite to UseSqlServer
+// Configure database context - Auto-detects database type from connection string
+// Supports: SQLite, SQL Server, and MySQL
+// Examples:
+// SQLite: "Data Source=memanagement.db"
+// SQL Server: "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True"
+// MySQL: "Server=192.168.0.88;Port=3306;Database=memanagement;User=root;Password=yourpassword"
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=memanagement.db";
-    if (connectionString.Contains("Data Source"))
+    
+    if (connectionString.Contains("Data Source", StringComparison.OrdinalIgnoreCase))
     {
         // SQLite connection
         options.UseSqlite(connectionString);
+        Console.WriteLine("Using SQLite database");
+    }
+    else if (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase) && 
+             (connectionString.Contains("User=", StringComparison.OrdinalIgnoreCase) || 
+              connectionString.Contains("User Id=", StringComparison.OrdinalIgnoreCase) ||
+              connectionString.Contains("Uid=", StringComparison.OrdinalIgnoreCase)))
+    {
+        // MySQL connection (Pomelo provider)
+        var serverVersion = ServerVersion.AutoDetect(connectionString);
+        options.UseMySql(connectionString, serverVersion);
+        Console.WriteLine("Using MySQL database");
     }
     else
     {
         // SQL Server connection
         options.UseSqlServer(connectionString);
+        Console.WriteLine("Using SQL Server database");
     }
 });
 
