@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.BusinessObjects.DTOs;
+using Server.BusinessObjects.Entities;
 using Server.DataAccess;
 
 namespace Server.Api.Controllers;
@@ -82,6 +83,48 @@ public class TransactionsController : ControllerBase
         {
             _logger.LogError(ex, "Error fetching transaction {TransactionId}", id);
             return StatusCode(500, new { message = "Error fetching transaction", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create a new transaction (requires Admin or User role)
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<TransactionDto>> CreateTransaction([FromBody] CreateTransactionRequest request)
+    {
+        try
+        {
+            var transaction = new TransactionEntity
+            {
+                Amount = (double)request.Amount,
+                Description = request.Description,
+                Date = request.Date,
+                Type = request.Type,
+                Medium = request.Medium
+            };
+
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Transaction {TransactionId} created", transaction.TransactionId);
+
+            var transactionDto = new TransactionDto
+            {
+                TransactionId = transaction.TransactionId,
+                Amount = transaction.Amount,
+                Description = transaction.Description,
+                Date = transaction.Date,
+                Type = transaction.Type,
+                Medium = transaction.Medium
+            };
+
+            return CreatedAtAction(nameof(GetTransaction), new { id = transaction.TransactionId }, transactionDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating transaction");
+            return StatusCode(500, new { message = "Error creating transaction", error = ex.Message });
         }
     }
 }

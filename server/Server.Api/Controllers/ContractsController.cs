@@ -200,6 +200,140 @@ public class ContractsController : ControllerBase
             return StatusCode(500, new { message = "Error deleting contract", error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Create a new contract (requires Admin or User role)
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<ContractDto>> CreateContract([FromBody] CreateContractRequest request)
+    {
+        try
+        {
+            // Verify customer exists
+            var customerExists = await _context.CustomersDb.AnyAsync(c => c.CustomerId == request.CustomerId);
+            if (!customerExists)
+            {
+                return BadRequest(new { message = $"Customer with ID {request.CustomerId} not found" });
+            }
+
+            // Verify all positions exist
+            var positionIds = request.Positions.Select(p => p.PositionId).ToList();
+            var existingPositionIds = await _context.PositionsDb
+                .Where(p => positionIds.Contains(p.PositionId))
+                .Select(p => p.PositionId)
+                .ToListAsync();
+
+            var missingPositions = positionIds.Except(existingPositionIds).ToList();
+            if (missingPositions.Any())
+            {
+                return BadRequest(new { message = $"Positions not found: {string.Join(", ", missingPositions)}" });
+            }
+
+            var contract = new ContractEntity
+            {
+                CreatedAt = DateTime.Now,
+                Accepted = request.Accepted,
+                CustomerId = request.CustomerId,
+                ContractPositions = request.Positions.Select(p => new ContractPosition
+                {
+                    PositionId = p.PositionId,
+                    Amount = (double)p.Amount
+                }).ToList()
+            };
+
+            _context.ContractsDb.Add(contract);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Contract {ContractId} created", contract.ContractId);
+
+            // Fetch the created contract with all relationships
+            var createdContract = await _context.ContractsDb
+                .Include(c => c.Customer)
+                .Include(c => c.ContractPositions)
+                    .ThenInclude(cp => cp.Position)
+                .Where(c => c.ContractId == contract.ContractId)
+                .Select(c => new ContractDto
+                {
+                    ContractId = c.ContractId,
+                    CreatedAt = c.CreatedAt,
+                    Accepted = c.Accepted,
+                    CustomerId = c.CustomerId,
+                    Customer = c.Customer == null ? null : new CustomerDto
+                    {
+                        CustomerId = c.Customer.CustomerId,
+                        Firstname = c.Customer.Firstname,
+                        Surname = c.Customer.Surname,
+                        Plz = c.Customer.Plz,
+                        City = c.Customer.City,
+                        Address = c.Customer.Address,
+                        Nr = c.Customer.Nr,
+                        Uid = c.Customer.Uid
+                    },
+                    Positions = c.ContractPositions!.Select(cp => new ContractPositionDto
+                    {
+                        ContractPositionId = cp.ContractPositionId,
+                        Amount = cp.Amount,
+                        PositionId = cp.PositionId,
+                        Position = cp.Position == null ? null : new PositionDto
+                        {
+                            PositionId = cp.Position.PositionId,
+                            Text = cp.Position.Text,
+                            Price = cp.Position.Price,
+                            Unit = cp.Position.Unit
+                        }
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return CreatedAtAction(nameof(GetContract), new { id = contract.ContractId }, createdContract);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating contract");
+            return StatusCode(500, new { message = "Error creating contract", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get contract data for converting to invoice (pre-fills invoice form)
+    /// </summary>
+    [HttpGet("{id}/convert-to-invoice")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<CreateInvoiceRequest>> GetContractForInvoiceConversion(int id)
+    {
+        try
+        {
+            var contract = await _context.ContractsDb
+                .Include(c => c.ContractPositions)
+                .FirstOrDefaultAsync(c => c.ContractId == id);
+
+            if (contract == null)
+            {
+                return NotFound(new { message = $"Contract with ID {id} not found" });
+            }
+
+            var invoiceRequest = new CreateInvoiceRequest
+            {
+                CustomerId = contract.CustomerId,
+                StartedAt = DateTime.Now,
+                FinishedAt = DateTime.Now,
+                Type = "D",
+                Positions = contract.ContractPositions!.Select(cp => new CreateInvoicePositionRequest
+                {
+                    PositionId = cp.PositionId,
+                    Amount = (decimal)cp.Amount
+                }).ToList()
+            };
+
+            return Ok(invoiceRequest);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error converting contract {ContractId} to invoice", id);
+            return StatusCode(500, new { message = "Error converting contract to invoice", error = ex.Message });
+        }
+    }
 }
 
 /// <summary>

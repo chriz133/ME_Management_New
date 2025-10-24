@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.BusinessObjects.DTOs;
+using Server.BusinessObjects.Entities;
 using Server.DataAccess;
 
 namespace Server.Api.Controllers;
@@ -175,6 +176,52 @@ public class CustomersController : ControllerBase
         {
             _logger.LogError(ex, "Error fetching invoices for customer {CustomerId}", id);
             return StatusCode(500, new { message = "Error fetching invoices", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create a new customer (requires Admin or User role)
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<CustomerDto>> CreateCustomer([FromBody] CreateCustomerRequest request)
+    {
+        try
+        {
+            var customer = new CustomerEntity
+            {
+                Firstname = request.Firstname,
+                Surname = request.Surname,
+                Plz = request.Plz,
+                City = request.City,
+                Address = request.Address,
+                Nr = request.Nr,
+                Uid = request.Uid
+            };
+
+            _context.CustomersDb.Add(customer);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Customer {CustomerId} created", customer.CustomerId);
+
+            var customerDto = new CustomerDto
+            {
+                CustomerId = customer.CustomerId,
+                Firstname = customer.Firstname,
+                Surname = customer.Surname,
+                Plz = customer.Plz,
+                City = customer.City,
+                Address = customer.Address,
+                Nr = customer.Nr,
+                Uid = customer.Uid
+            };
+
+            return CreatedAtAction(nameof(GetCustomer), new { id = customer.CustomerId }, customerDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating customer");
+            return StatusCode(500, new { message = "Error creating customer", error = ex.Message });
         }
     }
 }
