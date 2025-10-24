@@ -1,26 +1,128 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# =========================
+# .NET and C# Build Output
+# =========================
 
-# testing
-/coverage
+# Build results - ALL bin and obj folders recursively
+**/[Bb]in/
+**/[Oo]bj/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+artifacts/
 
-# production
-/build
+# Visual Studio cache
+.vs/
+.vscode/
 
-/.idea
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln.iml
 
+# Build outputs
+*.dll
+*.exe
+*.pdb
+*.cache
+*.deps.json
+*.runtimeconfig.json
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
+*.assets.cache
+*.sourcelink.json
+*.FileListAbsolute.txt
+*.CoreCompileInputs.cache
+*.csproj.nuget.dgspec.json
+*.csproj.nuget.g.props
+*.csproj.nuget.g.targets
+project.assets.json
+project.nuget.cache
+*.dswa.cache.json
 
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
 
-# misc
+# =========================
+# Angular / Node.js
+# =========================
+
+# Dependencies
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Angular build
+**/dist/
+**/out/
+**/build/
+**/.angular/
+.angular/cache
+
+# Testing
+coverage/
+.nyc_output/
+*.spec.ts.snap
+
+# =========================
+# IDE and Editors
+# =========================
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider / IntelliJ
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# =========================
+# Operating System
+# =========================
+
+# macOS
 .DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# =========================
+# Temporary Files
+# =========================
+
+*.swp
+*.swo
+*~.nib
+*.tmp
+*.bak
+tmp/
+temp/
+
+# Environment
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-/.idea/
