@@ -9,38 +9,15 @@ using Server.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure database context - Auto-detects database type from connection string
-// Supports: SQLite, SQL Server, and MySQL
-// Examples:
-// SQLite: "Data Source=memanagement.db"
-// SQL Server: "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True"
-// MySQL: "Server=192.168.0.88;Port=3306;Database=memanagement;User=root;Password=yourpassword"
+// Configure database context - Using MySQL database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=memanagement.db";
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' not found.");
     
-    if (connectionString.Contains("Data Source", StringComparison.OrdinalIgnoreCase))
-    {
-        // SQLite connection
-        options.UseSqlite(connectionString);
-        Console.WriteLine("Using SQLite database");
-    }
-    else if (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase) && 
-             (connectionString.Contains("User=", StringComparison.OrdinalIgnoreCase) || 
-              connectionString.Contains("User Id=", StringComparison.OrdinalIgnoreCase) ||
-              connectionString.Contains("Uid=", StringComparison.OrdinalIgnoreCase)))
-    {
-        // MySQL connection (Pomelo provider)
-        var serverVersion = ServerVersion.AutoDetect(connectionString);
-        options.UseMySql(connectionString, serverVersion);
-        Console.WriteLine("Using MySQL database");
-    }
-    else
-    {
-        // SQL Server connection
-        options.UseSqlServer(connectionString);
-        Console.WriteLine("Using SQL Server database");
-    }
+    var serverVersion = ServerVersion.AutoDetect(connectionString);
+    options.UseMySql(connectionString, serverVersion);
+    Console.WriteLine("Using MySQL database");
 });
 
 // Configure repositories
@@ -137,23 +114,35 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     
-    // Apply migrations
-    context.Database.Migrate();
-    
-    // Seed initial data if database is empty
-    if (!context.Users.Any())
+    // Ensure database connection is working
+    try
     {
-        // Create default admin user (username: admin, password: admin)
-        context.Users.Add(new User
+        if (context.Database.CanConnect())
         {
-            Username = "admin",
-            PasswordHash = AuthService.HashPassword("admin"),
-            DisplayName = "Administrator",
-            Email = "admin@me-management.de",
-            CreatedAt = DateTime.UtcNow
-        });
-        
-        context.SaveChanges();
+            Console.WriteLine("Successfully connected to MySQL database");
+            
+            // Check if Users table exists and seed default admin user if needed
+            if (context.Database.EnsureCreated() || !context.Users.Any())
+            {
+                // Create default admin user (username: admin, password: admin)
+                context.Users.Add(new User
+                {
+                    Username = "admin",
+                    PasswordHash = AuthService.HashPassword("admin"),
+                    DisplayName = "Administrator",
+                    Email = "admin@me-management.de",
+                    CreatedAt = DateTime.UtcNow
+                });
+                
+                context.SaveChanges();
+                Console.WriteLine("Default admin user created");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database connection or initialization failed: {ex.Message}");
+        Console.WriteLine("Please ensure MySQL is running and connection string is correct.");
     }
 }
 

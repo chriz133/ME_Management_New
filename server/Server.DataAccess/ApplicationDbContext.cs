@@ -5,8 +5,7 @@ namespace Server.DataAccess;
 
 /// <summary>
 /// Main database context for the application.
-/// Configured to use SQLite for simplicity and portability.
-/// In production, this could be switched to SQL Server or PostgreSQL.
+/// Configured to use MySQL database with support for both new entities and existing firmaDB schema.
 /// </summary>
 public class ApplicationDbContext : DbContext
 {
