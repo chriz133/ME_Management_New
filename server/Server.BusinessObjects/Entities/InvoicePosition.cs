@@ -11,24 +11,24 @@ namespace Server.BusinessObjects.Entities
     public class InvoicePosition
     {
         [Key]
-        [Column("INVOICE_POSITION_ID")]
+        [Column("invoicePositionId")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int InvoicePositionId { get; set; }
 
-        [Column("INVOICE_ID")]
-        public int? InvoiceId { get; set; }
+        [Column("amount")]
+        public double Amount { get; set; }
 
-        [Column("POSITION_ID")]
-        public int? PositionId { get; set; }
+        [Column("positionId")]
+        public int PositionId { get; set; }
 
-        [Column("QUANTITY")]
-        public int? Quantity { get; set; }
+        [Column("invoiceId")]
+        public int InvoiceId { get; set; }
 
         // Navigation properties
         [ForeignKey("InvoiceId")]
         public virtual InvoiceEntity? Invoice { get; set; }
 
         [ForeignKey("PositionId")]
-        public virtual Position? Position { get; set; }
+        public virtual PositionEntity? Position { get; set; }
     }
 }

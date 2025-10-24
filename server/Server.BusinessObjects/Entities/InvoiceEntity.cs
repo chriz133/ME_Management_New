@@ -11,33 +11,36 @@ namespace Server.BusinessObjects.Entities
     public class InvoiceEntity
     {
         [Key]
-        [Column("INVOICE_ID")]
+        [Column("invoiceId")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int InvoiceId { get; set; }
 
-        [Column("CONTRACT_ID")]
-        public int? ContractId { get; set; }
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; }
 
-        [Column("CUSTOMER_ID")]
-        public int? CustomerId { get; set; }
+        [Column("customerId")]
+        public int CustomerId { get; set; }
 
-        [Column("CREATION_DATE")]
-        public DateTime? CreationDate { get; set; }
+        [Column("started_at")]
+        public DateTime StartedAt { get; set; }
 
-        [Column("DUE_DATE")]
-        public DateTime? DueDate { get; set; }
+        [Column("finished_at")]
+        public DateTime FinishedAt { get; set; }
 
-        [Column("PAID")]
-        public bool? Paid { get; set; }
+        [Column("deposit_amount")]
+        public double DepositAmount { get; set; }
+
+        [Column("deposit_paid_on")]
+        public DateTime DepositPaidOn { get; set; }
+
+        [Column("type")]
+        [MaxLength(1)]
+        public string? Type { get; set; }
 
         // Navigation properties
-        [ForeignKey("ContractId")]
-        public virtual ContractEntity? Contract { get; set; }
-
         [ForeignKey("CustomerId")]
         public virtual CustomerEntity? Customer { get; set; }
 
         public virtual ICollection<InvoicePosition>? InvoicePositions { get; set; }
-        public virtual ICollection<FinanceEntity>? FinanceRecords { get; set; }
     }
 }

@@ -5,54 +5,44 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Server.BusinessObjects.Entities
 {
     /// <summary>
-    /// Customer entity - maps to existing 'customer' table in firmaDB
+    /// Customer entity - maps to existing 'customer2' table in firmaDB
     /// </summary>
-    [Table("customer")]
+    [Table("customer2")]
     public class CustomerEntity
     {
         [Key]
-        [Column("CUSTOMER_ID")]
+        [Column("customerId")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int CustomerId { get; set; }
 
-        [Column("ADDRESS_ID")]
-        public int? AddressId { get; set; }
-
-        [Column("NAME")]
+        [Column("firstname")]
         [MaxLength(45)]
-        public string? Name { get; set; }
+        public string? Firstname { get; set; }
 
-        [Column("EMAIL")]
+        [Column("surname")]
         [MaxLength(45)]
-        public string? Email { get; set; }
+        public string? Surname { get; set; }
 
-        [Column("PHONE")]
+        [Column("plz")]
+        public int? Plz { get; set; }
+
+        [Column("city")]
         [MaxLength(45)]
-        public string? Phone { get; set; }
+        public string? City { get; set; }
 
-        [Column("MOBIL")]
+        [Column("address")]
         [MaxLength(45)]
-        public string? Mobil { get; set; }
+        public string? Address { get; set; }
 
-        [Column("TAX_NUMBER")]
+        [Column("nr")]
+        public int? Nr { get; set; }
+
+        [Column("uid")]
         [MaxLength(45)]
-        public string? TaxNumber { get; set; }
-
-        [Column("FAX")]
-        [MaxLength(45)]
-        public string? Fax { get; set; }
-
-        [Column("WEBSITE")]
-        [MaxLength(45)]
-        public string? Website { get; set; }
-
-        // Navigation property
-        [ForeignKey("AddressId")]
-        public virtual Address? Address { get; set; }
+        public string? Uid { get; set; }
 
         // Collections
         public virtual ICollection<ContractEntity>? Contracts { get; set; }
         public virtual ICollection<InvoiceEntity>? Invoices { get; set; }
-        public virtual ICollection<PersonEntity>? Persons { get; set; }
     }
 }
