@@ -9,9 +9,24 @@ using Server.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure database context with SQL Server
+// Configure database context - Using SQLite for cross-platform compatibility
+// For SQL Server on Windows, update connection string in appsettings.json to:
+// "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+// and change UseSqlite to UseSqlServer
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=memanagement.db";
+    if (connectionString.Contains("Data Source"))
+    {
+        // SQLite connection
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        // SQL Server connection
+        options.UseSqlServer(connectionString);
+    }
+});
 
 // Configure repositories
 builder.Services.AddScoped<IRepository<Customer>, Repository<Customer>>();
