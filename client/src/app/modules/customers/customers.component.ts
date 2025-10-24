@@ -1,3 +1,4 @@
+import { Router } from "@angular/router";
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
@@ -237,6 +238,7 @@ import { ToastService } from '../../core/services/toast.service';
 export class CustomersComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
 
   customers: Customer[] = [];
   loading = true;
@@ -261,6 +263,7 @@ export class CustomersComponent implements OnInit {
   }
 
   viewCustomer(customer: Customer): void {
+    this.router.navigate(["/customers", customer.customerId]);
     this.toastService.info('Info', `Kunde: ${customer.fullName}`);
   }
 }

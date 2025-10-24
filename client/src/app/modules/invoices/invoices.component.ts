@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -251,6 +252,7 @@ import { ToastService } from '../../core/services/toast.service';
 export class InvoicesComponent implements OnInit {
   private readonly invoiceService = inject(InvoiceService);
   private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
 
   invoices: Invoice[] = [];
   loading = true;
@@ -275,7 +277,7 @@ export class InvoicesComponent implements OnInit {
   }
 
   viewInvoice(invoice: Invoice): void {
-    this.toastService.info('Info', `Rechnung #${invoice.invoiceId} - ${invoice.customer?.fullName || 'Unbekannt'}`);
+    this.router.navigate(['/invoices', invoice.invoiceId]);
   }
 
   getTypeLabel(type?: string): string {
