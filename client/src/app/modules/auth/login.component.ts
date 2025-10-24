@@ -25,19 +25,23 @@ import { ToastService } from '../../core/services/toast.service';
     PasswordModule
   ],
   template: `
-    <div class="flex items-center justify-center min-h-screen bg-gray-100">
-      <div class="w-full max-w-md">
-        <p-card>
-          <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">ME Management</h1>
-            <p class="text-gray-600">Internes Geschäftsverwaltungssystem</p>
+    <div class="flex items-center justify-center min-h-screen" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+      <div class="w-full max-w-md px-4">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4" 
+               style="background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+            <i class="pi pi-building text-4xl text-white"></i>
           </div>
+          <h1 class="text-4xl font-bold text-white mb-2" style="text-shadow: 0 2px 10px rgba(0,0,0,0.2);">ME Management</h1>
+          <p class="text-white text-lg opacity-90">Internes Geschäftsverwaltungssystem</p>
+        </div>
 
+        <p-card styleClass="shadow-2xl">
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-5">
               <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-                  Benutzername
+                <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="pi pi-user mr-2"></i>Benutzername
                 </label>
                 <input
                   pInputText
@@ -48,13 +52,13 @@ import { ToastService } from '../../core/services/toast.service';
                   [class.ng-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
                 />
                 @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
-                  <small class="text-red-500">Benutzername ist erforderlich</small>
+                  <small class="text-red-500 mt-1 block"><i class="pi pi-exclamation-circle mr-1"></i>Benutzername ist erforderlich</small>
                 }
               </div>
 
               <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                  Passwort
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="pi pi-lock mr-2"></i>Passwort
                 </label>
                 <p-password
                   formControlName="password"
@@ -66,7 +70,7 @@ import { ToastService } from '../../core/services/toast.service';
                   placeholder="Passwort eingeben"
                 />
                 @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-                  <small class="text-red-500">Passwort ist erforderlich</small>
+                  <small class="text-red-500 mt-1 block"><i class="pi pi-exclamation-circle mr-1"></i>Passwort ist erforderlich</small>
                 }
               </div>
 
@@ -76,15 +80,24 @@ import { ToastService } from '../../core/services/toast.service';
                 [loading]="loading"
                 [disabled]="loginForm.invalid"
                 styleClass="w-full"
+                [style]="{'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'border': 'none', 'padding': '0.875rem'}"
                 type="submit"
               />
             </div>
           </form>
 
-          <div class="mt-4 text-center text-sm text-gray-600">
-            <p>Standard-Anmeldedaten:</p>
-            <p>Benutzername: <strong>admin</strong></p>
-            <p>Passwort: <strong>admin</strong></p>
+          <div class="mt-6 p-4 rounded-lg text-center text-sm" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border: 1px solid rgba(102, 126, 234, 0.2);">
+            <p class="text-gray-700 font-medium mb-2"><i class="pi pi-info-circle mr-2"></i>Standard-Anmeldedaten</p>
+            <div class="flex justify-center gap-6 text-gray-600">
+              <div>
+                <span class="text-xs opacity-75">Benutzername:</span>
+                <div class="font-bold text-purple-700">admin</div>
+              </div>
+              <div>
+                <span class="text-xs opacity-75">Passwort:</span>
+                <div class="font-bold text-purple-700">admin</div>
+              </div>
+            </div>
           </div>
         </p-card>
       </div>

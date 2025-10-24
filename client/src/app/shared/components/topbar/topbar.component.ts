@@ -14,13 +14,23 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule, ButtonModule, MenuModule],
   template: `
     <div class="topbar flex items-center justify-between">
-      <div class="flex-1"></div>
+      <div class="flex-1">
+        <div class="text-sm text-gray-500">
+          <i class="pi pi-calendar mr-2"></i>{{ currentDate | date:'fullDate':'':'de-DE' }}
+        </div>
+      </div>
       
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-4">
         @if (currentUser$ | async; as user) {
-          <div class="text-right">
-            <div class="text-sm font-medium text-gray-700">{{ user.displayName }}</div>
-            <div class="text-xs text-gray-500">{{ user.username }}</div>
+          <div class="flex items-center gap-3 px-4 py-2 rounded-xl" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              {{ user.displayName.charAt(0).toUpperCase() }}
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-semibold text-gray-800">{{ user.displayName }}</div>
+              <div class="text-xs text-gray-500">{{ user.username }}</div>
+            </div>
           </div>
           <p-button 
             icon="pi pi-sign-out" 
@@ -30,6 +40,7 @@ import { AuthService } from '../../../core/services/auth.service';
             (onClick)="logout()"
             pTooltip="Abmelden"
             tooltipPosition="bottom"
+            styleClass="hover:bg-red-50"
           />
         }
       </div>
@@ -41,6 +52,7 @@ export class TopbarComponent {
   private readonly authService = inject(AuthService);
   
   currentUser$ = this.authService.currentUser$;
+  currentDate = new Date();
 
   logout(): void {
     this.authService.logout();

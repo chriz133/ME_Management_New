@@ -16,10 +16,20 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, TableModule, ButtonModule, CardModule, TagModule],
   template: `
-    <div class="container mx-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Rechnungen</h1>
-        <p-button label="Neue Rechnung" icon="pi pi-plus" (onClick)="createInvoice()" />
+    <div class="container mx-auto max-w-7xl">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent mb-2">
+            Rechnungen
+          </h1>
+          <p class="text-gray-600">Verwalten Sie Ihre Rechnungen und laden Sie PDFs herunter</p>
+        </div>
+        <p-button 
+          label="Neue Rechnung" 
+          icon="pi pi-plus" 
+          (onClick)="createInvoice()"
+          [style]="{'background': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', 'border': 'none', 'padding': '0.75rem 1.5rem'}"
+        />
       </div>
       
       <p-card>
@@ -39,28 +49,43 @@ import { ToastService } from '../../core/services/toast.service';
               <th>Netto</th>
               <th>Brutto</th>
               <th>Status</th>
-              <th>Aktionen</th>
+              <th class="text-center">Aktionen</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-invoice>
             <tr>
-              <td>{{ invoice.invoiceNumber }}</td>
-              <td>{{ invoice.customerName }}</td>
-              <td>{{ invoice.invoiceDate | date:'dd.MM.yyyy' }}</td>
-              <td>{{ invoice.dueDate | date:'dd.MM.yyyy' }}</td>
-              <td>{{ invoice.netTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</td>
-              <td>{{ invoice.grossTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</td>
+              <td><span class="font-semibold text-pink-700">{{ invoice.invoiceNumber }}</span></td>
+              <td><span class="font-medium">{{ invoice.customerName }}</span></td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-gray-400 text-sm"></i>
+                  <span>{{ invoice.invoiceDate | date:'dd.MM.yyyy' }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-gray-400 text-sm"></i>
+                  <span>{{ invoice.dueDate | date:'dd.MM.yyyy' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-medium text-gray-700">{{ invoice.netTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+              </td>
+              <td>
+                <span class="font-bold text-gray-900">{{ invoice.grossTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+              </td>
               <td>
                 <p-tag [value]="invoice.status" [severity]="getStatusSeverity(invoice.status)" />
               </td>
               <td>
-                <div class="flex gap-2">
+                <div class="flex gap-2 justify-center">
                   <p-button 
                     icon="pi pi-file-pdf" 
                     [text]="true" 
                     [rounded]="true"
                     severity="danger"
                     pTooltip="PDF herunterladen"
+                    tooltipPosition="top"
                     (onClick)="downloadPdf(invoice)"
                   />
                   <p-button 
@@ -69,6 +94,7 @@ import { ToastService } from '../../core/services/toast.service';
                     [rounded]="true"
                     severity="info"
                     pTooltip="Bearbeiten"
+                    tooltipPosition="top"
                     (onClick)="editInvoice(invoice)"
                   />
                 </div>
@@ -77,7 +103,15 @@ import { ToastService } from '../../core/services/toast.service';
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="8" class="text-center">Keine Rechnungen gefunden</td>
+              <td colspan="8" class="text-center py-12">
+                <div class="flex flex-col items-center gap-4">
+                  <i class="pi pi-file text-6xl text-gray-300"></i>
+                  <div>
+                    <p class="text-lg font-semibold text-gray-700 mb-2">Keine Rechnungen gefunden</p>
+                    <p class="text-sm text-gray-500">Erstellen Sie Ihre erste Rechnung</p>
+                  </div>
+                </div>
+              </td>
             </tr>
           </ng-template>
         </p-table>

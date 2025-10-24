@@ -16,10 +16,20 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, TableModule, ButtonModule, CardModule, TagModule],
   template: `
-    <div class="container mx-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Angebote</h1>
-        <p-button label="Neues Angebot" icon="pi pi-plus" (onClick)="createOffer()" />
+    <div class="container mx-auto max-w-7xl">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent mb-2">
+            Angebote
+          </h1>
+          <p class="text-gray-600">Erstellen und verwalten Sie Ihre Angebote</p>
+        </div>
+        <p-button 
+          label="Neues Angebot" 
+          icon="pi pi-plus" 
+          (onClick)="createOffer()"
+          [style]="{'background': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', 'border': 'none', 'padding': '0.75rem 1.5rem'}"
+        />
       </div>
       
       <p-card>
@@ -39,28 +49,41 @@ import { ToastService } from '../../core/services/toast.service';
               <th>Gültig bis</th>
               <th>Brutto</th>
               <th>Status</th>
-              <th>Aktionen</th>
+              <th class="text-center">Aktionen</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-offer>
             <tr>
-              <td>{{ offer.offerNumber }}</td>
-              <td>{{ offer.title }}</td>
+              <td><span class="font-semibold text-cyan-700">{{ offer.offerNumber }}</span></td>
+              <td><span class="font-medium">{{ offer.title }}</span></td>
               <td>{{ offer.customerName }}</td>
-              <td>{{ offer.offerDate | date:'dd.MM.yyyy' }}</td>
-              <td>{{ offer.validUntil | date:'dd.MM.yyyy' }}</td>
-              <td>{{ offer.grossTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-gray-400 text-sm"></i>
+                  <span>{{ offer.offerDate | date:'dd.MM.yyyy' }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-gray-400 text-sm"></i>
+                  <span>{{ offer.validUntil | date:'dd.MM.yyyy' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-bold text-gray-900">{{ offer.grossTotal | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+              </td>
               <td>
                 <p-tag [value]="offer.status" [severity]="getStatusSeverity(offer.status)" />
               </td>
               <td>
-                <div class="flex gap-2">
+                <div class="flex gap-2 justify-center">
                   <p-button 
                     icon="pi pi-file-pdf" 
                     [text]="true" 
                     [rounded]="true"
                     severity="danger"
                     pTooltip="PDF herunterladen"
+                    tooltipPosition="top"
                     (onClick)="downloadPdf(offer)"
                   />
                   <p-button 
@@ -69,6 +92,7 @@ import { ToastService } from '../../core/services/toast.service';
                     [rounded]="true"
                     severity="info"
                     pTooltip="Bearbeiten"
+                    tooltipPosition="top"
                     (onClick)="editOffer(offer)"
                   />
                 </div>
@@ -77,7 +101,15 @@ import { ToastService } from '../../core/services/toast.service';
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="8" class="text-center">Keine Angebote gefunden</td>
+              <td colspan="8" class="text-center py-12">
+                <div class="flex flex-col items-center gap-4">
+                  <i class="pi pi-book text-6xl text-gray-300"></i>
+                  <div>
+                    <p class="text-lg font-semibold text-gray-700 mb-2">Keine Angebote gefunden</p>
+                    <p class="text-sm text-gray-500">Erstellen Sie Ihr erstes Angebot</p>
+                  </div>
+                </div>
+              </td>
             </tr>
           </ng-template>
         </p-table>
