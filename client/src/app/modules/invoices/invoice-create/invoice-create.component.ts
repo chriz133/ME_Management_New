@@ -14,8 +14,11 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { CustomerService } from '../../../core/services/customer.service';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { ContractService } from '../../../core/services/contract.service';
+import { PositionService } from '../../../core/services/position.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Customer } from '../../../core/models/customer.model';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-invoice-create',
@@ -459,6 +462,7 @@ export class InvoiceCreateComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly invoiceService = inject(InvoiceService);
   private readonly contractService = inject(ContractService);
+  private readonly positionService = inject(PositionService);
   private readonly toastService = inject(ToastService);
 
   customers: Customer[] = [];
@@ -577,14 +581,47 @@ export class InvoiceCreateComponent implements OnInit {
       return;
     }
 
-    this.invoiceService.create(this.invoice).subscribe({
+    // Step 1: Create all positions first
+    const positionCreationObservables = this.invoice.positions.map((p: any) =>
+      this.positionService.create({
+        text: p.text,
+        price: p.price,
+        unit: p.unit
+      })
+    );
+
+    // Use forkJoin to wait for all positions to be created, or of([]) if none
+    const positions$ = positionCreationObservables.length > 0 
+      ? forkJoin(positionCreationObservables) 
+      : of([] as any[]);
+
+    positions$.pipe(
+      switchMap((createdPositions: any) => {
+        // Step 2: Create invoice with the created position IDs
+        const requestData = {
+          CustomerId: this.invoice.customerId,
+          StartedAt: this.invoice.startedAt,
+          FinishedAt: this.invoice.finishedAt,
+          DepositAmount: this.invoice.depositAmount,
+          DepositPaidOn: this.invoice.depositPaidOn,
+          Type: this.invoice.type,
+          Positions: (createdPositions as any[]).map((position: any, index: number) => ({
+            PositionId: position.positionId,
+            Amount: this.invoice.positions[index].amount
+          }))
+        };
+
+        console.log('Creating invoice with data:', requestData);
+        return this.invoiceService.create(requestData);
+      })
+    ).subscribe({
       next: (result) => {
         this.toastService.success('Rechnung erfolgreich erstellt');
         this.router.navigate(['/invoices', result.invoiceId]);
       },
       error: (error) => {
         this.toastService.error('Fehler beim Erstellen der Rechnung');
-        console.error(error);
+        console.error('Invoice creation error:', error);
       }
     });
   }
