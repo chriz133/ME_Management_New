@@ -28,4 +28,17 @@ export class PositionService {
   getById(id: number): Observable<Position> {
     return this.http.get<Position>(`${this.apiUrl}/${id}`);
   }
+
+  /**
+   * Create a new position
+   */
+  create(position: { text: string; price: number; unit: string }): Observable<Position> {
+    // Transform to match backend DTO (PascalCase)
+    const requestData = {
+      Text: position.text,
+      Price: position.price,
+      Unit: position.unit
+    };
+    return this.http.post<Position>(this.apiUrl, requestData);
+  }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.BusinessLogic.Services;
 using Server.BusinessObjects.DTOs;
@@ -25,6 +26,7 @@ public class AuthController : ControllerBase
     /// Login endpoint that validates credentials and returns a JWT token.
     /// </summary>
     [HttpPost("login")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)

@@ -107,11 +107,11 @@ import { Contract } from '../../../core/models/contract.model';
                    [tableStyle]="{'min-width': '50rem'}">
             <ng-template pTemplate="header">
               <tr>
-                <th style="width: 50%">Position</th>
-                <th>Menge</th>
+                <th style="width: 50%">Bezeichnung</th>
+                <th>Anzahl</th>
                 <th>Einheit</th>
                 <th class="text-right">Einzelpreis</th>
-                <th class="text-right">Gesamt</th>
+                <th class="text-right">Gesamtpreis</th>
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-pos>

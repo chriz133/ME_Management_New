@@ -72,6 +72,9 @@ public class ApplicationDbContext : DbContext
                 .WithMany(c => c.Contracts)
                 .HasForeignKey(e => e.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            // Ignore the Invoices navigation property as there's no FK in the database
+            entity.Ignore(e => e.Invoices);
         });
 
         modelBuilder.Entity<ContractPosition>(entity =>

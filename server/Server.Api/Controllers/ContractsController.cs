@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Server.BusinessLogic.Services;
 using Server.BusinessObjects.DTOs;
 using Server.BusinessObjects.Entities;
 using Server.DataAccess;
@@ -13,11 +14,16 @@ namespace Server.Api.Controllers;
 public class ContractsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IContractService _contractService;
     private readonly ILogger<ContractsController> _logger;
 
-    public ContractsController(ApplicationDbContext context, ILogger<ContractsController> logger)
+    public ContractsController(
+        ApplicationDbContext context, 
+        IContractService contractService,
+        ILogger<ContractsController> logger)
     {
         _context = context;
+        _contractService = contractService;
         _logger = logger;
     }
 
@@ -210,83 +216,13 @@ public class ContractsController : ControllerBase
     {
         try
         {
-            // Verify customer exists
-            var customerExists = await _context.CustomersDb.AnyAsync(c => c.CustomerId == request.CustomerId);
-            if (!customerExists)
-            {
-                return BadRequest(new { message = $"Customer with ID {request.CustomerId} not found" });
-            }
-
-            // Verify all positions exist
-            var positionIds = request.Positions.Select(p => p.PositionId).ToList();
-            var existingPositionIds = await _context.PositionsDb
-                .Where(p => positionIds.Contains(p.PositionId))
-                .Select(p => p.PositionId)
-                .ToListAsync();
-
-            var missingPositions = positionIds.Except(existingPositionIds).ToList();
-            if (missingPositions.Any())
-            {
-                return BadRequest(new { message = $"Positions not found: {string.Join(", ", missingPositions)}" });
-            }
-
-            var contract = new ContractEntity
-            {
-                CreatedAt = DateTime.Now,
-                Accepted = request.Accepted,
-                CustomerId = request.CustomerId,
-                ContractPositions = request.Positions.Select(p => new ContractPosition
-                {
-                    PositionId = p.PositionId,
-                    Amount = (double)p.Amount
-                }).ToList()
-            };
-
-            _context.ContractsDb.Add(contract);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Contract {ContractId} created", contract.ContractId);
-
-            // Fetch the created contract with all relationships
-            var createdContract = await _context.ContractsDb
-                .Include(c => c.Customer)
-                .Include(c => c.ContractPositions)
-                    .ThenInclude(cp => cp.Position)
-                .Where(c => c.ContractId == contract.ContractId)
-                .Select(c => new ContractDto
-                {
-                    ContractId = c.ContractId,
-                    CreatedAt = c.CreatedAt,
-                    Accepted = c.Accepted,
-                    CustomerId = c.CustomerId,
-                    Customer = c.Customer == null ? null : new CustomerDto
-                    {
-                        CustomerId = c.Customer.CustomerId,
-                        Firstname = c.Customer.Firstname,
-                        Surname = c.Customer.Surname,
-                        Plz = c.Customer.Plz,
-                        City = c.Customer.City,
-                        Address = c.Customer.Address,
-                        Nr = c.Customer.Nr,
-                        Uid = c.Customer.Uid
-                    },
-                    Positions = c.ContractPositions!.Select(cp => new ContractPositionDto
-                    {
-                        ContractPositionId = cp.ContractPositionId,
-                        Amount = cp.Amount,
-                        PositionId = cp.PositionId,
-                        Position = cp.Position == null ? null : new PositionDto
-                        {
-                            PositionId = cp.Position.PositionId,
-                            Text = cp.Position.Text,
-                            Price = cp.Position.Price,
-                            Unit = cp.Position.Unit
-                        }
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
-
-            return CreatedAtAction(nameof(GetContract), new { id = contract.ContractId }, createdContract);
+            var createdContract = await _contractService.CreateContractAsync(request);
+            return CreatedAtAction(nameof(GetContract), new { id = createdContract.ContractId }, createdContract);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error creating contract");
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -330,7 +266,7 @@ public class ContractsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error converting contract {ContractId} to invoice", id);
+                        _logger.LogError(ex, "Error converting contract {ContractId} to invoice", id);
             return StatusCode(500, new { message = "Error converting contract to invoice", error = ex.Message });
         }
     }

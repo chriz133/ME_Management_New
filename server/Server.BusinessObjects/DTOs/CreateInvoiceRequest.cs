@@ -33,8 +33,14 @@ public class CreateInvoiceRequest
 /// </summary>
 public class CreateInvoicePositionRequest
 {
-    [Required(ErrorMessage = "Position ist erforderlich")]
-    public int PositionId { get; set; }
+    // Inline position data - will be created if PositionId is null/0
+    public int? PositionId { get; set; }
+    
+    public string? Text { get; set; }
+    
+    public double? Price { get; set; }
+    
+    public string? Unit { get; set; }
 
     [Required(ErrorMessage = "Menge ist erforderlich")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Menge muss größer als 0 sein")]

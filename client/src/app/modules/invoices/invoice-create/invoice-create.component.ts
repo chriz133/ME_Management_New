@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
+import { CheckboxModule } from 'primeng/checkbox';
 import { CustomerService } from '../../../core/services/customer.service';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { ContractService } from '../../../core/services/contract.service';
@@ -29,7 +30,8 @@ import { Customer } from '../../../core/models/customer.model';
     InputTextModule,
     DatePicker,
     TableModule,
-    TooltipModule
+    TooltipModule,
+    CheckboxModule
   ],
   template: `
     <div class="invoice-create-container">
@@ -114,26 +116,44 @@ import { Customer } from '../../../core/models/customer.model';
 
           <div class="form-grid">
             <div class="form-field">
-              <label for="depositAmount">Anzahlung</label>
-              <p-inputNumber
-                id="depositAmount"
-                [(ngModel)]="invoice.depositAmount"
-                mode="currency"
-                currency="EUR"
-                locale="de-DE"
-                [style]="{'width': '100%'}" />
-            </div>
-
-            <div class="form-field">
-              <label for="depositPaidOn">Anzahlung bezahlt am</label>
-              <p-datePicker
-                id="depositPaidOn"
-                [(ngModel)]="invoice.depositPaidOn"
-                [showIcon]="true"
-                dateFormat="dd.mm.yy"
-                [style]="{'width': '100%'}" />
+              <label for="hasDeposit">Anzahlung</label>
+              <div class="checkbox-wrapper">
+                <p-checkbox
+                  [(ngModel)]="hasDeposit"
+                  [binary]="true"
+                  inputId="hasDeposit"
+                  (onChange)="onDepositToggle()" />
+                <label for="hasDeposit" class="checkbox-label">
+                  Anzahlung vorhanden
+                </label>
+              </div>
             </div>
           </div>
+
+          @if (hasDeposit) {
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="depositAmount">Anzahlungssumme *</label>
+                <p-inputNumber
+                  id="depositAmount"
+                  [(ngModel)]="invoice.depositAmount"
+                  mode="currency"
+                  currency="EUR"
+                  locale="de-DE"
+                  [style]="{'width': '100%'}" />
+              </div>
+
+              <div class="form-field">
+                <label for="depositPaidOn">Anzahlung bezahlt am *</label>
+                <p-datePicker
+                  id="depositPaidOn"
+                  [(ngModel)]="invoice.depositPaidOn"
+                  [showIcon]="true"
+                  dateFormat="dd.mm.yy"
+                  [style]="{'width': '100%'}" />
+              </div>
+            </div>
+          }
         </div>
 
         <div class="form-section">
@@ -152,30 +172,43 @@ import { Customer } from '../../../core/models/customer.model';
             <p-table [value]="invoice.positions" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm">
               <ng-template pTemplate="header">
                 <tr>
-                  <th style="width: 30%">Beschreibung</th>
+                  <th style="width: 30%">Bezeichnung</th>
+                  <th style="width: 15%">Anzahl</th>
                   <th style="width: 15%">Einheit</th>
-                  <th style="width: 15%">Preis</th>
-                  <th style="width: 15%">Menge</th>
-                  <th style="width: 15%">Gesamt</th>
-                  <th style="width: 10%">Aktionen</th>
+                  <th style="width: 15%">Einzelpreis</th>
+                  <th style="width: 15%">Gesamtpreis</th>
+                  <th style="width: 10%">Funktionen</th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                 <tr>
                   <td>
-                    <textarea
-                      [(ngModel)]="item.text"
-                      rows="2"
-                      class="p-textarea w-full"
-                      placeholder="Beschreibung eingeben..."></textarea>
-                  </td>
-                  <td>
                     <input
                       type="text"
-                      [(ngModel)]="item.unit"
                       pInputText
-                      class="w-full"
-                      placeholder="Stk." />
+                      [(ngModel)]="item.text"
+                      placeholder="Leistungsbeschreibung eingeben..."
+                      style="width: 100%;" />
+                  </td>
+                  <td>
+                    <p-inputNumber
+                      [(ngModel)]="item.amount"
+                      [min]="0"
+                      [minFractionDigits]="2"
+                      [maxFractionDigits]="2"
+                      [style]="{'width': '100%'}" />
+                  </td>
+                  <td>
+                    <p-select
+                      [(ngModel)]="item.unit"
+                      [options]="unitOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Einheit..."
+                      [style]="{'width': '100%'}"
+                      [panelStyle]="{'min-width': '100%'}"
+                      appendTo="body"
+                      [showClear]="true" />
                   </td>
                   <td>
                     <p-inputNumber
@@ -183,14 +216,6 @@ import { Customer } from '../../../core/models/customer.model';
                       mode="currency"
                       currency="EUR"
                       locale="de-DE"
-                      [min]="0"
-                      [minFractionDigits]="2"
-                      [maxFractionDigits]="2"
-                      [style]="{'width': '100%'}" />
-                  </td>
-                  <td>
-                    <p-inputNumber
-                      [(ngModel)]="item.amount"
                       [min]="0"
                       [minFractionDigits]="2"
                       [maxFractionDigits]="2"
@@ -327,6 +352,23 @@ import { Customer } from '../../../core/models/customer.model';
       font-size: 0.95rem;
     }
 
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid var(--surface-300);
+    }
+
+    .checkbox-label {
+      margin: 0;
+      font-weight: normal;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
     .empty-state {
       text-align: center;
       padding: 3rem 2rem;
@@ -421,10 +463,21 @@ export class InvoiceCreateComponent implements OnInit {
 
   customers: Customer[] = [];
   isFromContract = false;
+  hasDeposit = false;
 
   typeOptions = [
     { label: 'Dienstleistung', value: 'D' },
     { label: 'Bauleistung', value: 'B' }
+  ];
+
+  unitOptions = [
+    { label: 'Pauschal', value: 'Pauschal' },
+    { label: 'm³', value: 'm³' },
+    { label: 'Tage', value: 'Tage' },
+    { label: 'Stück', value: 'Stück' },
+    { label: 'Tonnen', value: 'Tonnen' },
+    { label: 'lfm', value: 'lfm' },
+    { label: 'Stunden', value: 'Stunden' }
   ];
 
   invoice: any = {
@@ -433,7 +486,7 @@ export class InvoiceCreateComponent implements OnInit {
     finishedAt: new Date(),
     type: 'D',
     depositAmount: 0,
-    depositPaidOn: null,
+    depositPaidOn: '1111-11-11',
     positions: []
   };
 
@@ -483,13 +536,20 @@ export class InvoiceCreateComponent implements OnInit {
     this.invoice.positions.push({
       text: '',
       price: 0,
-      unit: 'Stk.',
+      unit: 'Pauschal',
       amount: 1
     });
   }
 
   removePosition(index: number): void {
     this.invoice.positions.splice(index, 1);
+  }
+
+  onDepositToggle(): void {
+    if (!this.hasDeposit) {
+      this.invoice.depositAmount = 0;
+      this.invoice.depositPaidOn = '1111-11-11';
+    }
   }
 
   calculateLineTotal(item: any): number {
@@ -517,14 +577,32 @@ export class InvoiceCreateComponent implements OnInit {
       return;
     }
 
-    this.invoiceService.create(this.invoice).subscribe({
+    // Transform data to match backend DTO expectations (PascalCase with inline position data)
+    const requestData = {
+      CustomerId: this.invoice.customerId,
+      StartedAt: this.invoice.startedAt,
+      FinishedAt: this.invoice.finishedAt,
+      DepositAmount: this.invoice.depositAmount,
+      DepositPaidOn: this.invoice.depositPaidOn,
+      Type: this.invoice.type,
+      Positions: this.invoice.positions.map((p: any) => ({
+        Text: p.text,
+        Price: p.price,
+        Unit: p.unit,
+        Amount: p.amount
+      }))
+    };
+
+    console.log('Creating invoice with data:', requestData);
+
+    this.invoiceService.create(requestData).subscribe({
       next: (result) => {
         this.toastService.success('Rechnung erfolgreich erstellt');
         this.router.navigate(['/invoices', result.invoiceId]);
       },
       error: (error) => {
         this.toastService.error('Fehler beim Erstellen der Rechnung');
-        console.error(error);
+        console.error('Invoice creation error:', error);
       }
     });
   }
