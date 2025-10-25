@@ -47,8 +47,7 @@ public class SystemController : ControllerBase
             var databaseName = ExtractFromConnectionString(connectionString, "Database");
             var serverAddress = ExtractFromConnectionString(connectionString, "Server");
 
-            _logger.LogInformation("Retrieved database info - Database: {DatabaseName}, Server: {ServerAddress}", 
-                databaseName, serverAddress);
+            _logger.LogDebug("Retrieved database info successfully");
 
             return Ok(new DatabaseInfoResponse
             {
@@ -59,22 +58,31 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving database information");
-            return StatusCode(500, new { message = "Error retrieving database information" });
+            return Ok(new DatabaseInfoResponse
+            {
+                DatabaseName = "Unknown",
+                ServerAddress = "Unknown"
+            });
         }
     }
 
     /// <summary>
     /// Extract a value from a connection string by key.
+    /// Handles values that may contain '=' characters.
     /// </summary>
     private string? ExtractFromConnectionString(string connectionString, string key)
     {
         var parts = connectionString.Split(';');
         foreach (var part in parts)
         {
-            var keyValue = part.Split('=');
-            if (keyValue.Length == 2 && keyValue[0].Trim().Equals(key, StringComparison.OrdinalIgnoreCase))
+            var firstEquals = part.IndexOf('=');
+            if (firstEquals > 0)
             {
-                return keyValue[1].Trim();
+                var partKey = part.Substring(0, firstEquals).Trim();
+                if (partKey.Equals(key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return part.Substring(firstEquals + 1).Trim();
+                }
             }
         }
         return null;
