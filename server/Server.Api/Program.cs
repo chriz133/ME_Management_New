@@ -57,10 +57,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") // Angular default port
+        policy.WithOrigins(
+                "http://localhost:4200",  // Angular default port
+                "http://localhost:4201",  // Alternative port
+                "http://localhost:4202",  // Alternative port
+                "http://127.0.0.1:4200"   // Localhost alias
+              )
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials()
+              .WithExposedHeaders("*");  // Expose all headers
     });
 });
 
