@@ -13,6 +13,7 @@ import { CustomerService } from '../../../core/services/customer.service';
 import { ContractService } from '../../../core/services/contract.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Customer } from '../../../core/models/customer.model';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-contract-create',
@@ -26,7 +27,8 @@ import { Customer } from '../../../core/models/customer.model';
     InputNumberModule,
     InputTextModule,
     TableModule,
-    TooltipModule
+    TooltipModule,
+    CheckboxModule
   ],
   template: `
     <div class="contract-create-container">
@@ -369,6 +371,11 @@ export class ContractCreateComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly contractService = inject(ContractService);
   private readonly toastService = inject(ToastService);
+
+  unitOptions = [
+    { label: 'Stk.', value: 'Stk.' },
+    { label: 'm2', value: 'm2' }
+  ];
 
   customers: Customer[] = [];
 

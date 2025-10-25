@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule, ToolbarModule, ButtonModule, AvatarModule, MenuModule],
   template: `
+  <div class="ml-2 mr-2">
     <p-toolbar styleClass="topbar">
       <ng-template pTemplate="start">
         <div class="flex align-items-center gap-2">
@@ -52,6 +53,7 @@ import { Router } from '@angular/router';
         </div>
       </ng-template>
     </p-toolbar>
+  </div>
   `,
   styles: []
 })
