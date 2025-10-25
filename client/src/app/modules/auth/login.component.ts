@@ -85,21 +85,6 @@ import { ToastService } from '../../core/services/toast.service';
               type="submit"
             />
           </form>
-
-          <div class="divider">
-            <span>Demo-Zugangsdaten</span>
-          </div>
-
-          <div class="demo-info">
-            <div class="demo-item">
-              <span class="demo-label">Benutzername:</span>
-              <span class="demo-value">admin</span>
-            </div>
-            <div class="demo-item">
-              <span class="demo-label">Passwort:</span>
-              <span class="demo-value">admin</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -199,7 +184,6 @@ import { ToastService } from '../../core/services/toast.service';
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      margin-bottom: 2rem;
     }
 
     .form-field {
@@ -287,49 +271,6 @@ import { ToastService } from '../../core/services/toast.service';
     :host ::ng-deep .login-form .p-button:disabled {
       background: #9ca3af;
       cursor: not-allowed;
-    }
-
-    .divider {
-      margin: 0 0 1.5rem 0;
-      text-align: left;
-      position: relative;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .divider span {
-      font-size: 0.875rem;
-      color: #6b7280;
-      font-weight: 600;
-    }
-
-    .demo-info {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.625rem;
-    }
-
-    .demo-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .demo-label {
-      font-size: 0.875rem;
-      color: #6b7280;
-      font-weight: 500;
-    }
-
-    .demo-value {
-      font-size: 0.95rem;
-      color: #667eea;
-      font-weight: 700;
-      font-family: 'Courier New', Courier, monospace;
     }
 
     /* Responsive */
