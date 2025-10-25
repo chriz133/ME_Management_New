@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Server.BusinessLogic.Transaction;
 using Server.BusinessObjects.DTOs;
-using Server.BusinessObjects.Entities;
-using Server.DataAccess;
 
 namespace Server.Api.Controllers;
 
@@ -12,12 +10,12 @@ namespace Server.Api.Controllers;
 [Route("api/[controller]")]
 public class TransactionsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ITransactionBusinessLogic _transactionBusinessLogic;
     private readonly ILogger<TransactionsController> _logger;
 
-    public TransactionsController(ApplicationDbContext context, ILogger<TransactionsController> logger)
+    public TransactionsController(ITransactionBusinessLogic transactionBusinessLogic, ILogger<TransactionsController> logger)
     {
-        _context = context;
+        _transactionBusinessLogic = transactionBusinessLogic;
         _logger = logger;
     }
 
@@ -29,19 +27,7 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            var transactions = await _context.Transactions
-                .OrderByDescending(t => t.Date)
-                .Select(t => new TransactionDto
-                {
-                    TransactionId = t.TransactionId,
-                    Amount = t.Amount,
-                    Description = t.Description,
-                    Date = t.Date,
-                    Type = t.Type,
-                    Medium = t.Medium
-                })
-                .ToListAsync();
-                
+            var transactions = await _transactionBusinessLogic.GetAllTransactionsAsync();
             return Ok(transactions);
         }
         catch (Exception ex)
@@ -59,18 +45,7 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            var transaction = await _context.Transactions
-                .Where(t => t.TransactionId == id)
-                .Select(t => new TransactionDto
-                {
-                    TransactionId = t.TransactionId,
-                    Amount = t.Amount,
-                    Description = t.Description,
-                    Date = t.Date,
-                    Type = t.Type,
-                    Medium = t.Medium
-                })
-                .FirstOrDefaultAsync();
+            var transaction = await _transactionBusinessLogic.GetTransactionByIdAsync(id);
                 
             if (transaction == null)
             {
@@ -95,31 +70,8 @@ public class TransactionsController : ControllerBase
     {
         try
         {
-            var transaction = new TransactionEntity
-            {
-                Amount = (double)request.Amount,
-                Description = request.Description,
-                Date = request.Date,
-                Type = request.Type,
-                Medium = request.Medium
-            };
-
-            _context.Transactions.Add(transaction);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Transaction {TransactionId} created", transaction.TransactionId);
-
-            var transactionDto = new TransactionDto
-            {
-                TransactionId = transaction.TransactionId,
-                Amount = transaction.Amount,
-                Description = transaction.Description,
-                Date = transaction.Date,
-                Type = transaction.Type,
-                Medium = transaction.Medium
-            };
-
-            return CreatedAtAction(nameof(GetTransaction), new { id = transaction.TransactionId }, transactionDto);
+            var transactionDto = await _transactionBusinessLogic.CreateTransactionAsync(request);
+            return CreatedAtAction(nameof(GetTransaction), new { id = transactionDto.TransactionId }, transactionDto);
         }
         catch (Exception ex)
         {

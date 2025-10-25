@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Server.BusinessLogic.Services;
+using Server.BusinessLogic.Contract;
 using Server.BusinessObjects.DTOs;
-using Server.BusinessObjects.Entities;
-using Server.DataAccess;
 
 namespace Server.Api.Controllers;
 
@@ -13,17 +10,14 @@ namespace Server.Api.Controllers;
 [Route("api/[controller]")]
 public class ContractsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IContractService _contractService;
+    private readonly IContractBusinessLogic _contractBusinessLogic;
     private readonly ILogger<ContractsController> _logger;
 
     public ContractsController(
-        ApplicationDbContext context, 
-        IContractService contractService,
+        IContractBusinessLogic contractBusinessLogic,
         ILogger<ContractsController> logger)
     {
-        _context = context;
-        _contractService = contractService;
+        _contractBusinessLogic = contractBusinessLogic;
         _logger = logger;
     }
 
@@ -35,44 +29,7 @@ public class ContractsController : ControllerBase
     {
         try
         {
-            var contracts = await _context.ContractsDb
-                .Include(c => c.Customer)
-                .Include(c => c.ContractPositions)
-                    .ThenInclude(cp => cp.Position)
-                .OrderByDescending(c => c.CreatedAt)
-                .Select(c => new ContractDto
-                {
-                    ContractId = c.ContractId,
-                    CreatedAt = c.CreatedAt,
-                    Accepted = c.Accepted,
-                    CustomerId = c.CustomerId,
-                    Customer = c.Customer == null ? null : new CustomerDto
-                    {
-                        CustomerId = c.Customer.CustomerId,
-                        Firstname = c.Customer.Firstname,
-                        Surname = c.Customer.Surname,
-                        Plz = c.Customer.Plz,
-                        City = c.Customer.City,
-                        Address = c.Customer.Address,
-                        Nr = c.Customer.Nr,
-                        Uid = c.Customer.Uid
-                    },
-                    Positions = c.ContractPositions!.Select(cp => new ContractPositionDto
-                    {
-                        ContractPositionId = cp.ContractPositionId,
-                        Amount = cp.Amount,
-                        PositionId = cp.PositionId,
-                        Position = cp.Position == null ? null : new PositionDto
-                        {
-                            PositionId = cp.Position.PositionId,
-                            Text = cp.Position.Text,
-                            Price = cp.Position.Price,
-                            Unit = cp.Position.Unit
-                        }
-                    }).ToList()
-                })
-                .ToListAsync();
-                
+            var contracts = await _contractBusinessLogic.GetAllContractsAsync();
             return Ok(contracts);
         }
         catch (Exception ex)
@@ -90,43 +47,7 @@ public class ContractsController : ControllerBase
     {
         try
         {
-            var contract = await _context.ContractsDb
-                .Include(c => c.Customer)
-                .Include(c => c.ContractPositions)
-                    .ThenInclude(cp => cp.Position)
-                .Where(c => c.ContractId == id)
-                .Select(c => new ContractDto
-                {
-                    ContractId = c.ContractId,
-                    CreatedAt = c.CreatedAt,
-                    Accepted = c.Accepted,
-                    CustomerId = c.CustomerId,
-                    Customer = c.Customer == null ? null : new CustomerDto
-                    {
-                        CustomerId = c.Customer.CustomerId,
-                        Firstname = c.Customer.Firstname,
-                        Surname = c.Customer.Surname,
-                        Plz = c.Customer.Plz,
-                        City = c.Customer.City,
-                        Address = c.Customer.Address,
-                        Nr = c.Customer.Nr,
-                        Uid = c.Customer.Uid
-                    },
-                    Positions = c.ContractPositions!.Select(cp => new ContractPositionDto
-                    {
-                        ContractPositionId = cp.ContractPositionId,
-                        Amount = cp.Amount,
-                        PositionId = cp.PositionId,
-                        Position = cp.Position == null ? null : new PositionDto
-                        {
-                            PositionId = cp.Position.PositionId,
-                            Text = cp.Position.Text,
-                            Price = cp.Position.Price,
-                            Unit = cp.Position.Unit
-                        }
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
+            var contract = await _contractBusinessLogic.GetContractByIdAsync(id);
                 
             if (contract == null)
             {
@@ -151,17 +72,14 @@ public class ContractsController : ControllerBase
     {
         try
         {
-            var contract = await _context.ContractsDb.FindAsync(id);
-            if (contract == null)
-            {
-                return NotFound(new { message = $"Contract with ID {id} not found" });
-            }
-
-            contract.Accepted = request.Accepted;
-            await _context.SaveChangesAsync();
-
+            await _contractBusinessLogic.UpdateContractAsync(id, request.Accepted);
             _logger.LogInformation("Contract {ContractId} updated by user", id);
             return Ok(new { message = "Contract updated successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Contract {ContractId} not found", id);
+            return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -179,26 +97,14 @@ public class ContractsController : ControllerBase
     {
         try
         {
-            var contract = await _context.ContractsDb
-                .Include(c => c.ContractPositions)
-                .FirstOrDefaultAsync(c => c.ContractId == id);
-                
-            if (contract == null)
-            {
-                return NotFound(new { message = $"Contract with ID {id} not found" });
-            }
-
-            // Remove contract positions first
-            if (contract.ContractPositions != null)
-            {
-                _context.ContractPositions.RemoveRange(contract.ContractPositions);
-            }
-            
-            _context.ContractsDb.Remove(contract);
-            await _context.SaveChangesAsync();
-
+            await _contractBusinessLogic.DeleteContractAsync(id);
             _logger.LogInformation("Contract {ContractId} deleted by admin", id);
             return Ok(new { message = "Contract deleted successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Contract {ContractId} not found", id);
+            return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -216,7 +122,7 @@ public class ContractsController : ControllerBase
     {
         try
         {
-            var createdContract = await _contractService.CreateContractAsync(request);
+            var createdContract = await _contractBusinessLogic.CreateContractAsync(request);
             return CreatedAtAction(nameof(GetContract), new { id = createdContract.ContractId }, createdContract);
         }
         catch (ArgumentException ex)
@@ -240,33 +146,17 @@ public class ContractsController : ControllerBase
     {
         try
         {
-            var contract = await _context.ContractsDb
-                .Include(c => c.ContractPositions)
-                .FirstOrDefaultAsync(c => c.ContractId == id);
-
-            if (contract == null)
-            {
-                return NotFound(new { message = $"Contract with ID {id} not found" });
-            }
-
-            var invoiceRequest = new CreateInvoiceRequest
-            {
-                CustomerId = contract.CustomerId,
-                StartedAt = DateTime.Now,
-                FinishedAt = DateTime.Now,
-                Type = "D",
-                Positions = contract.ContractPositions!.Select(cp => new CreateInvoicePositionRequest
-                {
-                    PositionId = cp.PositionId,
-                    Amount = (decimal)cp.Amount
-                }).ToList()
-            };
-
+            var invoiceRequest = await _contractBusinessLogic.GetContractForInvoiceConversionAsync(id);
             return Ok(invoiceRequest);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Contract {ContractId} not found", id);
+            return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-                        _logger.LogError(ex, "Error converting contract {ContractId} to invoice", id);
+            _logger.LogError(ex, "Error converting contract {ContractId} to invoice", id);
             return StatusCode(500, new { message = "Error converting contract to invoice", error = ex.Message });
         }
     }
