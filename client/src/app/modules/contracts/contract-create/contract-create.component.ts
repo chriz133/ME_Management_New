@@ -28,16 +28,6 @@ import { Customer } from '../../../core/models/customer.model';
     TableModule,
     TooltipModule
   ],
-  
-  // Unit options for dropdown
-  unitOptions: { label: string; value: string }[] = [
-    { label: 'Stk.', value: 'Stk.' },
-    { label: 'm²', value: 'm²' },
-    { label: 'm', value: 'm' },
-    { label: 'Std.', value: 'Std.' },
-    { label: 'kg', value: 'kg' },
-    { label: 'Pauschal', value: 'Pauschal' }
-  ],
   template: `
     <div class="contract-create-container">
       <p-card>
