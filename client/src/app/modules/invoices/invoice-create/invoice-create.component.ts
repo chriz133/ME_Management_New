@@ -6,15 +6,15 @@ import { CardModule } from 'primeng/card';
 import { Select } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
 import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { CustomerService } from '../../../core/services/customer.service';
-import { PositionService } from '../../../core/services/position.service';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { ContractService } from '../../../core/services/contract.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Customer } from '../../../core/models/customer.model';
-import { Position } from '../../../core/models/position.model';
 
 @Component({
   selector: 'app-invoice-create',
@@ -26,8 +26,10 @@ import { Position } from '../../../core/models/position.model';
     Select,
     ButtonModule,
     InputNumberModule,
+    InputTextModule,
     DatePicker,
-    TableModule
+    TableModule,
+    TooltipModule
   ],
   template: `
     <div class="invoice-create-container">
@@ -150,27 +152,41 @@ import { Position } from '../../../core/models/position.model';
             <p-table [value]="invoice.positions" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm">
               <ng-template pTemplate="header">
                 <tr>
-                  <th style="width: 40%">Position</th>
+                  <th style="width: 30%">Beschreibung</th>
+                  <th style="width: 15%">Einheit</th>
+                  <th style="width: 15%">Preis</th>
                   <th style="width: 15%">Menge</th>
-                  <th style="width: 15%">Einzelpreis</th>
                   <th style="width: 15%">Gesamt</th>
-                  <th style="width: 15%">Aktionen</th>
+                  <th style="width: 10%">Aktionen</th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                 <tr>
                   <td>
-                    <p-select
-                      [options]="positions"
-                      [(ngModel)]="item.positionId"
-                      optionLabel="text"
-                      optionValue="positionId"
-                      placeholder="Position auswählen..."
-                      [style]="{'width': '100%'}"
-                      [panelStyle]="{'min-width': '100%'}"
-                      [filter]="true"
-                      filterBy="text"
-                      (onChange)="onPositionChange(item)" />
+                    <textarea
+                      [(ngModel)]="item.text"
+                      rows="2"
+                      class="p-textarea w-full"
+                      placeholder="Beschreibung eingeben..."></textarea>
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      [(ngModel)]="item.unit"
+                      pInputText
+                      class="w-full"
+                      placeholder="Stk." />
+                  </td>
+                  <td>
+                    <p-inputNumber
+                      [(ngModel)]="item.price"
+                      mode="currency"
+                      currency="EUR"
+                      locale="de-DE"
+                      [min]="0"
+                      [minFractionDigits]="2"
+                      [maxFractionDigits]="2"
+                      [style]="{'width': '100%'}" />
                   </td>
                   <td>
                     <p-inputNumber
@@ -178,11 +194,7 @@ import { Position } from '../../../core/models/position.model';
                       [min]="0"
                       [minFractionDigits]="2"
                       [maxFractionDigits]="2"
-                      [style]="{'width': '100%'}"
-                      suffix=" Stk." />
-                  </td>
-                  <td>
-                    <span class="price-display">{{ getPositionPrice(item.positionId) | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+                      [style]="{'width': '100%'}" />
                   </td>
                   <td>
                     <strong class="total-display">{{ calculateLineTotal(item) | currency:'EUR':'symbol':'1.2-2':'de' }}</strong>
@@ -403,13 +415,11 @@ export class InvoiceCreateComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly customerService = inject(CustomerService);
-  private readonly positionService = inject(PositionService);
   private readonly invoiceService = inject(InvoiceService);
   private readonly contractService = inject(ContractService);
   private readonly toastService = inject(ToastService);
 
   customers: Customer[] = [];
-  positions: Position[] = [];
   isFromContract = false;
 
   typeOptions = [
@@ -429,7 +439,6 @@ export class InvoiceCreateComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
-    this.loadPositions();
 
     // Check if creating from contract
     this.route.queryParams.subscribe(params => {
@@ -470,21 +479,11 @@ export class InvoiceCreateComponent implements OnInit {
     });
   }
 
-  loadPositions(): void {
-    this.positionService.getAll().subscribe({
-      next: (data) => {
-        this.positions = data;
-      },
-      error: (error) => {
-        this.toastService.error('Fehler beim Laden der Positionen');
-        console.error(error);
-      }
-    });
-  }
-
   addPosition(): void {
     this.invoice.positions.push({
-      positionId: null,
+      text: '',
+      price: 0,
+      unit: 'Stk.',
       amount: 1
     });
   }
@@ -493,18 +492,8 @@ export class InvoiceCreateComponent implements OnInit {
     this.invoice.positions.splice(index, 1);
   }
 
-  onPositionChange(item: any): void {
-    // Trigger change detection
-  }
-
-  getPositionPrice(positionId: number): number {
-    const position = this.positions.find(p => p.positionId === positionId);
-    return position ? position.price : 0;
-  }
-
   calculateLineTotal(item: any): number {
-    const price = this.getPositionPrice(item.positionId);
-    return price * (item.amount || 0);
+    return (item.price || 0) * (item.amount || 0);
   }
 
   calculateTotal(): number {
