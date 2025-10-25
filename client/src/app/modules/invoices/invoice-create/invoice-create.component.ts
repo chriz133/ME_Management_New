@@ -152,30 +152,43 @@ import { Customer } from '../../../core/models/customer.model';
             <p-table [value]="invoice.positions" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm">
               <ng-template pTemplate="header">
                 <tr>
-                  <th style="width: 30%">Beschreibung</th>
+                  <th style="width: 30%">Bezeichnung</th>
+                  <th style="width: 15%">Anzahl</th>
                   <th style="width: 15%">Einheit</th>
-                  <th style="width: 15%">Preis</th>
-                  <th style="width: 15%">Menge</th>
-                  <th style="width: 15%">Gesamt</th>
-                  <th style="width: 10%">Aktionen</th>
+                  <th style="width: 15%">Einzelpreis</th>
+                  <th style="width: 15%">Gesamtpreis</th>
+                  <th style="width: 10%">Funktionen</th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                 <tr>
                   <td>
-                    <textarea
-                      [(ngModel)]="item.text"
-                      rows="2"
-                      class="p-textarea w-full"
-                      placeholder="Beschreibung eingeben..."></textarea>
-                  </td>
-                  <td>
                     <input
                       type="text"
-                      [(ngModel)]="item.unit"
                       pInputText
-                      class="w-full"
-                      placeholder="Stk." />
+                      [(ngModel)]="item.text"
+                      placeholder="Leistungsbeschreibung eingeben..."
+                      style="width: 100%;" />
+                  </td>
+                  <td>
+                    <p-inputNumber
+                      [(ngModel)]="item.amount"
+                      [min]="0"
+                      [minFractionDigits]="2"
+                      [maxFractionDigits]="2"
+                      [style]="{'width': '100%'}" />
+                  </td>
+                  <td>
+                    <p-select
+                      [(ngModel)]="item.unit"
+                      [options]="unitOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Einheit..."
+                      [style]="{'width': '100%'}"
+                      [panelStyle]="{'min-width': '100%'}"
+                      appendTo="body"
+                      [showClear]="true" />
                   </td>
                   <td>
                     <p-inputNumber
@@ -183,14 +196,6 @@ import { Customer } from '../../../core/models/customer.model';
                       mode="currency"
                       currency="EUR"
                       locale="de-DE"
-                      [min]="0"
-                      [minFractionDigits]="2"
-                      [maxFractionDigits]="2"
-                      [style]="{'width': '100%'}" />
-                  </td>
-                  <td>
-                    <p-inputNumber
-                      [(ngModel)]="item.amount"
                       [min]="0"
                       [minFractionDigits]="2"
                       [maxFractionDigits]="2"
@@ -427,6 +432,16 @@ export class InvoiceCreateComponent implements OnInit {
     { label: 'Bauleistung', value: 'B' }
   ];
 
+  unitOptions = [
+    { label: 'Pauschal', value: 'Pauschal' },
+    { label: 'm³', value: 'm³' },
+    { label: 'Tage', value: 'Tage' },
+    { label: 'Stück', value: 'Stück' },
+    { label: 'Tonnen', value: 'Tonnen' },
+    { label: 'lfm', value: 'lfm' },
+    { label: 'Stunden', value: 'Stunden' }
+  ];
+
   invoice: any = {
     customerId: null,
     startedAt: new Date(),
@@ -483,7 +498,7 @@ export class InvoiceCreateComponent implements OnInit {
     this.invoice.positions.push({
       text: '',
       price: 0,
-      unit: 'Stk.',
+      unit: 'Pauschal',
       amount: 1
     });
   }

@@ -93,12 +93,12 @@ import { CheckboxModule } from 'primeng/checkbox';
             <p-table [value]="contract.positions" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm">
               <ng-template pTemplate="header">
                 <tr>
-                  <th style="width: 30%">Beschreibung</th>
+                  <th style="width: 30%">Bezeichnung</th>
+                  <th style="width: 15%">Anzahl</th>
                   <th style="width: 15%">Einheit</th>
                   <th style="width: 15%">Einzelpreis</th>
-                  <th style="width: 15%">Menge</th>
-                  <th style="width: 15%">Gesamt</th>
-                  <th style="width: 10%">Aktionen</th>
+                  <th style="width: 15%">Gesamtpreis</th>
+                  <th style="width: 10%">Funktionen</th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
@@ -110,6 +110,14 @@ import { CheckboxModule } from 'primeng/checkbox';
                       [(ngModel)]="item.text"
                       placeholder="Leistungsbeschreibung eingeben..."
                       style="width: 100%;" />
+                  </td>
+                  <td>
+                    <p-inputNumber
+                      [(ngModel)]="item.amount"
+                      [min]="0"
+                      [minFractionDigits]="2"
+                      [maxFractionDigits]="2"
+                      [style]="{'width': '100%'}" />
                   </td>
                   <td>
                     <p-select
@@ -131,14 +139,6 @@ import { CheckboxModule } from 'primeng/checkbox';
                       locale="de-DE"
                       [min]="0"
                       [minFractionDigits]="2"
-                      [style]="{'width': '100%'}" />
-                  </td>
-                  <td>
-                    <p-inputNumber
-                      [(ngModel)]="item.amount"
-                      [min]="0"
-                      [minFractionDigits]="2"
-                      [maxFractionDigits]="2"
                       [style]="{'width': '100%'}" />
                   </td>
                   <td>
@@ -373,8 +373,13 @@ export class ContractCreateComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   unitOptions = [
-    { label: 'Stk.', value: 'Stk.' },
-    { label: 'm2', value: 'm2' }
+    { label: 'Pauschal', value: 'Pauschal' },
+    { label: 'm³', value: 'm³' },
+    { label: 'Tage', value: 'Tage' },
+    { label: 'Stück', value: 'Stück' },
+    { label: 'Tonnen', value: 'Tonnen' },
+    { label: 'lfm', value: 'lfm' },
+    { label: 'Stunden', value: 'Stunden' }
   ];
 
   customers: Customer[] = [];
@@ -405,7 +410,7 @@ export class ContractCreateComponent implements OnInit {
     this.contract.positions.push({
       text: '',
       price: 0,
-      unit: 'Stk.',
+      unit: 'Pauschal',
       amount: 1
     });
   }

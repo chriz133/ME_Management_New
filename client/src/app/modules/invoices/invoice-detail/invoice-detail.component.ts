@@ -161,9 +161,10 @@ import { ToastService } from '../../../core/services/toast.service';
               <tr>
                 <th style="width: 80px;">Pos</th>
                 <th>Bezeichnung</th>
-                <th class="text-center">Menge</th>
+                <th class="text-center">Anzahl</th>
+                <th class="text-center">Einheit</th>
                 <th class="text-right">Einzelpreis</th>
-                <th class="text-right">Gesamt</th>
+                <th class="text-right">Gesamtpreis</th>
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-position let-rowIndex="rowIndex">
@@ -171,9 +172,9 @@ import { ToastService } from '../../../core/services/toast.service';
                 <td><p-tag [value]="(rowIndex + 1).toString()" severity="secondary" /></td>
                 <td>
                   <div class="font-semibold">{{position.position?.text || '-'}}</div>
-                  <div class="text-600 text-sm">{{position.position?.unit || ''}}</div>
                 </td>
                 <td class="text-center font-semibold">{{position.amount}}</td>
+                <td class="text-center">{{position.position?.unit || '-'}}</td>
                 <td class="text-right">
                   {{position.position?.price | currency:'EUR':'symbol':'1.2-2':'de'}}
                 </td>
@@ -184,14 +185,14 @@ import { ToastService } from '../../../core/services/toast.service';
             </ng-template>
             <ng-template pTemplate="emptymessage">
               <tr>
-                <td colspan="5" class="text-center py-4">
+                <td colspan="6" class="text-center py-4">
                   Keine Positionen vorhanden
                 </td>
               </tr>
             </ng-template>
             <ng-template pTemplate="footer">
               <tr>
-                <td colspan="4" class="text-right font-bold text-lg">Gesamtsumme:</td>
+                <td colspan="5" class="text-right font-bold text-lg">Gesamtsumme:</td>
                 <td class="text-right font-bold text-lg text-primary">
                   {{invoice.totalAmount | currency:'EUR':'symbol':'1.2-2':'de'}}
                 </td>
