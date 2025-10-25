@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
+import { CheckboxModule } from 'primeng/checkbox';
 import { CustomerService } from '../../../core/services/customer.service';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { ContractService } from '../../../core/services/contract.service';
@@ -29,7 +30,8 @@ import { Customer } from '../../../core/models/customer.model';
     InputTextModule,
     DatePicker,
     TableModule,
-    TooltipModule
+    TooltipModule,
+    CheckboxModule
   ],
   template: `
     <div class="invoice-create-container">
@@ -114,26 +116,44 @@ import { Customer } from '../../../core/models/customer.model';
 
           <div class="form-grid">
             <div class="form-field">
-              <label for="depositAmount">Anzahlung</label>
-              <p-inputNumber
-                id="depositAmount"
-                [(ngModel)]="invoice.depositAmount"
-                mode="currency"
-                currency="EUR"
-                locale="de-DE"
-                [style]="{'width': '100%'}" />
-            </div>
-
-            <div class="form-field">
-              <label for="depositPaidOn">Anzahlung bezahlt am</label>
-              <p-datePicker
-                id="depositPaidOn"
-                [(ngModel)]="invoice.depositPaidOn"
-                [showIcon]="true"
-                dateFormat="dd.mm.yy"
-                [style]="{'width': '100%'}" />
+              <label for="hasDeposit">Anzahlung</label>
+              <div class="checkbox-wrapper">
+                <p-checkbox
+                  [(ngModel)]="hasDeposit"
+                  [binary]="true"
+                  inputId="hasDeposit"
+                  (onChange)="onDepositToggle()" />
+                <label for="hasDeposit" class="checkbox-label">
+                  Anzahlung vorhanden
+                </label>
+              </div>
             </div>
           </div>
+
+          @if (hasDeposit) {
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="depositAmount">Anzahlungssumme *</label>
+                <p-inputNumber
+                  id="depositAmount"
+                  [(ngModel)]="invoice.depositAmount"
+                  mode="currency"
+                  currency="EUR"
+                  locale="de-DE"
+                  [style]="{'width': '100%'}" />
+              </div>
+
+              <div class="form-field">
+                <label for="depositPaidOn">Anzahlung bezahlt am *</label>
+                <p-datePicker
+                  id="depositPaidOn"
+                  [(ngModel)]="invoice.depositPaidOn"
+                  [showIcon]="true"
+                  dateFormat="dd.mm.yy"
+                  [style]="{'width': '100%'}" />
+              </div>
+            </div>
+          }
         </div>
 
         <div class="form-section">
@@ -332,6 +352,23 @@ import { Customer } from '../../../core/models/customer.model';
       font-size: 0.95rem;
     }
 
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid var(--surface-300);
+    }
+
+    .checkbox-label {
+      margin: 0;
+      font-weight: normal;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
     .empty-state {
       text-align: center;
       padding: 3rem 2rem;
@@ -426,6 +463,7 @@ export class InvoiceCreateComponent implements OnInit {
 
   customers: Customer[] = [];
   isFromContract = false;
+  hasDeposit = false;
 
   typeOptions = [
     { label: 'Dienstleistung', value: 'D' },
@@ -505,6 +543,13 @@ export class InvoiceCreateComponent implements OnInit {
 
   removePosition(index: number): void {
     this.invoice.positions.splice(index, 1);
+  }
+
+  onDepositToggle(): void {
+    if (!this.hasDeposit) {
+      this.invoice.depositAmount = 0;
+      this.invoice.depositPaidOn = null;
+    }
   }
 
   calculateLineTotal(item: any): number {

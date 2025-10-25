@@ -13,7 +13,6 @@ import { CustomerService } from '../../../core/services/customer.service';
 import { ContractService } from '../../../core/services/contract.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Customer } from '../../../core/models/customer.model';
-import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-contract-create',
@@ -27,8 +26,7 @@ import { CheckboxModule } from 'primeng/checkbox';
     InputNumberModule,
     InputTextModule,
     TableModule,
-    TooltipModule,
-    CheckboxModule
+    TooltipModule
   ],
   template: `
     <div class="contract-create-container">
@@ -60,19 +58,6 @@ import { CheckboxModule } from 'primeng/checkbox';
                 filterBy="fullName"
                 [showClear]="true"
                 required />
-            </div>
-
-            <div class="form-field">
-              <label for="accepted">Status</label>
-              <div class="checkbox-wrapper">
-                <p-checkbox
-                  [(ngModel)]="contract.accepted"
-                  [binary]="true"
-                  inputId="accepted" />
-                <label for="accepted" class="checkbox-label">
-                  Angebot wurde vom Kunden akzeptiert
-                </label>
-              </div>
             </div>
           </div>
         </div>
@@ -386,7 +371,6 @@ export class ContractCreateComponent implements OnInit {
 
   contract: any = {
     customerId: null,
-    accepted: false,
     positions: []
   };
 
