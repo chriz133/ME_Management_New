@@ -135,6 +135,7 @@ import { ToastService } from '../../core/services/toast.service';
       background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
       background-size: 50px 50px;
       animation: moveBackground 20s linear infinite;
+      will-change: transform;
     }
 
     @keyframes moveBackground {
@@ -365,7 +366,7 @@ import { ToastService } from '../../core/services/toast.service';
       font-size: 1rem;
       font-weight: 700;
       color: #667eea;
-      font-family: 'Courier New', monospace;
+      font-family: 'Courier New', Courier, monospace;
     }
 
     :host ::ng-deep .p-error {
