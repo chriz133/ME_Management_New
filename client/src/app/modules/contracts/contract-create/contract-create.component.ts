@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
-import { DropdownModule } from 'primeng/dropdown';
+import { Select } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -22,7 +22,7 @@ import { Position } from '../../../core/models/position.model';
     CommonModule,
     FormsModule,
     CardModule,
-    DropdownModule,
+    Select,
     ButtonModule,
     InputNumberModule,
     CheckboxModule,
@@ -35,7 +35,7 @@ import { Position } from '../../../core/models/position.model';
           <h3>Kundeninformationen</h3>
           <div class="form-field">
             <label for="customer">Kunde *</label>
-            <p-dropdown
+            <p-select
               id="customer"
               [options]="customers"
               [(ngModel)]="contract.customerId"
@@ -72,7 +72,7 @@ import { Position } from '../../../core/models/position.model';
             <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
               <tr>
                 <td>
-                  <p-dropdown
+                  <p-select
                     [options]="positions"
                     [(ngModel)]="item.positionId"
                     optionLabel="text"
@@ -224,7 +224,7 @@ export class ContractCreateComponent implements OnInit {
         this.customers = data;
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Laden der Kunden');
+        this.toastService.error('Fehler beim Laden der Kunden');
         console.error(error);
       }
     });
@@ -236,7 +236,7 @@ export class ContractCreateComponent implements OnInit {
         this.positions = data;
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Laden der Positionen');
+        this.toastService.error('Fehler beim Laden der Positionen');
         console.error(error);
       }
     });
@@ -284,11 +284,11 @@ export class ContractCreateComponent implements OnInit {
 
     this.contractService.create(this.contract).subscribe({
       next: (result) => {
-        this.toastService.showSuccess('Angebot erfolgreich erstellt');
+        this.toastService.success('Angebot erfolgreich erstellt');
         this.router.navigate(['/contracts', result.contractId]);
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Erstellen des Angebots');
+        this.toastService.error('Fehler beim Erstellen des Angebots');
         console.error(error);
       }
     });

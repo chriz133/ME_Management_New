@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CardModule } from 'primeng/card';
-import { DropdownModule } from 'primeng/dropdown';
+import { Select } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { CalendarModule } from 'primeng/calendar';
+import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { CustomerService } from '../../../core/services/customer.service';
 import { PositionService } from '../../../core/services/position.service';
@@ -23,10 +23,10 @@ import { Position } from '../../../core/models/position.model';
     CommonModule,
     FormsModule,
     CardModule,
-    DropdownModule,
+    Select,
     ButtonModule,
     InputNumberModule,
-    CalendarModule,
+    DatePicker,
     TableModule
   ],
   template: `
@@ -36,7 +36,7 @@ import { Position } from '../../../core/models/position.model';
           <h3>Kundeninformationen</h3>
           <div class="form-field">
             <label for="customer">Kunde *</label>
-            <p-dropdown
+            <p-select
               id="customer"
               [options]="customers"
               [(ngModel)]="invoice.customerId"
@@ -55,7 +55,7 @@ import { Position } from '../../../core/models/position.model';
           <div class="form-grid">
             <div class="form-field">
               <label for="startedAt">Begonnen am *</label>
-              <p-calendar
+              <p-datePicker
                 id="startedAt"
                 [(ngModel)]="invoice.startedAt"
                 [showIcon]="true"
@@ -66,7 +66,7 @@ import { Position } from '../../../core/models/position.model';
 
             <div class="form-field">
               <label for="finishedAt">Beendet am *</label>
-              <p-calendar
+              <p-datePicker
                 id="finishedAt"
                 [(ngModel)]="invoice.finishedAt"
                 [showIcon]="true"
@@ -77,7 +77,7 @@ import { Position } from '../../../core/models/position.model';
 
             <div class="form-field">
               <label for="type">Typ *</label>
-              <p-dropdown
+              <p-select
                 id="type"
                 [options]="typeOptions"
                 [(ngModel)]="invoice.type"
@@ -103,7 +103,7 @@ import { Position } from '../../../core/models/position.model';
 
             <div class="form-field">
               <label for="depositPaidOn">Anzahlung bezahlt am</label>
-              <p-calendar
+              <p-datePicker
                 id="depositPaidOn"
                 [(ngModel)]="invoice.depositPaidOn"
                 [showIcon]="true"
@@ -128,7 +128,7 @@ import { Position } from '../../../core/models/position.model';
             <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
               <tr>
                 <td>
-                  <p-dropdown
+                  <p-select
                     [options]="positions"
                     [(ngModel)]="item.positionId"
                     optionLabel="text"
@@ -310,10 +310,10 @@ export class InvoiceCreateComponent implements OnInit {
         this.invoice.finishedAt = new Date(data.finishedAt);
         this.invoice.type = data.type;
         this.invoice.positions = data.positions;
-        this.toastService.showInfo('Angebot wurde geladen. Bitte überprüfen Sie die Daten.');
+        this.toastService.info('Angebot wurde geladen. Bitte überprüfen Sie die Daten.');
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Laden des Angebots');
+        this.toastService.error('Fehler beim Laden des Angebots');
         console.error(error);
       }
     });
@@ -325,7 +325,7 @@ export class InvoiceCreateComponent implements OnInit {
         this.customers = data;
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Laden der Kunden');
+        this.toastService.error('Fehler beim Laden der Kunden');
         console.error(error);
       }
     });
@@ -337,7 +337,7 @@ export class InvoiceCreateComponent implements OnInit {
         this.positions = data;
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Laden der Positionen');
+        this.toastService.error('Fehler beim Laden der Positionen');
         console.error(error);
       }
     });
@@ -391,11 +391,11 @@ export class InvoiceCreateComponent implements OnInit {
 
     this.invoiceService.create(this.invoice).subscribe({
       next: (result) => {
-        this.toastService.showSuccess('Rechnung erfolgreich erstellt');
+        this.toastService.success('Rechnung erfolgreich erstellt');
         this.router.navigate(['/invoices', result.invoiceId]);
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Erstellen der Rechnung');
+        this.toastService.error('Fehler beim Erstellen der Rechnung');
         console.error(error);
       }
     });

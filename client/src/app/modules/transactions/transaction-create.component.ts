@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { CalendarModule } from 'primeng/calendar';
-import { DropdownModule } from 'primeng/dropdown';
+import { DatePicker } from 'primeng/datepicker';
+import { Select } from 'primeng/select';
 import { TransactionService } from '../../core/services/transaction.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -20,11 +19,10 @@ import { ToastService } from '../../core/services/toast.service';
     FormsModule,
     CardModule,
     InputTextModule,
-    InputTextareaModule,
     ButtonModule,
     InputNumberModule,
-    CalendarModule,
-    DropdownModule
+    DatePicker,
+    Select
   ],
   template: `
     <div class="transaction-create-container">
@@ -44,7 +42,7 @@ import { ToastService } from '../../core/services/toast.service';
 
           <div class="form-field">
             <label for="date">Datum *</label>
-            <p-calendar
+            <p-datePicker
               id="date"
               [(ngModel)]="transaction.date"
               [showIcon]="true"
@@ -55,7 +53,7 @@ import { ToastService } from '../../core/services/toast.service';
 
           <div class="form-field">
             <label for="type">Typ</label>
-            <p-dropdown
+            <p-select
               id="type"
               [options]="typeOptions"
               [(ngModel)]="transaction.type"
@@ -67,7 +65,7 @@ import { ToastService } from '../../core/services/toast.service';
 
           <div class="form-field">
             <label for="medium">Zahlungsmittel</label>
-            <p-dropdown
+            <p-select
               id="medium"
               [options]="mediumOptions"
               [(ngModel)]="transaction.medium"
@@ -80,11 +78,11 @@ import { ToastService } from '../../core/services/toast.service';
           <div class="form-field" style="grid-column: 1 / -1;">
             <label for="description">Beschreibung</label>
             <textarea
-              pInputTextarea
+              class="p-textarea"
               id="description"
               [(ngModel)]="transaction.description"
-              [rows]="5"
-              [style]="{'width': '100%'}"></textarea>
+              style="width: 100%; min-height: 120px;"
+              placeholder="Beschreibung eingeben"></textarea>
           </div>
         </div>
 
@@ -170,11 +168,11 @@ export class TransactionCreateComponent {
 
     this.transactionService.create(this.transaction).subscribe({
       next: (result) => {
-        this.toastService.showSuccess('Transaktion erfolgreich erstellt');
+        this.toastService.success('Transaktion erfolgreich erstellt');
         this.router.navigate(['/transactions']);
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Erstellen der Transaktion');
+        this.toastService.error('Fehler beim Erstellen der Transaktion');
         console.error(error);
       }
     });

@@ -165,11 +165,11 @@ export class CustomerCreateComponent {
 
     this.customerService.create(this.customer).subscribe({
       next: (result) => {
-        this.toastService.showSuccess('Kunde erfolgreich erstellt');
+        this.toastService.success('Kunde erfolgreich erstellt');
         this.router.navigate(['/customers', result.customerId]);
       },
       error: (error) => {
-        this.toastService.showError('Fehler beim Erstellen des Kunden');
+        this.toastService.error('Fehler beim Erstellen des Kunden');
         console.error(error);
       }
     });
