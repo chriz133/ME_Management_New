@@ -272,7 +272,6 @@ export class InvoicesComponent implements OnInit {
       next: (data: Invoice[]) => {
         this.invoices = data;
         this.loading = false;
-        this.toastService.success('Erfolg', `${data.length} Rechnungen geladen`);
       },
       error: () => {
         this.toastService.error('Fehler', 'Rechnungen konnten nicht geladen werden');
