@@ -25,7 +25,7 @@ import { ToastService } from '../../core/services/toast.service';
   template: `
     <div class="login-wrapper">
       <div class="login-card">
-        <div class="login-header">
+        <div class="login-left">
           <div class="brand-icon">
             <i class="pi pi-building"></i>
           </div>
@@ -33,7 +33,7 @@ import { ToastService } from '../../core/services/toast.service';
           <p class="brand-subtitle">Geschäftsverwaltungssystem</p>
         </div>
 
-        <div class="login-body">
+        <div class="login-right">
           <h2 class="login-title">Anmelden</h2>
           
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
@@ -116,12 +116,15 @@ import { ToastService } from '../../core/services/toast.service';
 
     .login-card {
       width: 100%;
-      max-width: 480px;
+      max-width: 1000px;
       background: white;
       border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       overflow: hidden;
       animation: slideIn 0.4s ease-out;
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      min-height: 500px;
     }
 
     @keyframes slideIn {
@@ -135,19 +138,23 @@ import { ToastService } from '../../core/services/toast.service';
       }
     }
 
-    .login-header {
+    .login-left {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 3rem 2rem;
+      padding: 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
       color: white;
     }
 
     .brand-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 1.5rem;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 2rem;
       background: rgba(255, 255, 255, 0.2);
-      border-radius: 16px;
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -155,40 +162,44 @@ import { ToastService } from '../../core/services/toast.service';
     }
 
     .brand-icon i {
-      font-size: 2.5rem;
+      font-size: 3rem;
       color: white;
     }
 
     .brand-title {
-      font-size: 2rem;
+      font-size: 2.25rem;
       font-weight: 700;
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 0.75rem 0;
       color: white;
     }
 
     .brand-subtitle {
-      font-size: 1rem;
+      font-size: 1.125rem;
       margin: 0;
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(255, 255, 255, 0.95);
       font-weight: 400;
+      line-height: 1.6;
     }
 
-    .login-body {
-      padding: 2.5rem 2rem;
+    .login-right {
+      padding: 3rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .login-title {
-      font-size: 1.5rem;
+      font-size: 1.75rem;
       font-weight: 600;
       color: #1f2937;
       margin: 0 0 2rem 0;
-      text-align: center;
     }
 
     .login-form {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .form-field {
@@ -262,7 +273,6 @@ import { ToastService } from '../../core/services/toast.service';
       border: none;
       border-radius: 8px;
       transition: all 0.3s ease;
-      margin-top: 0.5rem;
     }
 
     :host ::ng-deep .login-form .p-button:hover:enabled {
@@ -280,38 +290,27 @@ import { ToastService } from '../../core/services/toast.service';
     }
 
     .divider {
-      margin: 2rem 0 1.5rem;
-      text-align: center;
+      margin: 0 0 1.5rem 0;
+      text-align: left;
       position: relative;
-    }
-
-    .divider::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: #e5e7eb;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     .divider span {
-      position: relative;
-      background: white;
-      padding: 0 1rem;
       font-size: 0.875rem;
       color: #6b7280;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .demo-info {
       background: #f9fafb;
       border: 1px solid #e5e7eb;
       border-radius: 8px;
-      padding: 1.25rem;
+      padding: 1rem 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.625rem;
     }
 
     .demo-item {
@@ -327,36 +326,56 @@ import { ToastService } from '../../core/services/toast.service';
     }
 
     .demo-value {
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: #667eea;
       font-weight: 700;
       font-family: 'Courier New', Courier, monospace;
     }
 
     /* Responsive */
+    @media (max-width: 900px) {
+      .login-card {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+      }
+
+      .login-left {
+        padding: 2.5rem 2rem;
+      }
+
+      .brand-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1.5rem;
+      }
+
+      .brand-icon i {
+        font-size: 2.5rem;
+      }
+
+      .brand-title {
+        font-size: 2rem;
+      }
+
+      .brand-subtitle {
+        font-size: 1rem;
+      }
+
+      .login-right {
+        padding: 2.5rem 2rem;
+      }
+    }
+
     @media (max-width: 640px) {
       .login-wrapper {
         padding: 1rem;
       }
 
-      .login-header {
+      .login-left {
         padding: 2rem 1.5rem;
       }
 
-      .brand-icon {
-        width: 64px;
-        height: 64px;
-      }
-
-      .brand-icon i {
-        font-size: 2rem;
-      }
-
-      .brand-title {
-        font-size: 1.5rem;
-      }
-
-      .login-body {
+      .login-right {
         padding: 2rem 1.5rem;
       }
     }
