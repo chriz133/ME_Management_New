@@ -145,6 +145,9 @@ public class ContractBusinessLogic : IContractBusinessLogic
             Positions = contract.ContractPositions?.Select(cp => new CreateInvoicePositionRequest
             {
                 PositionId = cp.PositionId,
+                Text = cp.Position?.Text,
+                Price = cp.Position?.Price,
+                Unit = cp.Position?.Unit,
                 Amount = (decimal)cp.Amount
             }).ToList() ?? new List<CreateInvoicePositionRequest>()
         };
