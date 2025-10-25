@@ -9,6 +9,7 @@ import { CustomerService } from '../../core/services/customer.service';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { ContractService } from '../../core/services/contract.service';
 import { TransactionService } from '../../core/services/transaction.service';
+import { SystemService } from '../../core/services/system.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,7 +29,7 @@ import { TransactionService } from '../../core/services/transaction.service';
           <h1 class="page-title m-0 mb-2">
             <i class="pi pi-home mr-2"></i>Dashboard
           </h1>
-          <p class="page-subtitle text-600 m-0">Übersicht über Ihre Geschäftsaktivitäten aus firmaDB</p>
+          <p class="page-subtitle text-600 m-0">Übersicht über Ihre Geschäftsaktivitäten aus {{databaseInfo.databaseName || 'firmaDB'}}</p>
         </div>
       </div>
 
@@ -134,7 +135,7 @@ import { TransactionService } from '../../core/services/transaction.service';
                 <h2 class="text-2xl font-bold text-900 mb-3">Geschäftsverwaltungssystem</h2>
                 <p class="text-600 line-height-3 mb-4 mx-auto" style="max-width: 600px;">
                   Verwalten Sie Ihre Rechnungen, Angebote und Kunden effizient und professionell.
-                  Das System ist verbunden mit der firmaDB Datenbank und zeigt alle aktuellen Geschäftsdaten an.
+                  Das System ist verbunden mit der {{databaseInfo.databaseName || 'firmaDB'}} Datenbank und zeigt alle aktuellen Geschäftsdaten an.
                 </p>
                 <div class="flex gap-3 justify-content-center flex-wrap">
                   <p-button
@@ -251,7 +252,8 @@ import { TransactionService } from '../../core/services/transaction.service';
                 <div class="text-center p-3">
                   <i class="pi pi-database text-5xl text-blue-500 mb-3"></i>
                   <h4 class="text-lg font-semibold mb-2">Datenbank</h4>
-                  <p class="text-600 m-0">Verbunden mit firmaDB @ 192.168.0.88</p>
+                  <p class="text-600 m-0" *ngIf="!loading.databaseInfo">Verbunden mit {{databaseInfo.databaseName}} @ {{databaseInfo.serverAddress}}</p>
+                  <p-skeleton *ngIf="loading.databaseInfo" width="15rem" height="1.5rem"></p-skeleton>
                 </div>
               </div>
               <div class="col-12 md:col-4">
@@ -345,6 +347,7 @@ export class DashboardComponent implements OnInit {
   private readonly invoiceService = inject(InvoiceService);
   private readonly contractService = inject(ContractService);
   private readonly transactionService = inject(TransactionService);
+  private readonly systemService = inject(SystemService);
 
   stats = {
     customers: 0,
@@ -357,11 +360,18 @@ export class DashboardComponent implements OnInit {
     customers: true,
     invoices: true,
     contracts: true,
-    transactions: true
+    transactions: true,
+    databaseInfo: true
+  };
+
+  databaseInfo = {
+    databaseName: 'firmaDB',
+    serverAddress: '192.168.0.88'
   };
 
   ngOnInit(): void {
     this.loadStats();
+    this.loadDatabaseInfo();
   }
 
   loadStats(): void {
@@ -406,6 +416,19 @@ export class DashboardComponent implements OnInit {
       },
       error: () => {
         this.loading.transactions = false;
+      }
+    });
+  }
+
+  loadDatabaseInfo(): void {
+    this.systemService.getDatabaseInfo().subscribe({
+      next: (data) => {
+        this.databaseInfo = data;
+        this.loading.databaseInfo = false;
+      },
+      error: () => {
+        // Keep default values on error
+        this.loading.databaseInfo = false;
       }
     });
   }
