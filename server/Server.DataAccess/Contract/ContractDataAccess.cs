@@ -52,6 +52,7 @@ public class ContractDataAccess : IContractDataAccess
     {
         return await _context.ContractsDb
             .Include(c => c.ContractPositions)
+                .ThenInclude(cp => cp.Position)
             .FirstOrDefaultAsync(c => c.ContractId == contractId);
     }
 
