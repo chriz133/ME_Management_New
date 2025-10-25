@@ -195,31 +195,76 @@ SHOW TABLES;
 
 ## Integration Issues
 
-### 1. CORS Errors
+### 1. CORS Errors ✅ FIXED
 
 **Error:**
 ```
 Access to XMLHttpRequest at 'http://localhost:5000/api/...' from origin 'http://localhost:4200' has been blocked by CORS policy
 ```
 
-**Solution:**
-This is already configured in `Program.cs`, but if you change the frontend port:
+**Common Symptom:**
+Random CORS errors on different endpoints (customers, transactions, etc.) that appear intermittently.
 
-1. Update CORS policy in `server/Server.Api/Program.cs`:
+**Root Causes:**
+1. **Preflight requests failing** - Browser sends OPTIONS requests before actual API calls, and these were not being cached properly
+2. **Wildcard header exposure** - Using `WithExposedHeaders("*")` doesn't work properly with `AllowCredentials()`
+3. **Middleware ordering** - CORS middleware must be applied before all other middleware
+
+**Solution (Already Fixed):**
+The CORS configuration in `server/Server.Api/Program.cs` has been updated with:
+
+1. **Explicit exposed headers** instead of wildcard:
+```csharp
+.WithExposedHeaders("Content-Length", "Content-Type", "Authorization", "X-Requested-With")
+```
+
+2. **Preflight caching** to reduce repeated OPTIONS requests:
+```csharp
+.SetPreflightMaxAge(TimeSpan.FromMinutes(10))
+```
+
+3. **Correct middleware ordering** - UseCors is called FIRST:
+```csharp
+// Configure the HTTP request pipeline
+
+// IMPORTANT: UseCors must be called FIRST, before any other middleware
+app.UseCors("AllowAngularApp");
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+```
+
+**If you need to add additional ports:**
+Update the origins list in `server/Server.Api/Program.cs`:
 ```csharp
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") // Update port if needed
+        policy.WithOrigins(
+                "http://localhost:4200",  // Angular default port
+                "http://localhost:4201",  // Alternative port
+                "http://localhost:4202",  // Alternative port
+                "http://127.0.0.1:4200",  // Localhost alias
+                "http://localhost:YOUR_PORT" // Add your custom port here
+              )
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials()
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(10))
+              .WithExposedHeaders("Content-Length", "Content-Type", "Authorization", "X-Requested-With");
     });
 });
 ```
 
-2. Update API URL in `client/src/environments/environment.ts`:
+**Update Frontend API URL:**
+If you change the backend port, update `client/src/environments/environment.ts`:
 ```typescript
 export const environment = {
   production: false,
