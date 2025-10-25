@@ -195,7 +195,7 @@ SHOW TABLES;
 
 ## Integration Issues
 
-### 1. CORS Errors ✅ FIXED
+### 1. CORS Errors - FIXED
 
 **Error:**
 ```
@@ -252,7 +252,7 @@ builder.Services.AddCors(options =>
                 "http://localhost:4201",  // Alternative port
                 "http://localhost:4202",  // Alternative port
                 "http://127.0.0.1:4200",  // Localhost alias
-                "http://localhost:YOUR_PORT" // Add your custom port here
+                "http://localhost:4203"   // Add your custom port here (replace 4203 with your port)
               )
               .AllowAnyHeader()
               .AllowAnyMethod()
