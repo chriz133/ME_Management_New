@@ -26,6 +26,14 @@ export class ContractService {
     return this.http.post<Contract>(this.apiUrl, contract);
   }
 
+  update(id: number, accepted: boolean): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, { Accepted: accepted });
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
   convertToInvoice(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}/convert-to-invoice`);
   }

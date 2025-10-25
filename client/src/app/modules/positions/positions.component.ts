@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { PositionService } from '../../core/services/position.service';
 import { Position } from '../../core/models/position.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -23,8 +25,10 @@ import { ToastService } from '../../core/services/toast.service';
     ButtonModule,
     InputTextModule,
     SkeletonModule,
-    TooltipModule
+    TooltipModule,
+    ConfirmDialogModule
   ],
+  providers: [ConfirmationService],
   template: `
     <div class="positions-container">
       <p-card>
@@ -101,6 +105,8 @@ import { ToastService } from '../../core/services/toast.service';
           </ng-template>
         </p-table>
       </p-card>
+      
+      <p-confirmDialog></p-confirmDialog>
     </div>
   `,
   styles: [`
@@ -157,6 +163,7 @@ export class PositionsComponent implements OnInit {
   private readonly positionService = inject(PositionService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   positions: Position[] = [];
   loading = false;
@@ -183,6 +190,7 @@ export class PositionsComponent implements OnInit {
       },
       error: (error) => {
         console.error(error);
+        this.toastService.error('Fehler', 'Positionen konnten nicht geladen werden');
         this.loading = false;
       }
     });
@@ -193,7 +201,7 @@ export class PositionsComponent implements OnInit {
       this.toastService.error('Keine Berechtigung', 'Sie haben keine Berechtigung zum Bearbeiten');
       return;
     }
-    this.toastService.info('Info', 'Bearbeitungsfunktion noch nicht implementiert');
+    this.toastService.info('Info', 'Bearbeitungsfunktion für Positionen ist nur über Angebote/Rechnungen verfügbar');
   }
 
   deletePosition(position: Position): void {
@@ -201,6 +209,26 @@ export class PositionsComponent implements OnInit {
       this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Positionen löschen');
       return;
     }
-    this.toastService.info('Info', 'Löschfunktion noch nicht implementiert');
+
+    this.confirmationService.confirm({
+      message: `Möchten Sie die Position "${position.text}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+      header: 'Position löschen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, löschen',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.positionService.delete(position.positionId).subscribe({
+          next: () => {
+            this.toastService.success('Erfolg', 'Position erfolgreich gelöscht');
+            this.loadPositions();
+          },
+          error: (error) => {
+            console.error('Delete error:', error);
+            this.toastService.error('Fehler', 'Position konnte nicht gelöscht werden');
+          }
+        });
+      }
+    });
   }
 }

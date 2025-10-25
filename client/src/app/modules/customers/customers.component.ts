@@ -8,6 +8,8 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { CustomerService } from '../../core/services/customer.service';
 import { Customer } from '../../core/models/customer.model';
 import { ToastService } from '../../core/services/toast.service';
@@ -24,8 +26,10 @@ import { AuthService } from '../../core/services/auth.service';
     ToolbarModule, 
     TooltipModule, 
     TagModule,
-    InputTextModule
+    InputTextModule,
+    ConfirmDialogModule
   ],
+  providers: [ConfirmationService],
   template: `
     <div class="customers-page p-4">
       <div class="page-header mb-4">
@@ -210,6 +214,8 @@ import { AuthService } from '../../core/services/auth.service';
           </ng-template>
         </p-table>
       </p-card>
+      
+      <p-confirmDialog></p-confirmDialog>
     </div>
   `,
   styles: [`
@@ -267,6 +273,7 @@ export class CustomersComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly router = inject(Router);
 
   customers: Customer[] = [];
@@ -309,8 +316,8 @@ export class CustomersComponent implements OnInit {
       this.toastService.error('Keine Berechtigung', 'Sie haben keine Berechtigung zum Bearbeiten');
       return;
     }
-    // Navigate to edit page (to be implemented)
-    this.toastService.info('Info', 'Bearbeitungsfunktion noch nicht implementiert');
+    // Navigate to customer detail page which allows editing
+    this.router.navigate(['/customers', customer.customerId]);
   }
 
   deleteCustomer(customer: Customer): void {
@@ -318,8 +325,27 @@ export class CustomersComponent implements OnInit {
       this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Kunden löschen');
       return;
     }
-    // Implement delete with confirmation (to be implemented)
-    this.toastService.info('Info', 'Löschfunktion noch nicht implementiert');
+
+    this.confirmationService.confirm({
+      message: `Möchten Sie den Kunden "${customer.fullName}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+      header: 'Kunde löschen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, löschen',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.customerService.delete(customer.customerId).subscribe({
+          next: () => {
+            this.toastService.success('Erfolg', 'Kunde erfolgreich gelöscht');
+            this.loadCustomers();
+          },
+          error: (error) => {
+            console.error('Delete error:', error);
+            this.toastService.error('Fehler', 'Kunde konnte nicht gelöscht werden');
+          }
+        });
+      }
+    });
   }
 
   navigateToCreate(): void {

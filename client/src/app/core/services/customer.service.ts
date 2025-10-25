@@ -35,4 +35,12 @@ export class CustomerService {
   create(customer: Partial<Customer>): Observable<Customer> {
     return this.http.post<Customer>(this.apiUrl, customer);
   }
+
+  update(id: number, customer: Partial<Customer>): Observable<Customer> {
+    return this.http.put<Customer>(`${this.apiUrl}/${id}`, customer);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
