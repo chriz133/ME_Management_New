@@ -8,8 +8,12 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 import { TransactionService } from '../../core/services/transaction.service';
 import { Transaction } from '../../core/models/transaction.model';
+import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-transactions',
@@ -22,7 +26,8 @@ import { Transaction } from '../../core/models/transaction.model';
     ButtonModule,
     InputTextModule,
     TagModule,
-    SkeletonModule
+    SkeletonModule,
+    TooltipModule
   ],
   template: `
     <div class="transactions-container">
@@ -69,6 +74,7 @@ import { Transaction } from '../../core/models/transaction.model';
               <th pSortableColumn="type">Typ <p-sortIcon field="type"></p-sortIcon></th>
               <th pSortableColumn="medium">Zahlungsmittel <p-sortIcon field="medium"></p-sortIcon></th>
               <th>Beschreibung</th>
+              <th class="text-center" style="width: 150px;">Aktionen</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-transaction>
@@ -83,11 +89,33 @@ import { Transaction } from '../../core/models/transaction.model';
               </td>
               <td>{{ transaction.medium || '-' }}</td>
               <td>{{ transaction.description || '-' }}</td>
+              <td class="text-center">
+                <p-button
+                  *ngIf="canEdit"
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="warn"
+                  (onClick)="editTransaction(transaction); $event.stopPropagation()"
+                  pTooltip="Bearbeiten"
+                  tooltipPosition="top"
+                />
+                <p-button
+                  *ngIf="canDelete"
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="deleteTransaction(transaction); $event.stopPropagation()"
+                  pTooltip="Löschen"
+                  tooltipPosition="right"
+                />
+              </td>
             </tr>
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="6" class="text-center">Keine Transaktionen gefunden</td>
+              <td colspan="7" class="text-center">Keine Transaktionen gefunden</td>
             </tr>
           </ng-template>
         </p-table>
@@ -126,10 +154,21 @@ import { Transaction } from '../../core/models/transaction.model';
 export class TransactionsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly transactionService = inject(TransactionService);
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   transactions: Transaction[] = [];
   loading = false;
   searchText = '';
+
+  get canEdit(): boolean {
+    return this.authService.canEdit();
+  }
+
+  get canDelete(): boolean {
+    return this.authService.canDelete();
+  }
 
   ngOnInit(): void {
     this.loadTransactions();
@@ -151,5 +190,39 @@ export class TransactionsComponent implements OnInit {
 
   navigateToCreate(): void {
     this.router.navigate(['/transactions/create']);
+  }
+
+  editTransaction(transaction: Transaction): void {
+    // For now, navigate to create page with transaction ID as a query parameter
+    // In a full implementation, you'd have a proper edit page or dialog
+    this.toastService.info('Info', 'Bearbeitungsfunktion in Entwicklung');
+  }
+
+  deleteTransaction(transaction: Transaction): void {
+    if (!this.canDelete) {
+      this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Transaktionen löschen');
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Möchten Sie die Transaktion #${transaction.transactionId} wirklich löschen?`,
+      header: 'Löschen bestätigen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, löschen',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.transactionService.delete(transaction.transactionId).subscribe({
+          next: () => {
+            this.toastService.success('Erfolg', 'Transaktion wurde gelöscht');
+            this.loadTransactions();
+          },
+          error: (error) => {
+            console.error(error);
+            this.toastService.error('Fehler', 'Transaktion konnte nicht gelöscht werden');
+          }
+        });
+      }
+    });
   }
 }

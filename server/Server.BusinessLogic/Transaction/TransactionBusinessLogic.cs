@@ -47,6 +47,38 @@ public class TransactionBusinessLogic : ITransactionBusinessLogic
         return MapToDto(createdTransaction);
     }
 
+    public async Task<TransactionDto> UpdateTransactionAsync(int transactionId, UpdateTransactionRequest request)
+    {
+        var transaction = await _transactionDataAccess.GetTransactionByIdAsync(transactionId);
+        if (transaction == null)
+        {
+            throw new ArgumentException($"Transaction with ID {transactionId} not found");
+        }
+
+        transaction.Amount = (double)request.Amount;
+        transaction.Description = request.Description;
+        transaction.Date = request.Date;
+        transaction.Type = request.Type;
+        transaction.Medium = request.Medium;
+
+        var updatedTransaction = await _transactionDataAccess.UpdateTransactionAsync(transaction);
+        _logger.LogInformation("Transaction {TransactionId} updated", updatedTransaction.TransactionId);
+
+        return MapToDto(updatedTransaction);
+    }
+
+    public async Task DeleteTransactionAsync(int transactionId)
+    {
+        var exists = await _transactionDataAccess.TransactionExistsAsync(transactionId);
+        if (!exists)
+        {
+            throw new ArgumentException($"Transaction with ID {transactionId} not found");
+        }
+
+        await _transactionDataAccess.DeleteTransactionAsync(transactionId);
+        _logger.LogInformation("Transaction {TransactionId} deleted", transactionId);
+    }
+
     private static TransactionDto MapToDto(TransactionEntity transaction)
     {
         return new TransactionDto

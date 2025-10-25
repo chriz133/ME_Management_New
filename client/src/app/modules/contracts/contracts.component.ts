@@ -10,7 +10,7 @@ import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ContractService } from '../../core/services/contract.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Contract } from '../../core/models/contract.model';
@@ -34,7 +34,7 @@ import { Contract } from '../../core/models/contract.model';
     ProgressSpinnerModule,
     TooltipModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   template: `
     <div class="contracts-container" [@fadeIn]>
       <p-card>
@@ -248,6 +248,7 @@ export class ContractsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   contracts: Contract[] = [];
   filteredContracts: Contract[] = [];
@@ -305,11 +306,27 @@ export class ContractsComponent implements OnInit {
   }
 
   editContract(contract: Contract) {
-    // TODO: Implement edit functionality
-    this.messageService.add({ 
-      severity: 'info', 
-      summary: 'Info', 
-      detail: 'Bearbeitungsfunktion noch nicht implementiert' 
+    // Navigate to edit page (we'd need to create an edit component)
+    // For now, let's implement update of acceptance status
+    const updatedAccepted = !contract.accepted;
+    
+    this.contractService.update(contract.contractId, { accepted: updatedAccepted }).subscribe({
+      next: () => {
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Erfolg', 
+          detail: 'Angebot wurde aktualisiert' 
+        });
+        this.loadContracts();
+      },
+      error: (error) => {
+        console.error('Error updating contract:', error);
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Fehler', 
+          detail: 'Angebot konnte nicht aktualisiert werden' 
+        });
+      }
     });
   }
 
@@ -327,11 +344,33 @@ export class ContractsComponent implements OnInit {
       return;
     }
 
-    // TODO: Implement delete with confirmation dialog
-    this.messageService.add({ 
-      severity: 'info', 
-      summary: 'Info', 
-      detail: 'Löschfunktion noch nicht implementiert' 
+    this.confirmationService.confirm({
+      message: `Möchten Sie das Angebot #${contract.contractId} wirklich löschen?`,
+      header: 'Löschen bestätigen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, löschen',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.contractService.delete(contract.contractId).subscribe({
+          next: () => {
+            this.messageService.add({ 
+              severity: 'success', 
+              summary: 'Erfolg', 
+              detail: 'Angebot wurde gelöscht' 
+            });
+            this.loadContracts();
+          },
+          error: (error) => {
+            console.error('Error deleting contract:', error);
+            this.messageService.add({ 
+              severity: 'error', 
+              summary: 'Fehler', 
+              detail: 'Angebot konnte nicht gelöscht werden' 
+            });
+          }
+        });
+      }
     });
   }
 }

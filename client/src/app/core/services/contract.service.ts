@@ -29,4 +29,12 @@ export class ContractService {
   convertToInvoice(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}/convert-to-invoice`);
   }
+
+  update(id: number, contract: any): Observable<Contract> {
+    return this.http.put<Contract>(`${this.apiUrl}/${id}`, contract);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

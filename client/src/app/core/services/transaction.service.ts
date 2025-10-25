@@ -25,4 +25,12 @@ export class TransactionService {
   create(transaction: Partial<Transaction>): Observable<Transaction> {
     return this.http.post<Transaction>(this.apiUrl, transaction);
   }
+
+  update(id: number, transaction: Partial<Transaction>): Observable<Transaction> {
+    return this.http.put<Transaction>(`${this.apiUrl}/${id}`, transaction);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
