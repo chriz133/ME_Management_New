@@ -125,8 +125,6 @@ function CustomerAddEditScreen() {
                 <Alert onClose={handleCloseFailed} severity="error" sx={{ width: '100%' }}>
                     Fehler beim {id ? 'Aktualisieren' : 'Anlegen'} der Transaktion!
                 </Alert>
-                    Fehler beim anlegen der Transaktion!
-                </Alert>
             </Snackbar>
             <div className="customer-main">
                 <div className="customer-title">
