@@ -371,6 +371,7 @@ export class ContractCreateComponent implements OnInit {
 
   contract: any = {
     customerId: null,
+    accepted: false,
     positions: []
   };
 

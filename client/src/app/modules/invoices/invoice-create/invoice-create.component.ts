@@ -486,7 +486,7 @@ export class InvoiceCreateComponent implements OnInit {
     finishedAt: new Date(),
     type: 'D',
     depositAmount: 0,
-    depositPaidOn: null,
+    depositPaidOn: '1111-11-11',
     positions: []
   };
 
@@ -548,7 +548,7 @@ export class InvoiceCreateComponent implements OnInit {
   onDepositToggle(): void {
     if (!this.hasDeposit) {
       this.invoice.depositAmount = 0;
-      this.invoice.depositPaidOn = null;
+      this.invoice.depositPaidOn = '1111-11-11';
     }
   }
 
