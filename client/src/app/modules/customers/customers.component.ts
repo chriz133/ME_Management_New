@@ -11,6 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CustomerService } from '../../core/services/customer.service';
 import { Customer } from '../../core/models/customer.model';
 import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-customers',
@@ -114,7 +115,7 @@ import { ToastService } from '../../core/services/toast.service';
               </th>
               <th>PLZ</th>
               <th>UID</th>
-              <th class="text-center" style="width: 100px;">Aktionen</th>
+              <th class="text-center" style="width: 200px;">Aktionen</th>
             </tr>
           </ng-template>
 
@@ -148,15 +149,37 @@ import { ToastService } from '../../core/services/toast.service';
                 <span class="text-sm font-mono">{{ customer.uid || '-' }}</span>
               </td>
               <td class="text-center">
-                <p-button
-                  icon="pi pi-eye"
-                  [rounded]="true"
-                  [text]="true"
-                  severity="info"
-                  (onClick)="viewCustomer(customer)"
-                  pTooltip="Details anzeigen"
-                  tooltipPosition="left"
-                />
+                <div class="flex gap-1 justify-content-center">
+                  <p-button
+                    icon="pi pi-eye"
+                    [rounded]="true"
+                    [text]="true"
+                    severity="info"
+                    (onClick)="viewCustomer(customer)"
+                    pTooltip="Details anzeigen"
+                    tooltipPosition="left"
+                  />
+                  <p-button
+                    *ngIf="canEdit"
+                    icon="pi pi-pencil"
+                    [rounded]="true"
+                    [text]="true"
+                    severity="warning"
+                    (onClick)="editCustomer(customer); $event.stopPropagation()"
+                    pTooltip="Bearbeiten"
+                    tooltipPosition="top"
+                  />
+                  <p-button
+                    *ngIf="canDelete"
+                    icon="pi pi-trash"
+                    [rounded]="true"
+                    [text]="true"
+                    severity="danger"
+                    (onClick)="deleteCustomer(customer); $event.stopPropagation()"
+                    pTooltip="Löschen"
+                    tooltipPosition="top"
+                  />
+                </div>
               </td>
             </tr>
           </ng-template>
@@ -243,10 +266,19 @@ import { ToastService } from '../../core/services/toast.service';
 export class CustomersComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   customers: Customer[] = [];
   loading = true;
+
+  get canEdit(): boolean {
+    return this.authService.canEdit();
+  }
+
+  get canDelete(): boolean {
+    return this.authService.canDelete();
+  }
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -270,6 +302,24 @@ export class CustomersComponent implements OnInit {
   viewCustomer(customer: Customer): void {
     this.router.navigate(["/customers", customer.customerId]);
     this.toastService.info('Info', `Kunde: ${customer.fullName}`);
+  }
+
+  editCustomer(customer: Customer): void {
+    if (!this.canEdit) {
+      this.toastService.error('Keine Berechtigung', 'Sie haben keine Berechtigung zum Bearbeiten');
+      return;
+    }
+    // Navigate to edit page (to be implemented)
+    this.toastService.info('Info', 'Bearbeitungsfunktion noch nicht implementiert');
+  }
+
+  deleteCustomer(customer: Customer): void {
+    if (!this.canDelete) {
+      this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Kunden löschen');
+      return;
+    }
+    // Implement delete with confirmation (to be implemented)
+    this.toastService.info('Info', 'Löschfunktion noch nicht implementiert');
   }
 
   navigateToCreate(): void {

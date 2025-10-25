@@ -6,8 +6,11 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 import { PositionService } from '../../core/services/position.service';
 import { Position } from '../../core/models/position.model';
+import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-positions',
@@ -19,7 +22,8 @@ import { Position } from '../../core/models/position.model';
     TableModule,
     ButtonModule,
     InputTextModule,
-    SkeletonModule
+    SkeletonModule,
+    TooltipModule
   ],
   template: `
     <div class="positions-container">
@@ -69,6 +73,7 @@ import { Position } from '../../core/models/position.model';
               <th pSortableColumn="text">Beschreibung <p-sortIcon field="text"></p-sortIcon></th>
               <th pSortableColumn="price">Preis <p-sortIcon field="price"></p-sortIcon></th>
               <th pSortableColumn="unit">Einheit <p-sortIcon field="unit"></p-sortIcon></th>
+              <th style="width: 10rem">Aktionen</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-position>
@@ -77,11 +82,21 @@ import { Position } from '../../core/models/position.model';
               <td>{{ position.text }}</td>
               <td>{{ position.price | currency:'EUR':'symbol':'1.2-2':'de' }}</td>
               <td>{{ position.unit }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button *ngIf="canEdit" pButton icon="pi pi-pencil" class="p-button-text p-button-sm p-button-warning" 
+                          (click)="editPosition(position)"
+                          pTooltip="Bearbeiten" tooltipPosition="top"></button>
+                  <button *ngIf="canDelete" pButton icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" 
+                          (click)="deletePosition(position)"
+                          pTooltip="Löschen" tooltipPosition="top"></button>
+                </div>
+              </td>
             </tr>
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="4" class="text-center">Keine Positionen gefunden</td>
+              <td colspan="5" class="text-center">Keine Positionen gefunden</td>
             </tr>
           </ng-template>
         </p-table>
@@ -131,14 +146,29 @@ import { Position } from '../../core/models/position.model';
       text-align: center;
       padding: 2rem;
     }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
   `]
 })
 export class PositionsComponent implements OnInit {
   private readonly positionService = inject(PositionService);
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
 
   positions: Position[] = [];
   loading = false;
   searchText = '';
+
+  get canEdit(): boolean {
+    return this.authService.canEdit();
+  }
+
+  get canDelete(): boolean {
+    return this.authService.canDelete();
+  }
 
   ngOnInit(): void {
     this.loadPositions();
@@ -156,5 +186,21 @@ export class PositionsComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  editPosition(position: Position): void {
+    if (!this.canEdit) {
+      this.toastService.error('Keine Berechtigung', 'Sie haben keine Berechtigung zum Bearbeiten');
+      return;
+    }
+    this.toastService.info('Info', 'Bearbeitungsfunktion noch nicht implementiert');
+  }
+
+  deletePosition(position: Position): void {
+    if (!this.canDelete) {
+      this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Positionen löschen');
+      return;
+    }
+    this.toastService.info('Info', 'Löschfunktion noch nicht implementiert');
   }
 }
