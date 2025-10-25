@@ -3,8 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Server.BusinessLogic.Services;
+using Server.BusinessLogic.Customer;
+using Server.BusinessLogic.Invoice;
+using Server.BusinessLogic.Contract;
+using Server.BusinessLogic.Position;
+using Server.BusinessLogic.Transaction;
 using Server.BusinessObjects.Entities;
 using Server.DataAccess;
+using Server.DataAccess.Customer;
+using Server.DataAccess.Invoice;
+using Server.DataAccess.Contract;
+using Server.DataAccess.Position;
+using Server.DataAccess.Transaction;
 using Server.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,10 +30,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     Console.WriteLine("Using MySQL database");
 });
 
-// Configure business services
+// Configure DataAccess layer services
+builder.Services.AddScoped<ICustomerDataAccess, CustomerDataAccess>();
+builder.Services.AddScoped<IInvoiceDataAccess, InvoiceDataAccess>();
+builder.Services.AddScoped<IContractDataAccess, ContractDataAccess>();
+builder.Services.AddScoped<IPositionDataAccess, PositionDataAccess>();
+builder.Services.AddScoped<ITransactionDataAccess, TransactionDataAccess>();
+
+// Configure BusinessLogic layer services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IContractService, ContractService>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<ICustomerBusinessLogic, CustomerBusinessLogic>();
+builder.Services.AddScoped<IInvoiceBusinessLogic, InvoiceBusinessLogic>();
+builder.Services.AddScoped<IContractBusinessLogic, ContractBusinessLogic>();
+builder.Services.AddScoped<IPositionBusinessLogic, PositionBusinessLogic>();
+builder.Services.AddScoped<ITransactionBusinessLogic, TransactionBusinessLogic>();
 
 // Configure JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");

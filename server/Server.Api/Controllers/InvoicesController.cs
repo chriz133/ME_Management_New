@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Server.BusinessLogic.Services;
+using Server.BusinessLogic.Invoice;
 using Server.BusinessObjects.DTOs;
-using Server.BusinessObjects.Entities;
-using Server.DataAccess;
 
 namespace Server.Api.Controllers;
 
@@ -13,17 +10,14 @@ namespace Server.Api.Controllers;
 [Route("api/[controller]")]
 public class InvoicesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IInvoiceService _invoiceService;
+    private readonly IInvoiceBusinessLogic _invoiceBusinessLogic;
     private readonly ILogger<InvoicesController> _logger;
 
     public InvoicesController(
-        ApplicationDbContext context,
-        IInvoiceService invoiceService,
+        IInvoiceBusinessLogic invoiceBusinessLogic,
         ILogger<InvoicesController> logger)
     {
-        _context = context;
-        _invoiceService = invoiceService;
+        _invoiceBusinessLogic = invoiceBusinessLogic;
         _logger = logger;
     }
 
@@ -35,48 +29,7 @@ public class InvoicesController : ControllerBase
     {
         try
         {
-            var invoices = await _context.InvoicesDb
-                .Include(i => i.Customer)
-                .Include(i => i.InvoicePositions)
-                    .ThenInclude(ip => ip.Position)
-                .OrderByDescending(i => i.CreatedAt)
-                .Select(i => new InvoiceDto
-                {
-                    InvoiceId = i.InvoiceId,
-                    CreatedAt = i.CreatedAt,
-                    CustomerId = i.CustomerId,
-                    StartedAt = i.StartedAt,
-                    FinishedAt = i.FinishedAt,
-                    DepositAmount = i.DepositAmount,
-                    DepositPaidOn = i.DepositPaidOn,
-                    Type = i.Type,
-                    Customer = i.Customer == null ? null : new CustomerDto
-                    {
-                        CustomerId = i.Customer.CustomerId,
-                        Firstname = i.Customer.Firstname,
-                        Surname = i.Customer.Surname,
-                        Plz = i.Customer.Plz,
-                        City = i.Customer.City,
-                        Address = i.Customer.Address,
-                        Nr = i.Customer.Nr,
-                        Uid = i.Customer.Uid
-                    },
-                    Positions = i.InvoicePositions!.Select(ip => new InvoicePositionDto
-                    {
-                        InvoicePositionId = ip.InvoicePositionId,
-                        Amount = ip.Amount,
-                        PositionId = ip.PositionId,
-                        Position = ip.Position == null ? null : new PositionDto
-                        {
-                            PositionId = ip.Position.PositionId,
-                            Text = ip.Position.Text,
-                            Price = ip.Position.Price,
-                            Unit = ip.Position.Unit
-                        }
-                    }).ToList()
-                })
-                .ToListAsync();
-                
+            var invoices = await _invoiceBusinessLogic.GetAllInvoicesAsync();
             return Ok(invoices);
         }
         catch (Exception ex)
@@ -94,47 +47,7 @@ public class InvoicesController : ControllerBase
     {
         try
         {
-            var invoice = await _context.InvoicesDb
-                .Include(i => i.Customer)
-                .Include(i => i.InvoicePositions)
-                    .ThenInclude(ip => ip.Position)
-                .Where(i => i.InvoiceId == id)
-                .Select(i => new InvoiceDto
-                {
-                    InvoiceId = i.InvoiceId,
-                    CreatedAt = i.CreatedAt,
-                    CustomerId = i.CustomerId,
-                    StartedAt = i.StartedAt,
-                    FinishedAt = i.FinishedAt,
-                    DepositAmount = i.DepositAmount,
-                    DepositPaidOn = i.DepositPaidOn,
-                    Type = i.Type,
-                    Customer = i.Customer == null ? null : new CustomerDto
-                    {
-                        CustomerId = i.Customer.CustomerId,
-                        Firstname = i.Customer.Firstname,
-                        Surname = i.Customer.Surname,
-                        Plz = i.Customer.Plz,
-                        City = i.Customer.City,
-                        Address = i.Customer.Address,
-                        Nr = i.Customer.Nr,
-                        Uid = i.Customer.Uid
-                    },
-                    Positions = i.InvoicePositions!.Select(ip => new InvoicePositionDto
-                    {
-                        InvoicePositionId = ip.InvoicePositionId,
-                        Amount = ip.Amount,
-                        PositionId = ip.PositionId,
-                        Position = ip.Position == null ? null : new PositionDto
-                        {
-                            PositionId = ip.Position.PositionId,
-                            Text = ip.Position.Text,
-                            Price = ip.Position.Price,
-                            Unit = ip.Position.Unit
-                        }
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
+            var invoice = await _invoiceBusinessLogic.GetInvoiceByIdAsync(id);
                 
             if (invoice == null)
             {
@@ -159,7 +72,7 @@ public class InvoicesController : ControllerBase
     {
         try
         {
-            var createdInvoice = await _invoiceService.CreateInvoiceAsync(request);
+            var createdInvoice = await _invoiceBusinessLogic.CreateInvoiceAsync(request);
             return CreatedAtAction(nameof(GetInvoice), new { id = createdInvoice.InvoiceId }, createdInvoice);
         }
         catch (ArgumentException ex)

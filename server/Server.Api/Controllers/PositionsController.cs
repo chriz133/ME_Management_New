@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Server.BusinessLogic.Position;
 using Server.BusinessObjects.DTOs;
-using Server.BusinessObjects.Entities;
-using Server.DataAccess;
 
 namespace Server.Api.Controllers;
 
@@ -12,12 +10,12 @@ namespace Server.Api.Controllers;
 [Route("api/[controller]")]
 public class PositionsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IPositionBusinessLogic _positionBusinessLogic;
     private readonly ILogger<PositionsController> _logger;
 
-    public PositionsController(ApplicationDbContext context, ILogger<PositionsController> logger)
+    public PositionsController(IPositionBusinessLogic positionBusinessLogic, ILogger<PositionsController> logger)
     {
-        _context = context;
+        _positionBusinessLogic = positionBusinessLogic;
         _logger = logger;
     }
 
@@ -29,16 +27,7 @@ public class PositionsController : ControllerBase
     {
         try
         {
-            var positions = await _context.PositionsDb
-                .Select(p => new PositionDto
-                {
-                    PositionId = p.PositionId,
-                    Text = p.Text,
-                    Price = p.Price,
-                    Unit = p.Unit
-                })
-                .ToListAsync();
-                
+            var positions = await _positionBusinessLogic.GetAllPositionsAsync();
             return Ok(positions);
         }
         catch (Exception ex)
@@ -56,16 +45,7 @@ public class PositionsController : ControllerBase
     {
         try
         {
-            var position = await _context.PositionsDb
-                .Where(p => p.PositionId == id)
-                .Select(p => new PositionDto
-                {
-                    PositionId = p.PositionId,
-                    Text = p.Text,
-                    Price = p.Price,
-                    Unit = p.Unit
-                })
-                .FirstOrDefaultAsync();
+            var position = await _positionBusinessLogic.GetPositionByIdAsync(id);
                 
             if (position == null)
             {
@@ -90,27 +70,8 @@ public class PositionsController : ControllerBase
     {
         try
         {
-            var position = new PositionEntity
-            {
-                Text = request.Text,
-                Price = request.Price,
-                Unit = request.Unit
-            };
-
-            _context.PositionsDb.Add(position);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Position {PositionId} created", position.PositionId);
-
-            var createdPosition = new PositionDto
-            {
-                PositionId = position.PositionId,
-                Text = position.Text,
-                Price = position.Price,
-                Unit = position.Unit
-            };
-
-            return CreatedAtAction(nameof(GetPosition), new { id = position.PositionId }, createdPosition);
+            var createdPosition = await _positionBusinessLogic.CreatePositionAsync(request);
+            return CreatedAtAction(nameof(GetPosition), new { id = createdPosition.PositionId }, createdPosition);
         }
         catch (Exception ex)
         {

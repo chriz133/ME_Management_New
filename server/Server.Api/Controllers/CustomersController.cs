@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Server.BusinessLogic.Customer;
 using Server.BusinessObjects.DTOs;
-using Server.BusinessObjects.Entities;
-using Server.DataAccess;
 
 namespace Server.Api.Controllers;
 
@@ -12,12 +10,12 @@ namespace Server.Api.Controllers;
 [Route("api/[controller]")]
 public class CustomersController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICustomerBusinessLogic _customerBusinessLogic;
     private readonly ILogger<CustomersController> _logger;
 
-    public CustomersController(ApplicationDbContext context, ILogger<CustomersController> logger)
+    public CustomersController(ICustomerBusinessLogic customerBusinessLogic, ILogger<CustomersController> logger)
     {
-        _context = context;
+        _customerBusinessLogic = customerBusinessLogic;
         _logger = logger;
     }
 
@@ -29,20 +27,7 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var customers = await _context.CustomersDb
-                .Select(c => new CustomerDto
-                {
-                    CustomerId = c.CustomerId,
-                    Firstname = c.Firstname,
-                    Surname = c.Surname,
-                    Plz = c.Plz,
-                    City = c.City,
-                    Address = c.Address,
-                    Nr = c.Nr,
-                    Uid = c.Uid
-                })
-                .ToListAsync();
-                
+            var customers = await _customerBusinessLogic.GetAllCustomersAsync();
             return Ok(customers);
         }
         catch (Exception ex)
@@ -60,20 +45,7 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var customer = await _context.CustomersDb
-                .Where(c => c.CustomerId == id)
-                .Select(c => new CustomerDto
-                {
-                    CustomerId = c.CustomerId,
-                    Firstname = c.Firstname,
-                    Surname = c.Surname,
-                    Plz = c.Plz,
-                    City = c.City,
-                    Address = c.Address,
-                    Nr = c.Nr,
-                    Uid = c.Uid
-                })
-                .FirstOrDefaultAsync();
+            var customer = await _customerBusinessLogic.GetCustomerByIdAsync(id);
                 
             if (customer == null)
             {
@@ -97,32 +69,7 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var contracts = await _context.ContractsDb
-                .Where(c => c.CustomerId == id)
-                .Include(c => c.ContractPositions)
-                    .ThenInclude(cp => cp.Position)
-                .Select(c => new ContractDto
-                {
-                    ContractId = c.ContractId,
-                    CreatedAt = c.CreatedAt,
-                    Accepted = c.Accepted,
-                    CustomerId = c.CustomerId,
-                    Positions = c.ContractPositions!.Select(cp => new ContractPositionDto
-                    {
-                        ContractPositionId = cp.ContractPositionId,
-                        Amount = cp.Amount,
-                        PositionId = cp.PositionId,
-                        Position = cp.Position == null ? null : new PositionDto
-                        {
-                            PositionId = cp.Position.PositionId,
-                            Text = cp.Position.Text,
-                            Price = cp.Position.Price,
-                            Unit = cp.Position.Unit
-                        }
-                    }).ToList()
-                })
-                .ToListAsync();
-                
+            var contracts = await _customerBusinessLogic.GetCustomerContractsAsync(id);
             return Ok(contracts);
         }
         catch (Exception ex)
@@ -140,36 +87,7 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var invoices = await _context.InvoicesDb
-                .Where(i => i.CustomerId == id)
-                .Include(i => i.InvoicePositions)
-                    .ThenInclude(ip => ip.Position)
-                .Select(i => new InvoiceDto
-                {
-                    InvoiceId = i.InvoiceId,
-                    CreatedAt = i.CreatedAt,
-                    CustomerId = i.CustomerId,
-                    StartedAt = i.StartedAt,
-                    FinishedAt = i.FinishedAt,
-                    DepositAmount = i.DepositAmount,
-                    DepositPaidOn = i.DepositPaidOn,
-                    Type = i.Type,
-                    Positions = i.InvoicePositions!.Select(ip => new InvoicePositionDto
-                    {
-                        InvoicePositionId = ip.InvoicePositionId,
-                        Amount = ip.Amount,
-                        PositionId = ip.PositionId,
-                        Position = ip.Position == null ? null : new PositionDto
-                        {
-                            PositionId = ip.Position.PositionId,
-                            Text = ip.Position.Text,
-                            Price = ip.Position.Price,
-                            Unit = ip.Position.Unit
-                        }
-                    }).ToList()
-                })
-                .ToListAsync();
-                
+            var invoices = await _customerBusinessLogic.GetCustomerInvoicesAsync(id);
             return Ok(invoices);
         }
         catch (Exception ex)
@@ -188,35 +106,8 @@ public class CustomersController : ControllerBase
     {
         try
         {
-            var customer = new CustomerEntity
-            {
-                Firstname = request.Firstname,
-                Surname = request.Surname,
-                Plz = request.Plz,
-                City = request.City,
-                Address = request.Address,
-                Nr = request.Nr,
-                Uid = request.Uid
-            };
-
-            _context.CustomersDb.Add(customer);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Customer {CustomerId} created", customer.CustomerId);
-
-            var customerDto = new CustomerDto
-            {
-                CustomerId = customer.CustomerId,
-                Firstname = customer.Firstname,
-                Surname = customer.Surname,
-                Plz = customer.Plz,
-                City = customer.City,
-                Address = customer.Address,
-                Nr = customer.Nr,
-                Uid = customer.Uid
-            };
-
-            return CreatedAtAction(nameof(GetCustomer), new { id = customer.CustomerId }, customerDto);
+            var customerDto = await _customerBusinessLogic.CreateCustomerAsync(request);
+            return CreatedAtAction(nameof(GetCustomer), new { id = customerDto.CustomerId }, customerDto);
         }
         catch (Exception ex)
         {
