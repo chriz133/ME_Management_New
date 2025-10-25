@@ -78,7 +78,7 @@ public class ContractService : IContractService
                 // Create contract position linking
                 var contractPosition = new ContractPosition
                 {
-                    PositionId = position.PositionId,
+                    Position = position,  // Use navigation property instead of ID
                     Amount = (double)positionRequest.Amount
                 };
 

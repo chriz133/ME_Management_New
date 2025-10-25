@@ -88,7 +88,7 @@ public class InvoiceService : IInvoiceService
                 // Create invoice position linking
                 var invoicePosition = new InvoicePosition
                 {
-                    PositionId = position.PositionId,
+                    Position = position,  // Use navigation property instead of ID
                     Amount = (double)positionRequest.Amount
                 };
 
