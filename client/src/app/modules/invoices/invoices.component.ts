@@ -7,9 +7,12 @@ import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { Invoice } from '../../core/models/invoice.model';
 import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-invoices',
@@ -21,8 +24,10 @@ import { ToastService } from '../../core/services/toast.service';
     CardModule, 
     TagModule, 
     TooltipModule,
-    InputTextModule
+    InputTextModule,
+    ConfirmDialogModule
   ],
+  providers: [ConfirmationService],
   template: `
     <div class="invoices-page p-4">
       <div class="page-header mb-4">
