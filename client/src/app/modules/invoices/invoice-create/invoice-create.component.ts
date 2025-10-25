@@ -31,27 +31,47 @@ import { Position } from '../../../core/models/position.model';
   ],
   template: `
     <div class="invoice-create-container">
-      <p-card [header]="isFromContract ? 'Rechnung aus Angebot erstellen' : 'Neue Rechnung erstellen'">
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="card-header">
+            <h2>
+              <i class="pi pi-file-invoice"></i> 
+              {{ isFromContract ? 'Rechnung aus Angebot erstellen' : 'Neue Rechnung erstellen' }}
+            </h2>
+            @if (isFromContract) {
+              <p class="subtitle">Die Daten aus dem Angebot wurden übernommen. Sie können diese noch anpassen.</p>
+            }
+          </div>
+        </ng-template>
+
         <div class="form-section">
-          <h3>Kundeninformationen</h3>
-          <div class="form-field">
-            <label for="customer">Kunde *</label>
+          <div class="section-header">
+            <i class="pi pi-user"></i>
+            <h3>Kundeninformationen</h3>
+          </div>
+          <div class="form-field full-width">
+            <label for="customer">Kunde auswählen *</label>
             <p-select
               id="customer"
               [options]="customers"
               [(ngModel)]="invoice.customerId"
               optionLabel="fullName"
               optionValue="customerId"
-              placeholder="Kunde auswählen"
+              placeholder="Bitte einen Kunden auswählen..."
               [style]="{'width': '100%'}"
+              [panelStyle]="{'min-width': '100%'}"
               [filter]="true"
               filterBy="fullName"
+              [showClear]="true"
               required />
           </div>
         </div>
 
         <div class="form-section">
-          <h3>Rechnungsdaten</h3>
+          <div class="section-header">
+            <i class="pi pi-calendar"></i>
+            <h3>Rechnungsdaten</h3>
+          </div>
           <div class="form-grid">
             <div class="form-field">
               <label for="startedAt">Begonnen am *</label>
@@ -76,15 +96,16 @@ import { Position } from '../../../core/models/position.model';
             </div>
 
             <div class="form-field">
-              <label for="type">Typ *</label>
+              <label for="type">Rechnungstyp *</label>
               <p-select
                 id="type"
                 [options]="typeOptions"
                 [(ngModel)]="invoice.type"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Typ auswählen"
+                placeholder="Typ auswählen..."
                 [style]="{'width': '100%'}"
+                [panelStyle]="{'min-width': '100%'}"
                 required />
             </div>
           </div>
@@ -114,101 +135,161 @@ import { Position } from '../../../core/models/position.model';
         </div>
 
         <div class="form-section">
-          <h3>Positionen</h3>
-          <p-table [value]="invoice.positions" [tableStyle]="{ 'min-width': '50rem' }">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>Position</th>
-                <th style="width: 200px">Menge</th>
-                <th style="width: 150px">Preis</th>
-                <th style="width: 150px">Gesamt</th>
-                <th style="width: 100px">Aktionen</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-              <tr>
-                <td>
-                  <p-select
-                    [options]="positions"
-                    [(ngModel)]="item.positionId"
-                    optionLabel="text"
-                    optionValue="positionId"
-                    placeholder="Position auswählen"
-                    [style]="{'width': '100%'}"
-                    [filter]="true"
-                    filterBy="text"
-                    (onChange)="onPositionChange(item)" />
-                </td>
-                <td>
-                  <p-inputNumber
-                    [(ngModel)]="item.amount"
-                    [min]="0"
-                    [minFractionDigits]="2"
-                    [maxFractionDigits]="2"
-                    [style]="{'width': '100%'}" />
-                </td>
-                <td>
-                  <span>{{ getPositionPrice(item.positionId) | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
-                </td>
-                <td>
-                  <strong>{{ calculateLineTotal(item) | currency:'EUR':'symbol':'1.2-2':'de' }}</strong>
-                </td>
-                <td>
-                  <p-button
-                    icon="pi pi-trash"
-                    severity="danger"
-                    [text]="true"
-                    (onClick)="removePosition(rowIndex)" />
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="5" class="text-center">Keine Positionen hinzugefügt</td>
-              </tr>
-            </ng-template>
-          </p-table>
+          <div class="section-header">
+            <i class="pi pi-list"></i>
+            <h3>Positionen</h3>
+          </div>
+          
+          @if (invoice.positions.length === 0) {
+            <div class="empty-state">
+              <i class="pi pi-inbox"></i>
+              <p>Noch keine Positionen hinzugefügt</p>
+              <small>Klicken Sie auf "Position hinzufügen" um zu beginnen</small>
+            </div>
+          } @else {
+            <p-table [value]="invoice.positions" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 40%">Position</th>
+                  <th style="width: 15%">Menge</th>
+                  <th style="width: 15%">Einzelpreis</th>
+                  <th style="width: 15%">Gesamt</th>
+                  <th style="width: 15%">Aktionen</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                <tr>
+                  <td>
+                    <p-select
+                      [options]="positions"
+                      [(ngModel)]="item.positionId"
+                      optionLabel="text"
+                      optionValue="positionId"
+                      placeholder="Position auswählen..."
+                      [style]="{'width': '100%'}"
+                      [panelStyle]="{'min-width': '100%'}"
+                      [filter]="true"
+                      filterBy="text"
+                      (onChange)="onPositionChange(item)" />
+                  </td>
+                  <td>
+                    <p-inputNumber
+                      [(ngModel)]="item.amount"
+                      [min]="0"
+                      [minFractionDigits]="2"
+                      [maxFractionDigits]="2"
+                      [style]="{'width': '100%'}"
+                      suffix=" Stk." />
+                  </td>
+                  <td>
+                    <span class="price-display">{{ getPositionPrice(item.positionId) | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
+                  </td>
+                  <td>
+                    <strong class="total-display">{{ calculateLineTotal(item) | currency:'EUR':'symbol':'1.2-2':'de' }}</strong>
+                  </td>
+                  <td>
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      (onClick)="removePosition(rowIndex)"
+                      pTooltip="Position entfernen"
+                      tooltipPosition="top" />
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          }
 
-          <div class="add-position-button">
+          <div class="add-position-section">
             <p-button
               label="Position hinzufügen"
               icon="pi pi-plus"
               severity="secondary"
+              [outlined]="true"
               (onClick)="addPosition()" />
           </div>
 
-          <div class="total-section">
-            <h3>Gesamtsumme: {{ calculateTotal() | currency:'EUR':'symbol':'1.2-2':'de' }}</h3>
-          </div>
+          @if (invoice.positions.length > 0) {
+            <div class="total-section">
+              <div class="total-label">Gesamtsumme:</div>
+              <div class="total-amount">{{ calculateTotal() | currency:'EUR':'symbol':'1.2-2':'de' }}</div>
+            </div>
+          }
         </div>
 
-        <div class="button-group">
-          <p-button
-            label="Abbrechen"
-            icon="pi pi-times"
-            severity="secondary"
-            (onClick)="cancel()" />
-          <p-button
-            label="Speichern"
-            icon="pi pi-check"
-            (onClick)="save()"
-            [disabled]="!isValid()" />
-        </div>
+        <ng-template pTemplate="footer">
+          <div class="button-group">
+            <p-button
+              label="Abbrechen"
+              icon="pi pi-times"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="cancel()" />
+            <p-button
+              label="Rechnung speichern"
+              icon="pi pi-check"
+              (onClick)="save()"
+              [disabled]="!isValid()" />
+          </div>
+        </ng-template>
       </p-card>
     </div>
   `,
   styles: [`
     .invoice-create-container {
       padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card-header {
+      padding: 1.5rem;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      color: var(--primary-color);
+      font-size: 1.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .subtitle {
+      margin: 0.5rem 0 0 0;
+      color: var(--text-color-secondary);
+      font-size: 0.95rem;
     }
 
     .form-section {
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
+      padding: 1.5rem;
+      background: var(--surface-50);
+      border-radius: 8px;
     }
 
-    .form-section h3 {
-      margin-bottom: 1rem;
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--surface-200);
+    }
+
+    .section-header i {
       color: var(--primary-color);
+      font-size: 1.25rem;
+    }
+
+    .section-header h3 {
+      margin: 0;
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 600;
     }
 
     .form-grid {
@@ -222,41 +303,99 @@ import { Position } from '../../../core/models/position.model';
       margin-bottom: 1.5rem;
     }
 
+    .form-field.full-width {
+      grid-column: 1 / -1;
+    }
+
     .form-field label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 600;
       color: var(--text-color);
+      font-size: 0.95rem;
     }
 
-    .add-position-button {
-      margin-top: 1rem;
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: white;
+      border: 2px dashed var(--surface-300);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: var(--surface-400);
+      margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+
+    .empty-state small {
+      color: var(--text-color-secondary);
+      font-size: 0.9rem;
+    }
+
+    .price-display {
+      color: var(--text-color-secondary);
+      font-size: 0.95rem;
+    }
+
+    .total-display {
+      color: var(--primary-color);
+      font-size: 1.05rem;
+    }
+
+    .add-position-section {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--surface-200);
     }
 
     .total-section {
       margin-top: 2rem;
-      padding: 1rem;
-      background-color: var(--surface-50);
-      border-radius: 6px;
-      text-align: right;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600) 100%);
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    .total-section h3 {
-      margin: 0;
-      color: var(--primary-color);
+    .total-label {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .total-amount {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: white;
     }
 
     .button-group {
       display: flex;
       gap: 1rem;
       justify-content: flex-end;
-      margin-top: 2rem;
+      padding: 1rem;
     }
 
-    .text-center {
-      text-align: center;
-      padding: 2rem;
-      color: var(--text-color-secondary);
+    :host ::ng-deep {
+      .p-select-dropdown {
+        z-index: 1100 !important;
+      }
+      
+      .p-select-overlay {
+        z-index: 1100 !important;
+      }
     }
   `]
 })
