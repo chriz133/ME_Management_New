@@ -33,4 +33,24 @@ public class CustomerDataAccess : ICustomerDataAccess
     {
         return await _context.CustomersDb.AnyAsync(c => c.CustomerId == customerId);
     }
+
+    public async Task<IEnumerable<ContractEntity>> GetCustomerContractsAsync(int customerId)
+    {
+        return await _context.ContractsDb
+            .Where(c => c.CustomerId == customerId)
+            .Include(c => c.ContractPositions)
+                .ThenInclude(cp => cp.Position)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<InvoiceEntity>> GetCustomerInvoicesAsync(int customerId)
+    {
+        return await _context.InvoicesDb
+            .Where(i => i.CustomerId == customerId)
+            .Include(i => i.InvoicePositions)
+                .ThenInclude(ip => ip.Position)
+            .OrderByDescending(i => i.CreatedAt)
+            .ToListAsync();
+    }
 }

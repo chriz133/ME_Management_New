@@ -2,27 +2,19 @@ using Microsoft.Extensions.Logging;
 using Server.BusinessObjects.DTOs;
 using Server.BusinessObjects.Entities;
 using Server.DataAccess.Contract;
-using Server.DataAccess.Customer;
-using Server.DataAccess.Position;
 
 namespace Server.BusinessLogic.Contract;
 
 public class ContractBusinessLogic : IContractBusinessLogic
 {
     private readonly IContractDataAccess _contractDataAccess;
-    private readonly ICustomerDataAccess _customerDataAccess;
-    private readonly IPositionDataAccess _positionDataAccess;
     private readonly ILogger<ContractBusinessLogic> _logger;
 
     public ContractBusinessLogic(
         IContractDataAccess contractDataAccess,
-        ICustomerDataAccess customerDataAccess,
-        IPositionDataAccess positionDataAccess,
         ILogger<ContractBusinessLogic> logger)
     {
         _contractDataAccess = contractDataAccess;
-        _customerDataAccess = customerDataAccess;
-        _positionDataAccess = positionDataAccess;
         _logger = logger;
     }
 
@@ -41,7 +33,7 @@ public class ContractBusinessLogic : IContractBusinessLogic
     public async Task<ContractDto> CreateContractAsync(CreateContractRequest request)
     {
         // Verify customer exists
-        var customerExists = await _customerDataAccess.CustomerExistsAsync(request.CustomerId);
+        var customerExists = await _contractDataAccess.CustomerExistsAsync(request.CustomerId);
         if (!customerExists)
         {
             throw new ArgumentException($"Customer with ID {request.CustomerId} not found");
@@ -65,7 +57,7 @@ public class ContractBusinessLogic : IContractBusinessLogic
             if (positionRequest.PositionId.HasValue && positionRequest.PositionId.Value > 0)
             {
                 // Use existing position
-                position = await _positionDataAccess.GetPositionByIdAsync(positionRequest.PositionId.Value);
+                position = await _contractDataAccess.GetPositionByIdAsync(positionRequest.PositionId.Value);
                 if (position == null)
                 {
                     throw new ArgumentException($"Position with ID {positionRequest.PositionId} not found");
@@ -88,7 +80,7 @@ public class ContractBusinessLogic : IContractBusinessLogic
                     Unit = positionRequest.Unit
                 };
                 
-                position = await _positionDataAccess.CreatePositionAsync(position);
+                position = await _contractDataAccess.CreatePositionAsync(position);
             }
 
             // Create contract position linking

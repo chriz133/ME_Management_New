@@ -48,6 +48,23 @@ public class InvoiceDataAccess : IInvoiceDataAccess
         return invoice;
     }
 
+    public async Task<bool> CustomerExistsAsync(int customerId)
+    {
+        return await _context.CustomersDb.AnyAsync(c => c.CustomerId == customerId);
+    }
+
+    public async Task<PositionEntity?> GetPositionByIdAsync(int positionId)
+    {
+        return await _context.PositionsDb.FindAsync(positionId);
+    }
+
+    public async Task<PositionEntity> CreatePositionAsync(PositionEntity position)
+    {
+        _context.PositionsDb.Add(position);
+        await _context.SaveChangesAsync();
+        return position;
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

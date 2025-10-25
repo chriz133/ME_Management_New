@@ -11,5 +11,8 @@ public interface IContractDataAccess
     Task<ContractEntity?> GetContractWithPositionsAsync(int contractId);
     Task UpdateContractAsync(ContractEntity contract);
     Task DeleteContractAsync(ContractEntity contract);
+    Task<bool> CustomerExistsAsync(int customerId);
+    Task<PositionEntity?> GetPositionByIdAsync(int positionId);
+    Task<PositionEntity> CreatePositionAsync(PositionEntity position);
     Task SaveChangesAsync();
 }

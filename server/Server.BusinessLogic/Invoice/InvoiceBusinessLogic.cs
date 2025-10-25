@@ -1,28 +1,20 @@
 using Microsoft.Extensions.Logging;
 using Server.BusinessObjects.DTOs;
 using Server.BusinessObjects.Entities;
-using Server.DataAccess.Customer;
 using Server.DataAccess.Invoice;
-using Server.DataAccess.Position;
 
 namespace Server.BusinessLogic.Invoice;
 
 public class InvoiceBusinessLogic : IInvoiceBusinessLogic
 {
     private readonly IInvoiceDataAccess _invoiceDataAccess;
-    private readonly ICustomerDataAccess _customerDataAccess;
-    private readonly IPositionDataAccess _positionDataAccess;
     private readonly ILogger<InvoiceBusinessLogic> _logger;
 
     public InvoiceBusinessLogic(
         IInvoiceDataAccess invoiceDataAccess,
-        ICustomerDataAccess customerDataAccess,
-        IPositionDataAccess positionDataAccess,
         ILogger<InvoiceBusinessLogic> logger)
     {
         _invoiceDataAccess = invoiceDataAccess;
-        _customerDataAccess = customerDataAccess;
-        _positionDataAccess = positionDataAccess;
         _logger = logger;
     }
 
@@ -41,7 +33,7 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
     public async Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceRequest request)
     {
         // Verify customer exists
-        var customerExists = await _customerDataAccess.CustomerExistsAsync(request.CustomerId);
+        var customerExists = await _invoiceDataAccess.CustomerExistsAsync(request.CustomerId);
         if (!customerExists)
         {
             throw new ArgumentException($"Customer with ID {request.CustomerId} not found");
@@ -69,7 +61,7 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
             if (positionRequest.PositionId.HasValue && positionRequest.PositionId.Value > 0)
             {
                 // Use existing position
-                position = await _positionDataAccess.GetPositionByIdAsync(positionRequest.PositionId.Value);
+                position = await _invoiceDataAccess.GetPositionByIdAsync(positionRequest.PositionId.Value);
                 if (position == null)
                 {
                     throw new ArgumentException($"Position with ID {positionRequest.PositionId} not found");
@@ -92,7 +84,7 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
                     Unit = positionRequest.Unit
                 };
                 
-                position = await _positionDataAccess.CreatePositionAsync(position);
+                position = await _invoiceDataAccess.CreatePositionAsync(position);
             }
 
             // Create invoice position linking

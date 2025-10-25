@@ -2,27 +2,19 @@ using Microsoft.Extensions.Logging;
 using Server.BusinessObjects.DTOs;
 using Server.BusinessObjects.Entities;
 using Server.DataAccess.Customer;
-using Server.DataAccess.Contract;
-using Server.DataAccess.Invoice;
 
 namespace Server.BusinessLogic.Customer;
 
 public class CustomerBusinessLogic : ICustomerBusinessLogic
 {
     private readonly ICustomerDataAccess _customerDataAccess;
-    private readonly IContractDataAccess _contractDataAccess;
-    private readonly IInvoiceDataAccess _invoiceDataAccess;
     private readonly ILogger<CustomerBusinessLogic> _logger;
 
     public CustomerBusinessLogic(
         ICustomerDataAccess customerDataAccess,
-        IContractDataAccess contractDataAccess,
-        IInvoiceDataAccess invoiceDataAccess,
         ILogger<CustomerBusinessLogic> logger)
     {
         _customerDataAccess = customerDataAccess;
-        _contractDataAccess = contractDataAccess;
-        _invoiceDataAccess = invoiceDataAccess;
         _logger = logger;
     }
 
@@ -40,13 +32,13 @@ public class CustomerBusinessLogic : ICustomerBusinessLogic
 
     public async Task<IEnumerable<ContractDto>> GetCustomerContractsAsync(int customerId)
     {
-        var contracts = await _contractDataAccess.GetContractsByCustomerIdAsync(customerId);
+        var contracts = await _customerDataAccess.GetCustomerContractsAsync(customerId);
         return contracts.Select(MapContractToDto);
     }
 
     public async Task<IEnumerable<InvoiceDto>> GetCustomerInvoicesAsync(int customerId)
     {
-        var invoices = await _invoiceDataAccess.GetInvoicesByCustomerIdAsync(customerId);
+        var invoices = await _customerDataAccess.GetCustomerInvoicesAsync(customerId);
         return invoices.Select(MapInvoiceToDto);
     }
 
