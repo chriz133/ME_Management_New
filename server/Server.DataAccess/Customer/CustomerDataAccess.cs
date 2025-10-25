@@ -53,4 +53,16 @@ public class CustomerDataAccess : ICustomerDataAccess
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task UpdateCustomerAsync(CustomerEntity customer)
+    {
+        _context.CustomersDb.Update(customer);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteCustomerAsync(CustomerEntity customer)
+    {
+        _context.CustomersDb.Remove(customer);
+        await _context.SaveChangesAsync();
+    }
 }

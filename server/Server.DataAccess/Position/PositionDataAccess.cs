@@ -28,4 +28,16 @@ public class PositionDataAccess : IPositionDataAccess
         await _context.SaveChangesAsync();
         return position;
     }
+
+    public async Task UpdatePositionAsync(PositionEntity position)
+    {
+        _context.PositionsDb.Update(position);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeletePositionAsync(PositionEntity position)
+    {
+        _context.PositionsDb.Remove(position);
+        await _context.SaveChangesAsync();
+    }
 }

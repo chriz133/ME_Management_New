@@ -30,4 +30,16 @@ public class TransactionDataAccess : ITransactionDataAccess
         await _context.SaveChangesAsync();
         return transaction;
     }
+
+    public async Task UpdateTransactionAsync(TransactionEntity transaction)
+    {
+        _context.Transactions.Update(transaction);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteTransactionAsync(TransactionEntity transaction)
+    {
+        _context.Transactions.Remove(transaction);
+        await _context.SaveChangesAsync();
+    }
 }

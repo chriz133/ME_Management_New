@@ -86,4 +86,53 @@ public class InvoicesController : ControllerBase
             return StatusCode(500, new { message = "Error creating invoice", error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Update an existing invoice (requires Admin or User role)
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<InvoiceDto>> UpdateInvoice(int id, [FromBody] UpdateInvoiceRequest request)
+    {
+        try
+        {
+            var invoiceDto = await _invoiceBusinessLogic.UpdateInvoiceAsync(id, request);
+            return Ok(invoiceDto);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invoice {InvoiceId} not found or validation error", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating invoice {InvoiceId}", id);
+            return StatusCode(500, new { message = "Error updating invoice", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete invoice (requires Admin role only)
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> DeleteInvoice(int id)
+    {
+        try
+        {
+            await _invoiceBusinessLogic.DeleteInvoiceAsync(id);
+            _logger.LogInformation("Invoice {InvoiceId} deleted by admin", id);
+            return Ok(new { message = "Invoice deleted successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invoice {InvoiceId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting invoice {InvoiceId}", id);
+            return StatusCode(500, new { message = "Error deleting invoice", error = ex.Message });
+        }
+    }
 }

@@ -107,6 +107,97 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
         return MapToDto(invoiceWithRelations!);
     }
 
+    public async Task<InvoiceDto> UpdateInvoiceAsync(int invoiceId, UpdateInvoiceRequest request)
+    {
+        var invoice = await _invoiceDataAccess.GetInvoiceWithPositionsAsync(invoiceId);
+        
+        if (invoice == null)
+        {
+            throw new ArgumentException($"Invoice with ID {invoiceId} not found");
+        }
+
+        // Verify customer exists if it's being changed
+        if (request.CustomerId != invoice.CustomerId)
+        {
+            var customerExists = await _invoiceDataAccess.CustomerExistsAsync(request.CustomerId);
+            if (!customerExists)
+            {
+                throw new ArgumentException($"Customer with ID {request.CustomerId} not found");
+            }
+        }
+
+        // Update basic properties
+        invoice.CustomerId = request.CustomerId;
+        invoice.StartedAt = request.StartedAt ?? invoice.StartedAt;
+        invoice.FinishedAt = request.FinishedAt ?? invoice.FinishedAt;
+        invoice.DepositAmount = request.DepositAmount.HasValue ? (double)request.DepositAmount.Value : invoice.DepositAmount;
+        invoice.DepositPaidOn = request.DepositPaidOn ?? invoice.DepositPaidOn;
+        invoice.Type = request.Type;
+
+        // Clear existing positions and add new ones
+        invoice.InvoicePositions.Clear();
+
+        foreach (var positionRequest in request.Positions)
+        {
+            PositionEntity? position;
+
+            if (positionRequest.PositionId.HasValue && positionRequest.PositionId.Value > 0)
+            {
+                position = await _invoiceDataAccess.GetPositionByIdAsync(positionRequest.PositionId.Value);
+                if (position == null)
+                {
+                    throw new ArgumentException($"Position with ID {positionRequest.PositionId} not found");
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(positionRequest.Text) || 
+                    !positionRequest.Price.HasValue || 
+                    string.IsNullOrWhiteSpace(positionRequest.Unit))
+                {
+                    throw new ArgumentException("Position data (Text, Price, Unit) is required when PositionId is not provided");
+                }
+
+                position = new PositionEntity
+                {
+                    Text = positionRequest.Text,
+                    Price = positionRequest.Price.Value,
+                    Unit = positionRequest.Unit
+                };
+                
+                position = await _invoiceDataAccess.CreatePositionAsync(position);
+            }
+
+            var invoicePosition = new InvoicePosition
+            {
+                Position = position,
+                Amount = (double)positionRequest.Amount
+            };
+
+            invoice.InvoicePositions.Add(invoicePosition);
+        }
+
+        await _invoiceDataAccess.UpdateInvoiceAsync(invoice);
+        _logger.LogInformation("Invoice {InvoiceId} updated", invoiceId);
+
+        // Fetch the complete invoice with relationships
+        var updatedInvoice = await _invoiceDataAccess.GetInvoiceByIdAsync(invoiceId);
+        return MapToDto(updatedInvoice!);
+    }
+
+    public async Task DeleteInvoiceAsync(int invoiceId)
+    {
+        var invoice = await _invoiceDataAccess.GetInvoiceWithPositionsAsync(invoiceId);
+        
+        if (invoice == null)
+        {
+            throw new ArgumentException($"Invoice with ID {invoiceId} not found");
+        }
+
+        await _invoiceDataAccess.DeleteInvoiceAsync(invoice);
+        _logger.LogInformation("Invoice {InvoiceId} deleted", invoiceId);
+    }
+
     private static InvoiceDto MapToDto(InvoiceEntity invoice)
     {
         return new InvoiceDto
