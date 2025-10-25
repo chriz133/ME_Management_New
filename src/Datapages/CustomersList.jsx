@@ -7,23 +7,53 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import "../Styles/List.css"
-import {Button} from "@mui/material";
+import {Button, Snackbar, Alert} from "@mui/material";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 import customerDataService from "../Data/CustomerDataService";
+import DeleteConfirmDialog from "../FunctionalComponents/DeleteConfirmDialog";
 
 
 export default function CustomerList() {
     const [data, setData] = useState([]);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteItemId, setDeleteItemId] = useState(null);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteFailed, setDeleteFailed] = useState(false);
 
     const navigate = useNavigate();
 
     useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = () => {
         customerDataService.getAll().then(res => {
             setData(res.data);
         })
-    }, []);
+    }
+
+    const handleDeleteClick = (id) => {
+        setDeleteItemId(id);
+        setDeleteDialogOpen(true);
+    }
+
+    const handleDeleteConfirm = () => {
+        customerDataService.deleteById(deleteItemId).then(res => {
+            setDeleteSuccess(true);
+            setDeleteDialogOpen(false);
+            loadData();
+        }).catch(err => {
+            setDeleteFailed(true);
+            setDeleteDialogOpen(false);
+        });
+    }
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
+        setDeleteItemId(null);
+    }
 
 
     return (
@@ -64,13 +94,34 @@ export default function CustomerList() {
                                 <TableCell align={"center"}>{data.uid !== null ? data.uid: 'X'}</TableCell>
                                 <TableCell>
                                     <Button sx={{marginRight: 1}} variant="contained" onClick={() => navigate("/contracts/" + data.customerId)}>Zeige Aufträge</Button>
-                                    <Button variant="contained" color="warning" onClick={() => navigate("/customers/edit/" + data.customerId)}>Bearbeiten</Button>
+                                    <Button sx={{marginRight: 1}} variant="contained" color="warning" onClick={() => navigate("/customers/edit/" + data.customerId)}>Bearbeiten</Button>
+                                    <Button variant="contained" color="error" onClick={() => handleDeleteClick(data.customerId)}>Löschen</Button>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <DeleteConfirmDialog
+                open={deleteDialogOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                title="Kunde löschen"
+                message="Möchten Sie diesen Kunden wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+            />
+
+            <Snackbar open={deleteSuccess} autoHideDuration={3000} onClose={() => setDeleteSuccess(false)}>
+                <Alert onClose={() => setDeleteSuccess(false)} severity="success" sx={{ width: '100%' }}>
+                    Kunde erfolgreich gelöscht!
+                </Alert>
+            </Snackbar>
+
+            <Snackbar open={deleteFailed} autoHideDuration={3000} onClose={() => setDeleteFailed(false)}>
+                <Alert onClose={() => setDeleteFailed(false)} severity="error" sx={{ width: '100%' }}>
+                    Fehler beim Löschen des Kunden!
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

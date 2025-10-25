@@ -7,19 +7,28 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import "../Styles/List.css"
-import {Button} from "@mui/material";
+import {Button, Snackbar, Alert} from "@mui/material";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 import '../Data/InvoiceDataService'
 import invoiceDataService from "../Data/InvoiceDataService";
+import DeleteConfirmDialog from "../FunctionalComponents/DeleteConfirmDialog";
 
-export default function ContractList({customerId}) {
+export default function InvoiceList({customerId}) {
     const [data, setData] = useState([]);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteItemId, setDeleteItemId] = useState(null);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteFailed, setDeleteFailed] = useState(false);
 
     const navigate = useNavigate();
 
     useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = () => {
         if (!customerId) {
             invoiceDataService.getAll().then(res => {
                 setData(res.data);
@@ -31,7 +40,28 @@ export default function ContractList({customerId}) {
                 setData(res.data);
             })
         }
-    }, []);
+    }
+
+    const handleDeleteClick = (id) => {
+        setDeleteItemId(id);
+        setDeleteDialogOpen(true);
+    }
+
+    const handleDeleteConfirm = () => {
+        invoiceDataService.deleteById(deleteItemId).then(res => {
+            setDeleteSuccess(true);
+            setDeleteDialogOpen(false);
+            loadData();
+        }).catch(err => {
+            setDeleteFailed(true);
+            setDeleteDialogOpen(false);
+        });
+    }
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
+        setDeleteItemId(null);
+    }
 
 
     return (
@@ -67,12 +97,33 @@ export default function ContractList({customerId}) {
                                 <TableCell className="cell-btn">
                                     <Button variant="contained" color="info" onClick={() => navigate("/test2/" + data.invoiceId)}>Zeige Rechnung</Button>
                                     <Button variant="contained" color="warning" className="btn-edit" onClick={() => navigate("/invoices/edit/" + data.invoiceId)}>Bearbeiten</Button>
+                                    <Button variant="contained" color="error" className="btn-edit" onClick={() => handleDeleteClick(data.invoiceId)}>Löschen</Button>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <DeleteConfirmDialog
+                open={deleteDialogOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                title="Rechnung löschen"
+                message="Möchten Sie diese Rechnung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+            />
+
+            <Snackbar open={deleteSuccess} autoHideDuration={3000} onClose={() => setDeleteSuccess(false)}>
+                <Alert onClose={() => setDeleteSuccess(false)} severity="success" sx={{ width: '100%' }}>
+                    Rechnung erfolgreich gelöscht!
+                </Alert>
+            </Snackbar>
+
+            <Snackbar open={deleteFailed} autoHideDuration={3000} onClose={() => setDeleteFailed(false)}>
+                <Alert onClose={() => setDeleteFailed(false)} severity="error" sx={{ width: '100%' }}>
+                    Fehler beim Löschen der Rechnung!
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

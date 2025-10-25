@@ -7,19 +7,28 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import "../Styles/List.css"
-import {Button} from "@mui/material";
+import {Button, Snackbar, Alert} from "@mui/material";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 import contractDataService from "../Data/ContractDataService";
+import DeleteConfirmDialog from "../FunctionalComponents/DeleteConfirmDialog";
 
 
 export default function ContractList({customerId}) {
     const [data, setData] = useState([]);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteItemId, setDeleteItemId] = useState(null);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteFailed, setDeleteFailed] = useState(false);
 
     const navigate = useNavigate();
 
     useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = () => {
         if (!customerId) {
             contractDataService.getAll().then(res => {
                 setData(res.data);
@@ -30,7 +39,28 @@ export default function ContractList({customerId}) {
                 setData(res.data);
             })
         }
-    }, []);
+    }
+
+    const handleDeleteClick = (id) => {
+        setDeleteItemId(id);
+        setDeleteDialogOpen(true);
+    }
+
+    const handleDeleteConfirm = () => {
+        contractDataService.deleteById(deleteItemId).then(res => {
+            setDeleteSuccess(true);
+            setDeleteDialogOpen(false);
+            loadData();
+        }).catch(err => {
+            setDeleteFailed(true);
+            setDeleteDialogOpen(false);
+        });
+    }
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
+        setDeleteItemId(null);
+    }
 
 
     return (
@@ -69,12 +99,33 @@ export default function ContractList({customerId}) {
                                     <Button variant="contained" size="small" color="info" onClick={() => navigate("/test/" + data.contractId)}>Zeige Angebot</Button>
                                     <Button variant="contained" size="small" color="warning" className="btn-edit" onClick={() => navigate("/contracts/edit/" + data.contractId)}>Bearbeiten</Button>
                                     <Button variant="contained" size="small" color="secondary" className="btn-edit" onClick={() => navigate("/invoices/add/" + data.contractId)}>Generiere Rechnung</Button>
+                                    <Button variant="contained" size="small" color="error" className="btn-edit" onClick={() => handleDeleteClick(data.contractId)}>Löschen</Button>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <DeleteConfirmDialog
+                open={deleteDialogOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                title="Angebot löschen"
+                message="Möchten Sie dieses Angebot wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+            />
+
+            <Snackbar open={deleteSuccess} autoHideDuration={3000} onClose={() => setDeleteSuccess(false)}>
+                <Alert onClose={() => setDeleteSuccess(false)} severity="success" sx={{ width: '100%' }}>
+                    Angebot erfolgreich gelöscht!
+                </Alert>
+            </Snackbar>
+
+            <Snackbar open={deleteFailed} autoHideDuration={3000} onClose={() => setDeleteFailed(false)}>
+                <Alert onClose={() => setDeleteFailed(false)} severity="error" sx={{ width: '100%' }}>
+                    Fehler beim Löschen des Angebots!
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

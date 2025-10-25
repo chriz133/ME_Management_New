@@ -7,23 +7,53 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import "../Styles/List.css"
-import {Button} from "@mui/material";
+import {Button, Snackbar, Alert} from "@mui/material";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
+import positionDataService from "../Data/PositionDataService";
+import DeleteConfirmDialog from "../FunctionalComponents/DeleteConfirmDialog";
 
 
 export default function PositionList() {
     const [data, setData] = useState([]);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteItemId, setDeleteItemId] = useState(null);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteFailed, setDeleteFailed] = useState(false);
 
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get("http://192.168.0.236:8080/positions").then(res => {
-            setData(res.data);
-            console.log(res.data);
-        })
+        loadData();
     }, []);
+
+    const loadData = () => {
+        positionDataService.getAll().then(res => {
+            setData(res.data);
+        })
+    }
+
+    const handleDeleteClick = (id) => {
+        setDeleteItemId(id);
+        setDeleteDialogOpen(true);
+    }
+
+    const handleDeleteConfirm = () => {
+        positionDataService.deleteById(deleteItemId).then(res => {
+            setDeleteSuccess(true);
+            setDeleteDialogOpen(false);
+            loadData();
+        }).catch(err => {
+            setDeleteFailed(true);
+            setDeleteDialogOpen(false);
+        });
+    }
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
+        setDeleteItemId(null);
+    }
 
 
     return (
@@ -56,12 +86,33 @@ export default function PositionList() {
                                 <TableCell className="cell-btn">
                                     {/*<Button sx={{marginRight: 1}} variant="contained" >Zeige Aufträge</Button>*/}
                                     <Button variant="contained" color="warning" onClick={() => navigate("/positions/edit/" + data.positionId)}>Bearbeiten</Button>
+                                    <Button variant="contained" color="error" className="btn-edit" onClick={() => handleDeleteClick(data.positionId)}>Löschen</Button>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <DeleteConfirmDialog
+                open={deleteDialogOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                title="Position löschen"
+                message="Möchten Sie diese Position wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+            />
+
+            <Snackbar open={deleteSuccess} autoHideDuration={3000} onClose={() => setDeleteSuccess(false)}>
+                <Alert onClose={() => setDeleteSuccess(false)} severity="success" sx={{ width: '100%' }}>
+                    Position erfolgreich gelöscht!
+                </Alert>
+            </Snackbar>
+
+            <Snackbar open={deleteFailed} autoHideDuration={3000} onClose={() => setDeleteFailed(false)}>
+                <Alert onClose={() => setDeleteFailed(false)} severity="error" sx={{ width: '100%' }}>
+                    Fehler beim Löschen der Position!
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

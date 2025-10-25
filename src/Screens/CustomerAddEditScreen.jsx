@@ -68,7 +68,6 @@ function CustomerAddEditScreen() {
         }
 
         const data = {
-            customerId: customerId,
             firstname: firstname,
             surname: surname,
             plz: plz,
@@ -78,11 +77,21 @@ function CustomerAddEditScreen() {
             uid: uid
         }
 
-        customerDataService.post(data).then(res => {
-            setSuccess(true);
-        }).catch(res => {
-            setFailed(true);
-        })
+        if (userId) {
+            // Update existing customer
+            customerDataService.put(userId, data).then(res => {
+                setSuccess(true);
+            }).catch(res => {
+                setFailed(true);
+            })
+        } else {
+            // Create new customer
+            customerDataService.post(data).then(res => {
+                setSuccess(true);
+            }).catch(res => {
+                setFailed(true);
+            })
+        }
     }
 
     const handleCloseSuccess = () => {
@@ -99,12 +108,12 @@ function CustomerAddEditScreen() {
             <Sidebar data="customer" />
             <Snackbar open={success} autoHideDuration={6000} onClose={handleCloseSuccess}>
                 <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-                    Kunde erfolgreich angelegt!
+                    Kunde erfolgreich {userId ? 'aktualisiert' : 'angelegt'}!
                 </Alert>
             </Snackbar>
             <Snackbar open={failed} autoHideDuration={6000} onClose={handleCloseFailed}>
                 <Alert onClose={handleCloseFailed} severity="error" sx={{ width: '100%' }}>
-                    Fehler beim anlegen des Kunden!
+                    Fehler beim {userId ? 'Aktualisieren' : 'Anlegen'} des Kunden!
                 </Alert>
             </Snackbar>
             <div className="customer-main">
