@@ -28,6 +28,16 @@ import { Customer } from '../../../core/models/customer.model';
     TableModule,
     TooltipModule
   ],
+  
+  // Unit options for dropdown
+  unitOptions: { label: string; value: string }[] = [
+    { label: 'Stk.', value: 'Stk.' },
+    { label: 'm²', value: 'm²' },
+    { label: 'm', value: 'm' },
+    { label: 'Std.', value: 'Std.' },
+    { label: 'kg', value: 'kg' },
+    { label: 'Pauschal', value: 'Pauschal' }
+  ],
   template: `
     <div class="contract-create-container">
       <p-card>
@@ -91,10 +101,10 @@ import { Customer } from '../../../core/models/customer.model';
             <p-table [value]="contract.positions" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm">
               <ng-template pTemplate="header">
                 <tr>
-                  <th style="width: 35%">Beschreibung</th>
+                  <th style="width: 30%">Beschreibung</th>
+                  <th style="width: 15%">Einheit</th>
                   <th style="width: 15%">Einzelpreis</th>
-                  <th style="width: 12%">Einheit</th>
-                  <th style="width: 13%">Menge</th>
+                  <th style="width: 15%">Menge</th>
                   <th style="width: 15%">Gesamt</th>
                   <th style="width: 10%">Aktionen</th>
                 </tr>
@@ -102,12 +112,24 @@ import { Customer } from '../../../core/models/customer.model';
               <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                 <tr>
                   <td>
-                    <textarea
+                    <input
+                      type="text"
+                      pInputText
                       [(ngModel)]="item.text"
-                      rows="2"
-                      class="p-textarea"
                       placeholder="Leistungsbeschreibung eingeben..."
-                      style="width: 100%; resize: vertical;"></textarea>
+                      style="width: 100%;" />
+                  </td>
+                  <td>
+                    <p-select
+                      [(ngModel)]="item.unit"
+                      [options]="unitOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Einheit..."
+                      [style]="{'width': '100%'}"
+                      [panelStyle]="{'min-width': '100%'}"
+                      appendTo="body"
+                      [showClear]="true" />
                   </td>
                   <td>
                     <p-inputNumber
@@ -118,14 +140,6 @@ import { Customer } from '../../../core/models/customer.model';
                       [min]="0"
                       [minFractionDigits]="2"
                       [style]="{'width': '100%'}" />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      pInputText
-                      [(ngModel)]="item.unit"
-                      placeholder="Stk., m², m..."
-                      style="width: 100%;" />
                   </td>
                   <td>
                     <p-inputNumber
