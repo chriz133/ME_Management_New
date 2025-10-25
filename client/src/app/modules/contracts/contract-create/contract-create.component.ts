@@ -11,11 +11,8 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { CustomerService } from '../../../core/services/customer.service';
 import { ContractService } from '../../../core/services/contract.service';
-import { PositionService } from '../../../core/services/position.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Customer } from '../../../core/models/customer.model';
-import { forkJoin, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-contract-create',
@@ -358,7 +355,6 @@ export class ContractCreateComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly customerService = inject(CustomerService);
   private readonly contractService = inject(ContractService);
-  private readonly positionService = inject(PositionService);
   private readonly toastService = inject(ToastService);
 
   unitOptions = [
@@ -428,36 +424,21 @@ export class ContractCreateComponent implements OnInit {
       return;
     }
 
-    // Step 1: Create all positions first
-    const positionCreationObservables = this.contract.positions.map((p: any) =>
-      this.positionService.create({
-        text: p.text,
-        price: p.price,
-        unit: p.unit
-      })
-    );
+    // Transform data to match backend DTO expectations (PascalCase with inline position data)
+    const requestData = {
+      CustomerId: this.contract.customerId,
+      Accepted: this.contract.accepted,
+      Positions: this.contract.positions.map((p: any) => ({
+        Text: p.text,
+        Price: p.price,
+        Unit: p.unit,
+        Amount: p.amount
+      }))
+    };
 
-    // Use forkJoin to wait for all positions to be created, or of([]) if none
-    const positions$ = positionCreationObservables.length > 0 
-      ? forkJoin(positionCreationObservables) 
-      : of([] as any[]);
+    console.log('Creating contract with data:', requestData);
 
-    positions$.pipe(
-      switchMap((createdPositions: any) => {
-        // Step 2: Create contract with the created position IDs
-        const requestData = {
-          CustomerId: this.contract.customerId,
-          Accepted: this.contract.accepted,
-          Positions: (createdPositions as any[]).map((position: any, index: number) => ({
-            PositionId: position.positionId,
-            Amount: this.contract.positions[index].amount
-          }))
-        };
-
-        console.log('Creating contract with data:', requestData);
-        return this.contractService.create(requestData);
-      })
-    ).subscribe({
+    this.contractService.create(requestData).subscribe({
       next: (result) => {
         this.toastService.success('Angebot erfolgreich erstellt');
         this.router.navigate(['/contracts', result.contractId]);

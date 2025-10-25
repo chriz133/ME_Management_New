@@ -22,6 +22,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Configure business services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IContractService, ContractService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 // Configure JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
