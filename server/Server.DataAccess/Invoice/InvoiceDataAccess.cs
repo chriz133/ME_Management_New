@@ -65,32 +65,6 @@ public class InvoiceDataAccess : IInvoiceDataAccess
         return position;
     }
 
-    public async Task<InvoiceEntity?> GetInvoiceWithPositionsAsync(int invoiceId)
-    {
-        return await _context.InvoicesDb
-            .Include(i => i.InvoicePositions)
-                .ThenInclude(ip => ip.Position)
-            .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
-    }
-
-    public async Task UpdateInvoiceAsync(InvoiceEntity invoice)
-    {
-        _context.InvoicesDb.Update(invoice);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteInvoiceAsync(InvoiceEntity invoice)
-    {
-        // Remove invoice positions first if they exist
-        if (invoice.InvoicePositions != null)
-        {
-            _context.InvoicePositions.RemoveRange(invoice.InvoicePositions);
-        }
-        
-        _context.InvoicesDb.Remove(invoice);
-        await _context.SaveChangesAsync();
-    }
-
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

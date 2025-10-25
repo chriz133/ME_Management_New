@@ -75,6 +75,7 @@ function CustomerAddEditScreen() {
         }
 
         const data = {
+            transactionId: transactionId,
             description: description,
             amount: amount,
             type: type,
@@ -82,23 +83,13 @@ function CustomerAddEditScreen() {
             medium: medium,
         }
 
-        if (id) {
-            // Update existing transaction
-            transactionDataService.put(id, data).then(res => {
-                setSuccess(true);
-                saving = true;
-            }).catch(res => {
-                setFailed(true);
-            })
-        } else {
-            // Create new transaction
-            transactionDataService.post(data).then(res => {
-                setSuccess(true);
-                saving = true;
-            }).catch(res => {
-                setFailed(true);
-            })
-        }
+        transactionDataService.post(data).then(res => {
+            // navigate("/finances");
+            setSuccess(true);
+            saving = true;
+        }).catch(res => {
+            setFailed(true);
+        })
     }
 
     const handleCloseSuccess = () => {
@@ -118,12 +109,12 @@ function CustomerAddEditScreen() {
             <Sidebar data="finance" />
             <Snackbar open={success} autoHideDuration={multiMode ? 1000 : 6000} onClose={handleCloseSuccess}>
                 <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-                    Transaktion erfolgreich {id ? 'aktualisiert' : 'angelegt'}!
+                    Transaktion erfolgreich angelegt!
                 </Alert>
             </Snackbar>
             <Snackbar open={failed} autoHideDuration={multiMode ? 1000 : 6000} onClose={handleCloseFailed}>
                 <Alert onClose={handleCloseFailed} severity="error" sx={{ width: '100%' }}>
-                    Fehler beim {id ? 'Aktualisieren' : 'Anlegen'} der Transaktion!
+                    Fehler beim anlegen der Transaktion!
                 </Alert>
             </Snackbar>
             <div className="customer-main">

@@ -61,42 +61,6 @@ public class CustomerBusinessLogic : ICustomerBusinessLogic
         return MapToDto(createdCustomer);
     }
 
-    public async Task<CustomerDto> UpdateCustomerAsync(int customerId, UpdateCustomerRequest request)
-    {
-        var customer = await _customerDataAccess.GetCustomerByIdAsync(customerId);
-        
-        if (customer == null)
-        {
-            throw new ArgumentException($"Customer with ID {customerId} not found");
-        }
-
-        customer.Firstname = request.Firstname;
-        customer.Surname = request.Surname;
-        customer.Plz = request.Plz;
-        customer.City = request.City;
-        customer.Address = request.Address;
-        customer.Nr = request.Nr;
-        customer.Uid = request.Uid;
-
-        await _customerDataAccess.UpdateCustomerAsync(customer);
-        _logger.LogInformation("Customer {CustomerId} updated", customerId);
-        
-        return MapToDto(customer);
-    }
-
-    public async Task DeleteCustomerAsync(int customerId)
-    {
-        var customer = await _customerDataAccess.GetCustomerByIdAsync(customerId);
-        
-        if (customer == null)
-        {
-            throw new ArgumentException($"Customer with ID {customerId} not found");
-        }
-
-        await _customerDataAccess.DeleteCustomerAsync(customer);
-        _logger.LogInformation("Customer {CustomerId} deleted", customerId);
-    }
-
     private static CustomerDto MapToDto(CustomerEntity customer)
     {
         return new CustomerDto

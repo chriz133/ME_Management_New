@@ -45,38 +45,6 @@ public class PositionBusinessLogic : IPositionBusinessLogic
         return MapToDto(createdPosition);
     }
 
-    public async Task<PositionDto> UpdatePositionAsync(int positionId, UpdatePositionRequest request)
-    {
-        var position = await _positionDataAccess.GetPositionByIdAsync(positionId);
-        
-        if (position == null)
-        {
-            throw new ArgumentException($"Position with ID {positionId} not found");
-        }
-
-        position.Text = request.Text;
-        position.Price = request.Price;
-        position.Unit = request.Unit;
-
-        await _positionDataAccess.UpdatePositionAsync(position);
-        _logger.LogInformation("Position {PositionId} updated", positionId);
-        
-        return MapToDto(position);
-    }
-
-    public async Task DeletePositionAsync(int positionId)
-    {
-        var position = await _positionDataAccess.GetPositionByIdAsync(positionId);
-        
-        if (position == null)
-        {
-            throw new ArgumentException($"Position with ID {positionId} not found");
-        }
-
-        await _positionDataAccess.DeletePositionAsync(position);
-        _logger.LogInformation("Position {PositionId} deleted", positionId);
-    }
-
     private static PositionDto MapToDto(PositionEntity position)
     {
         return new PositionDto

@@ -6,13 +6,12 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
-import {Button, TextField, Snackbar, Alert} from "@mui/material";
+import {Button, TextField} from "@mui/material";
 import TableContainer from "@mui/material/TableContainer";
 import * as React from "react";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import {useNavigate, useParams, Link} from "react-router-dom";
-import positionDataService from "../Data/PositionDataService";
 
 
 function PositionAddEditScreen() {
@@ -22,8 +21,6 @@ function PositionAddEditScreen() {
     const [unit, setUnit] = useState(null);
 
     const [title, setTitle] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [failed, setFailed] = useState(false);
 
     const {id} = useParams();
 
@@ -31,7 +28,7 @@ function PositionAddEditScreen() {
 
     useEffect(() => {
         if (id){
-            positionDataService.getById(id).then(res => {
+            axios.get("http://192.168.0.236:8080/positions/" + id).then(res => {
                 const position = res.data;
                 setPositionId(position.positionId);
                 setText(position.text);
@@ -49,6 +46,7 @@ function PositionAddEditScreen() {
 
     const handleSubmit = () => {
         const data = {
+            positionId: positionId,
             text: text,
             price: price,
             unit: unit,
@@ -56,45 +54,15 @@ function PositionAddEditScreen() {
 
         console.log(data);
 
-        if (id) {
-            // Update existing position
-            positionDataService.put(id, data).then(res => {
-                setSuccess(true);
-            }).catch(res => {
-                setFailed(true);
-            })
-        } else {
-            // Create new position
-            positionDataService.post(data).then(res => {
-                setSuccess(true);
-            }).catch(res => {
-                setFailed(true);
-            })
-        }
-    }
-
-    const handleCloseSuccess = () => {
-        setSuccess(false);
-        navigate("/positions");
-    }
-
-    const handleCloseFailed = () => {
-        setFailed(false);
+        axios.post("http://192.168.0.236:8080/positions", data).then(res =>{
+            console.log(res);
+            navigate("/positions");
+        })
     }
 
     return (
         <>
             <Sidebar data="contract"/>
-            <Snackbar open={success} autoHideDuration={6000} onClose={handleCloseSuccess}>
-                <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-                    Position erfolgreich {id ? 'aktualisiert' : 'angelegt'}!
-                </Alert>
-            </Snackbar>
-            <Snackbar open={failed} autoHideDuration={6000} onClose={handleCloseFailed}>
-                <Alert onClose={handleCloseFailed} severity="error" sx={{ width: '100%' }}>
-                    Fehler beim {id ? 'Aktualisieren' : 'Anlegen'} der Position!
-                </Alert>
-            </Snackbar>
             <div className="customer-main">
                 <div className="customer-title">
                     <h2>Bereich: Position {title}</h2>

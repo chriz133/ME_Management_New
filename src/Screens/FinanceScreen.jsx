@@ -2,7 +2,7 @@ import Sidebar from "../FunctionalComponents/Sidebar";
 import * as React from "react";
 import '../Styles/FinanceScreen.css'
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {Button, TextField, Snackbar, Alert} from "@mui/material";
+import {Button, TextField} from "@mui/material";
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -15,17 +15,12 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import {useEffect, useState} from "react";
 import transactionDataService from "../Data/TransactionDataService";
-import DeleteConfirmDialog from "../FunctionalComponents/DeleteConfirmDialog";
 
 function FinanceScreen() {
     const [data, setData] = useState([]);
     const [date, setDate] = useState(null);
     const [income, setIncome] = useState(0);
     const [outcome, setOutcome] = useState(0);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [deleteItemId, setDeleteItemId] = useState(null);
-    const [deleteSuccess, setDeleteSuccess] = useState(false);
-    const [deleteFailed, setDeleteFailed] = useState(false);
 
     const {dateParam} = useParams();
 
@@ -46,14 +41,11 @@ function FinanceScreen() {
 
     useEffect(() => {
         if (date !== null){
-            loadData();
+            const dateText = date.split('-');
+            transactionDataService.getByMonthYear(Number(dateText[1]), Number(dateText[0])).then(res => setData(res.data));
+
         }
     }, [date])
-
-    const loadData = () => {
-        const dateText = date.split('-');
-        transactionDataService.getByMonthYear(Number(dateText[1]), Number(dateText[0])).then(res => setData(res.data));
-    }
 
     useEffect(() => {
         let inCome = 0;
@@ -73,27 +65,6 @@ function FinanceScreen() {
         setIncome(inCome);
         setOutcome(outCome);
     }, [data])
-
-    const handleDeleteClick = (id) => {
-        setDeleteItemId(id);
-        setDeleteDialogOpen(true);
-    }
-
-    const handleDeleteConfirm = () => {
-        transactionDataService.deleteById(deleteItemId).then(res => {
-            setDeleteSuccess(true);
-            setDeleteDialogOpen(false);
-            loadData();
-        }).catch(err => {
-            setDeleteFailed(true);
-            setDeleteDialogOpen(false);
-        });
-    }
-
-    const handleDeleteCancel = () => {
-        setDeleteDialogOpen(false);
-        setDeleteItemId(null);
-    }
 
     const months = ['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
 
@@ -168,7 +139,6 @@ function FinanceScreen() {
                                         <TableCell align='center'>{data.medium === 'CARD' ? 'Karte' : 'Bar'}</TableCell>
                                         <TableCell sx={{width: '15%'}} align='center'>
                                             <Button variant="contained" color="info" size="small" onClick={() => navigate("/finances/edit/" + data.transactionId)}>Bearbeiten</Button>
-                                            <Button variant="contained" color="error" size="small" sx={{marginLeft: 1}} onClick={() => handleDeleteClick(data.transactionId)}>Löschen</Button>
                                         </TableCell>
                                     </TableRow>
                                 )):
@@ -182,26 +152,6 @@ function FinanceScreen() {
                     </TableContainer>
                 </div>
             </div>
-
-            <DeleteConfirmDialog
-                open={deleteDialogOpen}
-                onClose={handleDeleteCancel}
-                onConfirm={handleDeleteConfirm}
-                title="Transaktion löschen"
-                message="Möchten Sie diese Transaktion wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
-            />
-
-            <Snackbar open={deleteSuccess} autoHideDuration={3000} onClose={() => setDeleteSuccess(false)}>
-                <Alert onClose={() => setDeleteSuccess(false)} severity="success" sx={{ width: '100%' }}>
-                    Transaktion erfolgreich gelöscht!
-                </Alert>
-            </Snackbar>
-
-            <Snackbar open={deleteFailed} autoHideDuration={3000} onClose={() => setDeleteFailed(false)}>
-                <Alert onClose={() => setDeleteFailed(false)} severity="error" sx={{ width: '100%' }}>
-                    Fehler beim Löschen der Transaktion!
-                </Alert>
-            </Snackbar>
         </>
     )
 }
