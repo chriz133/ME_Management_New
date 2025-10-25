@@ -5,7 +5,8 @@
     height: 100%;
     background-color: rgb(161, 161, 161);
     z-index: 10;
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 .title {
@@ -64,3 +65,36 @@
 .info-btn.clicked:first-child{
     color: #20cb8a !important;
 }
+
+.sidebar-user-info {
+    margin-top: auto;
+    padding: 20px 10px;
+    background-color: rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.user-name {
+    color: #ffffff;
+    font-weight: 500;
+    text-align: center;
+}
+
+.user-role {
+    color: #e0e0e0;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.logout-btn {
+    margin-top: 8px !important;
+    background-color: transparent !important;
+    border-color: #ff6b6b !important;
+    color: #ffffff !important;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 107, 107, 0.1) !important;
+}
+

@@ -2,7 +2,7 @@ import './Styles/App.css';
 import {useState, useEffect} from "react";
 import InfoScreen from "./Screens/InfoScreen";
 import CustomersScreen from "./Screens/CustomersScreen";
-import {HashRouter as Router, Routes, Route, } from "react-router-dom";
+import {HashRouter as Router, Routes, Route, Navigate} from "react-router-dom";
 import CustomerAddEditScreen from "./Screens/CustomerAddEditScreen";
 import ContractScreen from "./Screens/ContractScreen";
 import ContractPage from "./Datapages/ContractPage";
@@ -14,7 +14,14 @@ import InvoicePage from "./Datapages/InvoicePage";
 import InvoiceAddEditScreen from "./Screens/InvoiceAddEditScreen";
 import FinanceScreen from "./Screens/FinanceScreen";
 import TransactionAddEditScreen from "./Screens/TransactionAddEditScreen";
+import LoginScreen from "./Screens/LoginScreen";
+import authService from "./Data/AuthService";
 
+
+// Protected Route component
+function ProtectedRoute({ children }) {
+  return authService.isAuthenticated() ? children : <Navigate to="/login" />;
+}
 
 function App() {
 
@@ -22,29 +29,30 @@ function App() {
     <div>
         <Router>
             <Routes>
-                <Route exact path="/" element={<InfoScreen />} />
-                <Route exact path="/customers" element={<CustomersScreen />} />
-                <Route exact path="/customers/add" element={<CustomerAddEditScreen />} />
-                <Route exact path="/customers/edit/:userId" element={<CustomerAddEditScreen />} />
-                <Route exact path="/contracts" element={<ContractScreen />} />
-                <Route exact path="/contracts/:customerId" element={<ContractScreen />} />
-                <Route exact path="/contracts/add" element={<ContractAddEditScreen />} />
-                <Route exact path="/contracts/edit/:contractId" element={<ContractAddEditScreen />} />
-                <Route exact path="/positions" element={<PositionScreen />} />
-                <Route exact path="/positions/add" element={<PositionAddEditScreen />} />
-                <Route exact path="/positions/edit/:id" element={<PositionAddEditScreen />} />
-                <Route exact path="/invoices" element={<InvoiceScreen />} />
-                <Route exact path="/invoices/:customerId" element={<InvoiceScreen />} />
-                <Route exact path="/invoices/add" element={<InvoiceAddEditScreen />} />
-                <Route exact path="/invoices/add/:contractId" element={<InvoiceAddEditScreen />} />
-                <Route exact path="/invoices/edit/:invoiceId" element={<InvoiceAddEditScreen />} />
-                <Route exact path="/finances" element={<FinanceScreen />} />
-                <Route exact path="/finances/:dateParam" element={<FinanceScreen />} />
-                <Route exact path="/finances/add" element={<TransactionAddEditScreen />} />
-                <Route exact path="/finances/edit/:id" element={<TransactionAddEditScreen />} />
-                <Route exact path="/test" element={<ContractPage />} />
-                <Route exact path="/test/:contractId" element={<ContractPage />} />
-                <Route exact path="/test2/:invoiceId" element={<InvoicePage />} />
+                <Route exact path="/login" element={<LoginScreen />} />
+                <Route exact path="/" element={<ProtectedRoute><InfoScreen /></ProtectedRoute>} />
+                <Route exact path="/customers" element={<ProtectedRoute><CustomersScreen /></ProtectedRoute>} />
+                <Route exact path="/customers/add" element={<ProtectedRoute><CustomerAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/customers/edit/:userId" element={<ProtectedRoute><CustomerAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/contracts" element={<ProtectedRoute><ContractScreen /></ProtectedRoute>} />
+                <Route exact path="/contracts/:customerId" element={<ProtectedRoute><ContractScreen /></ProtectedRoute>} />
+                <Route exact path="/contracts/add" element={<ProtectedRoute><ContractAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/contracts/edit/:contractId" element={<ProtectedRoute><ContractAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/positions" element={<ProtectedRoute><PositionScreen /></ProtectedRoute>} />
+                <Route exact path="/positions/add" element={<ProtectedRoute><PositionAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/positions/edit/:id" element={<ProtectedRoute><PositionAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/invoices" element={<ProtectedRoute><InvoiceScreen /></ProtectedRoute>} />
+                <Route exact path="/invoices/:customerId" element={<ProtectedRoute><InvoiceScreen /></ProtectedRoute>} />
+                <Route exact path="/invoices/add" element={<ProtectedRoute><InvoiceAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/invoices/add/:contractId" element={<ProtectedRoute><InvoiceAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/invoices/edit/:invoiceId" element={<ProtectedRoute><InvoiceAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/finances" element={<ProtectedRoute><FinanceScreen /></ProtectedRoute>} />
+                <Route exact path="/finances/:dateParam" element={<ProtectedRoute><FinanceScreen /></ProtectedRoute>} />
+                <Route exact path="/finances/add" element={<ProtectedRoute><TransactionAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/finances/edit/:id" element={<ProtectedRoute><TransactionAddEditScreen /></ProtectedRoute>} />
+                <Route exact path="/test" element={<ProtectedRoute><ContractPage /></ProtectedRoute>} />
+                <Route exact path="/test/:contractId" element={<ProtectedRoute><ContractPage /></ProtectedRoute>} />
+                <Route exact path="/test2/:invoiceId" element={<ProtectedRoute><InvoicePage /></ProtectedRoute>} />
 
             </Routes>
         </Router>
