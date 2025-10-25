@@ -258,7 +258,6 @@ export class CustomersComponent implements OnInit {
       next: (data: Customer[]) => {
         this.customers = data;
         this.loading = false;
-        this.toastService.success('Erfolg', `${data.length} Kunden geladen`);
       },
       error: () => {
         this.toastService.error('Fehler', 'Kunden konnten nicht geladen werden');
@@ -269,7 +268,6 @@ export class CustomersComponent implements OnInit {
 
   viewCustomer(customer: Customer): void {
     this.router.navigate(["/customers", customer.customerId]);
-    this.toastService.info('Info', `Kunde: ${customer.fullName}`);
   }
 
   navigateToCreate(): void {
