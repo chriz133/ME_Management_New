@@ -9,52 +9,19 @@ using Server.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure database context - Auto-detects database type from connection string
-// Supports: SQLite, SQL Server, and MySQL
-// Examples:
-// SQLite: "Data Source=memanagement.db"
-// SQL Server: "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True"
-// MySQL: "Server=192.168.0.88;Port=3306;Database=memanagement;User=root;Password=yourpassword"
+// Configure database context - Using MySQL database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=memanagement.db";
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' not found.");
     
-    if (connectionString.Contains("Data Source", StringComparison.OrdinalIgnoreCase))
-    {
-        // SQLite connection
-        options.UseSqlite(connectionString);
-        Console.WriteLine("Using SQLite database");
-    }
-    else if (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase) && 
-             (connectionString.Contains("User=", StringComparison.OrdinalIgnoreCase) || 
-              connectionString.Contains("User Id=", StringComparison.OrdinalIgnoreCase) ||
-              connectionString.Contains("Uid=", StringComparison.OrdinalIgnoreCase)))
-    {
-        // MySQL connection (Pomelo provider)
-        var serverVersion = ServerVersion.AutoDetect(connectionString);
-        options.UseMySql(connectionString, serverVersion);
-        Console.WriteLine("Using MySQL database");
-    }
-    else
-    {
-        // SQL Server connection
-        options.UseSqlServer(connectionString);
-        Console.WriteLine("Using SQL Server database");
-    }
+    var serverVersion = ServerVersion.AutoDetect(connectionString);
+    options.UseMySql(connectionString, serverVersion);
+    Console.WriteLine("Using MySQL database");
 });
-
-// Configure repositories
-builder.Services.AddScoped<IRepository<Customer>, Repository<Customer>>();
-builder.Services.AddScoped<IRepository<Position>, Repository<Position>>();
-builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
-builder.Services.AddScoped<IOfferRepository, OfferRepository>();
 
 // Configure business services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
-builder.Services.AddScoped<IOfferService, OfferService>();
-builder.Services.AddScoped<IPdfService, PdfService>();
 
 // Configure JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -137,23 +104,80 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     
-    // Apply migrations
-    context.Database.Migrate();
-    
-    // Seed initial data if database is empty
-    if (!context.Users.Any())
+    // Ensure database connection is working
+    try
     {
-        // Create default admin user (username: admin, password: admin)
-        context.Users.Add(new User
+        if (context.Database.CanConnect())
         {
-            Username = "admin",
-            PasswordHash = AuthService.HashPassword("admin"),
-            DisplayName = "Administrator",
-            Email = "admin@me-management.de",
-            CreatedAt = DateTime.UtcNow
-        });
-        
-        context.SaveChanges();
+            Console.WriteLine("Successfully connected to MySQL database (firmaDB)");
+            
+            // Try to ensure Users table exists without affecting existing firmaDB tables
+            try
+            {
+                // Check if Users table exists by querying it
+                var userExists = context.Users.Any();
+                Console.WriteLine("Users table exists");
+            }
+            catch
+            {
+                // Users table doesn't exist, try to create it
+                Console.WriteLine("Users table not found, attempting to create...");
+                try
+                {
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS Users (
+                            Id INT AUTO_INCREMENT PRIMARY KEY,
+                            Username VARCHAR(100) NOT NULL UNIQUE,
+                            PasswordHash VARCHAR(255) NOT NULL,
+                            DisplayName VARCHAR(200),
+                            Email VARCHAR(200),
+                            Role VARCHAR(50) NOT NULL DEFAULT 'User',
+                            CreatedAt DATETIME(6) NOT NULL,
+                            LastLoginAt DATETIME(6) NULL,
+                            INDEX IX_Users_Username (Username)
+                        )");
+                    Console.WriteLine("Users table created");
+                }
+                catch (Exception createEx)
+                {
+                    Console.WriteLine($"Could not create Users table: {createEx.Message}");
+                }
+            }
+            
+            // Seed default users if needed
+            if (!context.Users.Any())
+            {
+                // Create default admin user (username: admin, password: admin)
+                context.Users.Add(new User
+                {
+                    Username = "admin",
+                    PasswordHash = AuthService.HashPassword("admin"),
+                    DisplayName = "Administrator",
+                    Email = "admin@me-management.de",
+                    Role = "Admin",
+                    CreatedAt = DateTime.UtcNow
+                });
+                
+                // Create default normal user (username: user, password: user)
+                context.Users.Add(new User
+                {
+                    Username = "user",
+                    PasswordHash = AuthService.HashPassword("user"),
+                    DisplayName = "Normal User",
+                    Email = "user@me-management.de",
+                    Role = "User",
+                    CreatedAt = DateTime.UtcNow
+                });
+                
+                context.SaveChanges();
+                Console.WriteLine("Default users created (admin/admin and user/user)");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database connection or initialization failed: {ex.Message}");
+        Console.WriteLine("Please ensure MySQL is running and connection string is correct.");
     }
 }
 

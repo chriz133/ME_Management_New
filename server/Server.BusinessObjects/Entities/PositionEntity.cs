@@ -4,33 +4,29 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Server.BusinessObjects.Entities;
 
 /// <summary>
-/// Entity mapping to firmaDB 'position' table
-/// Represents a service position/offering in the ME Management system
-/// Column names preserved from existing database schema
+/// Position entity - maps to 'position' table in firmaDB
+/// Represents a service or product position
 /// </summary>
 [Table("position")]
 public class PositionEntity
 {
     [Key]
-    [Column("POSITION_ID")]
+    [Column("positionId")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int PositionId { get; set; }
 
-    [Column("NAME")]
-    [MaxLength(100)]
-    public string? Name { get; set; }
+    [Column("text")]
+    [MaxLength(255)]
+    public string? Text { get; set; }
 
-    [Column("DESCRIPTION")]
-    [MaxLength(500)]
-    public string? Description { get; set; }
+    [Column("price")]
+    public double Price { get; set; }
 
-    [Column("PRICE", TypeName = "decimal(10,2)")]
-    public decimal? Price { get; set; }
-
-    [Column("UNIT")]
-    [MaxLength(20)]
+    [Column("unit")]
+    [MaxLength(45)]
     public string? Unit { get; set; }
 
     // Navigation properties
-    public virtual ICollection<ContractEntity>? Contracts { get; set; }
     public virtual ICollection<ContractPosition>? ContractPositions { get; set; }
+    public virtual ICollection<InvoicePosition>? InvoicePositions { get; set; }
 }

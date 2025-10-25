@@ -1,25 +1,23 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Server.BusinessLogic.Services;
+using Microsoft.EntityFrameworkCore;
 using Server.BusinessObjects.DTOs;
+using Server.BusinessObjects.Entities;
+using Server.DataAccess;
 
 namespace Server.Api.Controllers;
 
-/// <summary>
-/// Controller for invoice (Rechnung) management operations.
-/// All endpoints require authentication.
-/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class InvoicesController : ControllerBase
 {
-    private readonly IInvoiceService _invoiceService;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<InvoicesController> _logger;
 
-    public InvoicesController(IInvoiceService invoiceService, ILogger<InvoicesController> logger)
+    public InvoicesController(ApplicationDbContext context, ILogger<InvoicesController> logger)
     {
-        _invoiceService = invoiceService;
+        _context = context;
         _logger = logger;
     }
 
@@ -27,120 +25,224 @@ public class InvoicesController : ControllerBase
     /// Get all invoices
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<InvoiceDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<InvoiceDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<InvoiceDto>>> GetInvoices()
     {
-        var invoices = await _invoiceService.GetAllAsync();
-        return Ok(invoices);
+        try
+        {
+            var invoices = await _context.InvoicesDb
+                .Include(i => i.Customer)
+                .Include(i => i.InvoicePositions)
+                    .ThenInclude(ip => ip.Position)
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => new InvoiceDto
+                {
+                    InvoiceId = i.InvoiceId,
+                    CreatedAt = i.CreatedAt,
+                    CustomerId = i.CustomerId,
+                    StartedAt = i.StartedAt,
+                    FinishedAt = i.FinishedAt,
+                    DepositAmount = i.DepositAmount,
+                    DepositPaidOn = i.DepositPaidOn,
+                    Type = i.Type,
+                    Customer = i.Customer == null ? null : new CustomerDto
+                    {
+                        CustomerId = i.Customer.CustomerId,
+                        Firstname = i.Customer.Firstname,
+                        Surname = i.Customer.Surname,
+                        Plz = i.Customer.Plz,
+                        City = i.Customer.City,
+                        Address = i.Customer.Address,
+                        Nr = i.Customer.Nr,
+                        Uid = i.Customer.Uid
+                    },
+                    Positions = i.InvoicePositions!.Select(ip => new InvoicePositionDto
+                    {
+                        InvoicePositionId = ip.InvoicePositionId,
+                        Amount = ip.Amount,
+                        PositionId = ip.PositionId,
+                        Position = ip.Position == null ? null : new PositionDto
+                        {
+                            PositionId = ip.Position.PositionId,
+                            Text = ip.Position.Text,
+                            Price = ip.Position.Price,
+                            Unit = ip.Position.Unit
+                        }
+                    }).ToList()
+                })
+                .ToListAsync();
+                
+            return Ok(invoices);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching invoices");
+            return StatusCode(500, new { message = "Error fetching invoices", error = ex.Message });
+        }
     }
 
     /// <summary>
-    /// Get a specific invoice by ID
+    /// Get invoice by ID
     /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<InvoiceDto>> GetById(int id)
+    public async Task<ActionResult<InvoiceDto>> GetInvoice(int id)
     {
-        var invoice = await _invoiceService.GetByIdAsync(id);
-        
-        if (invoice == null)
+        try
         {
-            return NotFound();
+            var invoice = await _context.InvoicesDb
+                .Include(i => i.Customer)
+                .Include(i => i.InvoicePositions)
+                    .ThenInclude(ip => ip.Position)
+                .Where(i => i.InvoiceId == id)
+                .Select(i => new InvoiceDto
+                {
+                    InvoiceId = i.InvoiceId,
+                    CreatedAt = i.CreatedAt,
+                    CustomerId = i.CustomerId,
+                    StartedAt = i.StartedAt,
+                    FinishedAt = i.FinishedAt,
+                    DepositAmount = i.DepositAmount,
+                    DepositPaidOn = i.DepositPaidOn,
+                    Type = i.Type,
+                    Customer = i.Customer == null ? null : new CustomerDto
+                    {
+                        CustomerId = i.Customer.CustomerId,
+                        Firstname = i.Customer.Firstname,
+                        Surname = i.Customer.Surname,
+                        Plz = i.Customer.Plz,
+                        City = i.Customer.City,
+                        Address = i.Customer.Address,
+                        Nr = i.Customer.Nr,
+                        Uid = i.Customer.Uid
+                    },
+                    Positions = i.InvoicePositions!.Select(ip => new InvoicePositionDto
+                    {
+                        InvoicePositionId = ip.InvoicePositionId,
+                        Amount = ip.Amount,
+                        PositionId = ip.PositionId,
+                        Position = ip.Position == null ? null : new PositionDto
+                        {
+                            PositionId = ip.Position.PositionId,
+                            Text = ip.Position.Text,
+                            Price = ip.Position.Price,
+                            Unit = ip.Position.Unit
+                        }
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+                
+            if (invoice == null)
+            {
+                return NotFound(new { message = $"Invoice with ID {id} not found" });
+            }
+            
+            return Ok(invoice);
         }
-
-        return Ok(invoice);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching invoice {InvoiceId}", id);
+            return StatusCode(500, new { message = "Error fetching invoice", error = ex.Message });
+        }
     }
 
     /// <summary>
-    /// Get invoices for a specific customer
-    /// </summary>
-    [HttpGet("customer/{customerId}")]
-    [ProducesResponseType(typeof(IEnumerable<InvoiceDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<InvoiceDto>>> GetByCustomerId(int customerId)
-    {
-        var invoices = await _invoiceService.GetByCustomerIdAsync(customerId);
-        return Ok(invoices);
-    }
-
-    /// <summary>
-    /// Create a new invoice
+    /// Create a new invoice (requires Admin or User role)
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<InvoiceDto>> Create([FromBody] InvoiceCreateUpdateDto dto)
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<InvoiceDto>> CreateInvoice([FromBody] CreateInvoiceRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(ModelState);
+            // Verify customer exists
+            var customerExists = await _context.CustomersDb.AnyAsync(c => c.CustomerId == request.CustomerId);
+            if (!customerExists)
+            {
+                return BadRequest(new { message = $"Customer with ID {request.CustomerId} not found" });
+            }
+
+            // Verify all positions exist
+            var positionIds = request.Positions.Select(p => p.PositionId).ToList();
+            var existingPositionIds = await _context.PositionsDb
+                .Where(p => positionIds.Contains(p.PositionId))
+                .Select(p => p.PositionId)
+                .ToListAsync();
+
+            var missingPositions = positionIds.Except(existingPositionIds).ToList();
+            if (missingPositions.Any())
+            {
+                return BadRequest(new { message = $"Positions not found: {string.Join(", ", missingPositions)}" });
+            }
+
+            var invoice = new InvoiceEntity
+            {
+                CreatedAt = DateTime.Now,
+                CustomerId = request.CustomerId,
+                StartedAt = request.StartedAt ?? DateTime.Now,
+                FinishedAt = request.FinishedAt ?? DateTime.Now,
+                DepositAmount = (double)(request.DepositAmount ?? 0),
+                DepositPaidOn = request.DepositPaidOn ?? DateTime.Now,
+                Type = request.Type,
+                InvoicePositions = request.Positions.Select(p => new InvoicePosition
+                {
+                    PositionId = p.PositionId,
+                    Amount = (double)p.Amount
+                }).ToList()
+            };
+
+            _context.InvoicesDb.Add(invoice);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Invoice {InvoiceId} created", invoice.InvoiceId);
+
+            // Fetch the created invoice with all relationships
+            var createdInvoice = await _context.InvoicesDb
+                .Include(i => i.Customer)
+                .Include(i => i.InvoicePositions)
+                    .ThenInclude(ip => ip.Position)
+                .Where(i => i.InvoiceId == invoice.InvoiceId)
+                .Select(i => new InvoiceDto
+                {
+                    InvoiceId = i.InvoiceId,
+                    CreatedAt = i.CreatedAt,
+                    CustomerId = i.CustomerId,
+                    StartedAt = i.StartedAt,
+                    FinishedAt = i.FinishedAt,
+                    DepositAmount = i.DepositAmount,
+                    DepositPaidOn = i.DepositPaidOn,
+                    Type = i.Type,
+                    Customer = i.Customer == null ? null : new CustomerDto
+                    {
+                        CustomerId = i.Customer.CustomerId,
+                        Firstname = i.Customer.Firstname,
+                        Surname = i.Customer.Surname,
+                        Plz = i.Customer.Plz,
+                        City = i.Customer.City,
+                        Address = i.Customer.Address,
+                        Nr = i.Customer.Nr,
+                        Uid = i.Customer.Uid
+                    },
+                    Positions = i.InvoicePositions!.Select(ip => new InvoicePositionDto
+                    {
+                        InvoicePositionId = ip.InvoicePositionId,
+                        Amount = ip.Amount,
+                        PositionId = ip.PositionId,
+                        Position = ip.Position == null ? null : new PositionDto
+                        {
+                            PositionId = ip.Position.PositionId,
+                            Text = ip.Position.Text,
+                            Price = ip.Position.Price,
+                            Unit = ip.Position.Unit
+                        }
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return CreatedAtAction(nameof(GetInvoice), new { id = invoice.InvoiceId }, createdInvoice);
         }
-
-        var invoice = await _invoiceService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = invoice.Id }, invoice);
-    }
-
-    /// <summary>
-    /// Update an existing invoice
-    /// </summary>
-    [HttpPut("{id}")]
-    [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<InvoiceDto>> Update(int id, [FromBody] InvoiceCreateUpdateDto dto)
-    {
-        if (!ModelState.IsValid)
+        catch (Exception ex)
         {
-            return BadRequest(ModelState);
+            _logger.LogError(ex, "Error creating invoice");
+            return StatusCode(500, new { message = "Error creating invoice", error = ex.Message });
         }
-
-        var invoice = await _invoiceService.UpdateAsync(id, dto);
-        
-        if (invoice == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(invoice);
-    }
-
-    /// <summary>
-    /// Delete an invoice
-    /// </summary>
-    [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var result = await _invoiceService.DeleteAsync(id);
-        
-        if (!result)
-        {
-            return NotFound();
-        }
-
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Generate and download PDF for an invoice.
-    /// Returns the PDF file as binary data.
-    /// </summary>
-    [HttpGet("{id}/pdf")]
-    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetPdf(int id)
-    {
-        var pdfBytes = await _invoiceService.GeneratePdfAsync(id);
-        
-        if (pdfBytes == null)
-        {
-            return NotFound();
-        }
-
-        var invoice = await _invoiceService.GetByIdAsync(id);
-        var fileName = $"Rechnung_{invoice!.InvoiceNumber}.pdf";
-
-        return File(pdfBytes, "application/pdf", fileName);
     }
 }

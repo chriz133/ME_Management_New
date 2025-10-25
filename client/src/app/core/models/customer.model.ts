@@ -1,24 +1,11 @@
 export interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  taxId: string;
-  createdAt: Date;
-  updatedAt?: Date;
-}
-
-export interface CustomerCreateUpdate {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  taxId: string;
+  customerId: number;
+  firstname?: string;
+  surname?: string;
+  fullName: string;
+  plz?: number;
+  city?: string;
+  address?: string;
+  nr?: number;
+  uid?: string;
 }

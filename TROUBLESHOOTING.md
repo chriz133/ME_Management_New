@@ -46,109 +46,150 @@ See `FRONTEND_FIXES.md` for complete details.
 
 ## Backend Issues
 
-### 1. Missing Database Migration ✅ RESOLVED
+### 1. Missing Database Setup ✅ RESOLVED
 
 **Error:**
 Backend fails to start with database-related errors.
 
 **Cause:**
-No database migrations existed. Application was configured to auto-create database but needed explicit migrations for SQL Server.
+MySQL connection not configured or database doesn't exist.
 
 **Solution:**
-Created initial migration:
-```bash
-cd server/Server.Api
-dotnet ef migrations add InitialCreate --project ../Server.DataAccess
-dotnet ef database update
+1. Ensure MySQL is running
+2. Create the database if it doesn't exist:
+```sql
+CREATE DATABASE IF NOT EXISTS memanagement CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
+3. Update connection string in `server/Server.Api/appsettings.json`
 
-**Fixed in commit:** b705630
+The application will automatically create necessary tables on first run using `EnsureCreated()`.
+
+**Note:** The backend now uses MySQL only. SQLite and SQL Server support has been removed.
 
 ---
 
-### 2. SQL Server Connection Issues
+### 2. MySQL Connection Issues
 
 **Error:**
 ```
-A network-related or instance-specific error occurred while establishing a connection to SQL Server
+Unable to connect to any of the specified MySQL hosts
 ```
 
 **Solutions:**
 
-#### Option 1: Use SQL Server LocalDB (Default)
-LocalDB is included with Visual Studio and SQL Server Express.
+#### Option 1: Use Local MySQL Server (Default)
 
 Connection string:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```
 
-Check if LocalDB is installed:
+Check if MySQL is running:
 ```bash
-sqllocaldb info
+# Linux
+systemctl status mysql
+
+# macOS
+brew services list
+
+# Windows
+# Check Services in Task Manager
 ```
 
-If not installed, download SQL Server Express with LocalDB from Microsoft.
+If not installed, install MySQL Server 5.7+ or MariaDB 10.2+.
 
-#### Option 2: Use Full SQL Server Instance
+#### Option 2: Use Remote MySQL Server
 
 Update `server/Server.Api/appsettings.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=MEManagement;User Id=sa;Password=YourPassword;TrustServerCertificate=True"
+    "DefaultConnection": "Server=192.168.0.88;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```
 
-Or use Windows Authentication:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=MEManagement;Integrated Security=True;TrustServerCertificate=True"
-  }
-}
-```
+Replace:
+- `192.168.0.88` with your MySQL server IP
+- `root` with your MySQL username
+- `your_secure_password` with your actual MySQL password
 
-#### Option 3: Use Docker SQL Server
+#### Option 3: Use Docker MySQL
 
-Run SQL Server in Docker:
+Run MySQL in Docker:
 ```bash
-docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong@Password" -p 1433:1433 --name sqlserver -d mcr.microsoft.com/mssql/server:2022-latest
+docker run --name mysql-memanagement -e MYSQL_ROOT_PASSWORD=your_secure_password -e MYSQL_DATABASE=memanagement -p 3306:3306 -d mysql:8.0
 ```
 
 Connection string:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=MEManagement;User Id=sa;Password=YourStrong@Password;TrustServerCertificate=True"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```
 
+#### Common MySQL Connection Issues
+
+**Authentication Failed:**
+```sql
+-- Grant privileges to user
+GRANT ALL PRIVILEGES ON memanagement.* TO 'root'@'%';
+FLUSH PRIVILEGES;
+```
+
+**Can't Connect from Remote Host:**
+```bash
+# Edit MySQL config (Linux)
+sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+
+# Change bind-address from 127.0.0.1 to 0.0.0.0
+bind-address = 0.0.0.0
+
+# Restart MySQL
+sudo systemctl restart mysql
+```
+
+**Firewall Blocking:**
+```bash
+# Linux - Allow MySQL port
+sudo ufw allow 3306
+
+# Windows - Add firewall rule for port 3306
+```
+
+For more MySQL troubleshooting, see [MySQL Setup Guide](MYSQL_MIGRATION_GUIDE.md).
+
 ---
 
-### 3. Entity Framework Tools Not Found
+### 3. Database Tables Not Created
 
 **Error:**
 ```
-dotnet-ef does not exist
+Table 'memanagement.Users' doesn't exist
 ```
 
 **Solution:**
-Install EF Core tools globally:
-```bash
-dotnet tool install --global dotnet-ef --version 8.0.11
+The application uses `EnsureCreated()` to automatically create tables on first run. If this fails:
+
+1. Check that the MySQL user has CREATE TABLE privileges:
+```sql
+SHOW GRANTS FOR 'root'@'%';
 ```
 
-Or update if already installed:
-```bash
-dotnet tool update --global dotnet-ef --version 8.0.11
+2. Manually verify database exists:
+```sql
+SHOW DATABASES;
+USE memanagement;
+SHOW TABLES;
 ```
+
+3. Check backend console output for error messages during startup.
 
 ---
 

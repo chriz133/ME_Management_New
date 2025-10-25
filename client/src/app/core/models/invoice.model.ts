@@ -1,52 +1,40 @@
 export interface Invoice {
-  id: number;
-  customerId: number;
-  customerName: string;
-  contractId?: number;
-  invoiceNumber: string;
-  invoiceDate: Date;
-  dueDate: Date;
-  status: string;
-  notes?: string;
-  lineItems: InvoiceLineItem[];
-  netTotal: number;
-  taxTotal: number;
-  grossTotal: number;
-  createdAt: Date;
-  updatedAt?: Date;
-}
-
-export interface InvoiceLineItem {
-  id: number;
   invoiceId: number;
-  positionId?: number;
-  lineNumber: number;
-  description: string;
-  quantity: number;
-  unit: string;
-  unitPrice: number;
-  taxRate: number;
-  lineTotal: number;
-  lineTax: number;
-}
-
-export interface InvoiceCreateUpdate {
+  createdAt: Date;
   customerId: number;
-  contractId?: number;
-  invoiceNumber: string;
-  invoiceDate: Date;
-  dueDate: Date;
-  status: string;
-  notes?: string;
-  lineItems: InvoiceLineItemCreateUpdate[];
+  startedAt: Date;
+  finishedAt: Date;
+  depositAmount: number;
+  depositPaidOn: Date;
+  type?: string;
+  customer?: Customer;
+  positions?: InvoicePosition[];
+  totalAmount: number;
 }
 
-export interface InvoiceLineItemCreateUpdate {
-  positionId?: number;
-  lineNumber: number;
-  description: string;
-  quantity: number;
-  unit: string;
-  unitPrice: number;
-  taxRate: number;
+export interface InvoicePosition {
+  invoicePositionId: number;
+  amount: number;
+  positionId: number;
+  position?: Position;
+  lineTotal: number;
+}
+
+export interface Position {
+  positionId: number;
+  text?: string;
+  price: number;
+  unit?: string;
+}
+
+export interface Customer {
+  customerId: number;
+  firstname?: string;
+  surname?: string;
+  fullName: string;
+  plz?: number;
+  city?: string;
+  address?: string;
+  nr?: number;
+  uid?: string;
 }

@@ -28,6 +28,13 @@ public class User
     /// </summary>
     public string Email { get; set; } = string.Empty;
     
+    /// <summary>
+    /// User role: "Admin" or "User"
+    /// Admin can view, edit, and delete everything
+    /// User can view and edit but cannot delete
+    /// </summary>
+    public string Role { get; set; } = "User";
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     public DateTime? LastLoginAt { get; set; }

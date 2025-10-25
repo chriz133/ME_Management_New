@@ -24,7 +24,7 @@ The backend is built using ASP.NET Core 8 with a clean architecture:
 
 **Key Features:**
 - JWT-based authentication
-- SQLite database with Entity Framework Core
+- MySQL database with Entity Framework Core
 - Clean separation of concerns
 - Professional PDF generation using QuestPDF
 - CORS configured for Angular frontend
@@ -75,7 +75,7 @@ The frontend is built using Angular 20 with PrimeNG UI components and Tailwind C
 
 - .NET 8 SDK or later
 - Node.js 18+ and npm
-- SQL Server or SQL Server LocalDB
+- MySQL Server 5.7+ or MariaDB 10.2+
 - Any modern web browser
 
 ### Running the Backend
@@ -85,22 +85,19 @@ The frontend is built using Angular 20 with PrimeNG UI components and Tailwind C
 cd server
 ```
 
-2. Update the connection string in `Server.Api/appsettings.json` to point to your SQL Server instance (or use the default LocalDB):
+2. Update the connection string in `Server.Api/appsettings.json` to point to your MySQL instance:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=MEManagement;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=memanagement;User=root;Password=your_secure_password;AllowPublicKeyRetrieval=True"
   }
 }
 ```
 
-3. Apply database migrations:
-```bash
-cd Server.Api
-dotnet ef database update
+3. Ensure the MySQL database exists:
+```sql
+CREATE DATABASE IF NOT EXISTS memanagement CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
-
-This will create the database and all necessary tables.
 
 4. Build the solution:
 ```bash
@@ -184,7 +181,7 @@ Authorization: Bearer <token>
 ### Backend
 - **ASP.NET Core 8**: Web API framework
 - **Entity Framework Core 8**: ORM for database access
-- **SQLite**: Lightweight database
+- **MySQL**: Production-ready database (Pomelo provider)
 - **QuestPDF**: Professional PDF generation
 - **JWT Authentication**: Secure token-based authentication
 - **Swagger/OpenAPI**: API documentation
@@ -214,13 +211,9 @@ Authorization: Bearer <token>
 
 ### Database Migrations
 
-To add a new migration after changing entities:
+The backend uses `EnsureCreated()` to work with existing MySQL databases. Tables are created automatically on first run if they don't exist. No manual migrations are needed.
 
-```bash
-cd server/Server.Api
-dotnet ef migrations add MigrationName
-dotnet ef database update
-```
+For more details, see [MySQL Setup Guide](MYSQL_MIGRATION_GUIDE.md).
 
 ### Building for Production
 
@@ -278,10 +271,12 @@ The production build will be in `client/dist/client/browser`.
 
 ### Backend Issues
 
-**Database locked error:**
-- Stop all running instances of the API
-- Delete `memanagement.db-wal` and `memanagement.db-shm` files
-- Restart the API
+**MySQL connection error:**
+- Verify MySQL server is running
+- Check connection string in `appsettings.json`
+- Ensure database exists
+- Verify user has proper permissions
+- See [MySQL Setup Guide](MYSQL_MIGRATION_GUIDE.md) for troubleshooting
 
 **CORS errors:**
 - Verify the Angular app is running on `http://localhost:4200`
