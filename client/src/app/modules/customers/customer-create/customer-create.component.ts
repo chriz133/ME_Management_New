@@ -40,7 +40,6 @@ import { ToastService } from '../../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field">
               <label for="firstname">
-                <i class="pi pi-user"></i>
                 Vorname *
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -57,7 +56,6 @@ import { ToastService } from '../../../core/services/toast.service';
 
             <div class="form-field">
               <label for="surname">
-                <i class="pi pi-user"></i>
                 Nachname *
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -82,7 +80,6 @@ import { ToastService } from '../../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field">
               <label for="address">
-                <i class="pi pi-home"></i>
                 Straße
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -98,7 +95,6 @@ import { ToastService } from '../../../core/services/toast.service';
 
             <div class="form-field">
               <label for="nr">
-                <i class="pi pi-hashtag"></i>
                 Hausnummer
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -114,7 +110,6 @@ import { ToastService } from '../../../core/services/toast.service';
 
             <div class="form-field">
               <label for="plz">
-                <i class="pi pi-map"></i>
                 Postleitzahl *
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -131,7 +126,6 @@ import { ToastService } from '../../../core/services/toast.service';
 
             <div class="form-field">
               <label for="city">
-                <i class="pi pi-building"></i>
                 Stadt *
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -156,7 +150,6 @@ import { ToastService } from '../../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field full-width">
               <label for="uid">
-                <i class="pi pi-id-card"></i>
                 Umsatzsteuer-Identifikationsnummer (UID)
               </label>
               <span class="p-input-icon-left" style="width: 100%">

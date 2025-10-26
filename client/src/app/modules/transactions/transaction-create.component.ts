@@ -42,7 +42,6 @@ import { ToastService } from '../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field">
               <label for="amount">
-                <i class="pi pi-euro"></i>
                 Betrag (EUR) *
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -63,7 +62,6 @@ import { ToastService } from '../../core/services/toast.service';
 
             <div class="form-field">
               <label for="date">
-                <i class="pi pi-calendar"></i>
                 Datum *
               </label>
               <span class="p-input-icon-left" style="width: 100%">
@@ -81,7 +79,6 @@ import { ToastService } from '../../core/services/toast.service';
 
             <div class="form-field">
               <label for="type">
-                <i class="pi pi-tag"></i>
                 Typ *
               </label>
               <p-select
@@ -98,7 +95,6 @@ import { ToastService } from '../../core/services/toast.service';
 
             <div class="form-field">
               <label for="medium">
-                <i class="pi pi-wallet"></i>
                 Zahlungsmittel *
               </label>
               <p-select
@@ -116,7 +112,6 @@ import { ToastService } from '../../core/services/toast.service';
 
           <div class="form-field full-width">
             <label for="description">
-              <i class="pi pi-file-edit"></i>
               Beschreibung *
             </label>
             <textarea 
