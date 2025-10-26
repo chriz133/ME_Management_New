@@ -43,12 +43,10 @@ export class PdfService {
   }
 
   private async generatePdfFromElement(element: HTMLElement, filename: string, isInvoice: boolean): Promise<void> {
-    // Position on screen but make it invisible
-    element.style.position = 'fixed';
-    element.style.left = '0';
+    // Position element off-screen but still rendered
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
     element.style.top = '0';
-    element.style.zIndex = '-9999';
-    element.style.visibility = 'hidden';
     
     document.body.appendChild(element);
     
@@ -57,19 +55,18 @@ export class PdfService {
     
     try {
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 1,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        allowTaint: true
       });
       
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'pt', 'a4', true);
       
-      // Always use the captured canvas dimensions
-      const imgWidth = 595;
-      const imgHeight = 842;
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      // The canvas represents the zoomed (0.5) version, so dimensions are already correct
+      pdf.addImage(imgData, 'PNG', 0, 0, 595, 842);
       
       pdf.save(filename);
     } finally {
@@ -78,11 +75,9 @@ export class PdfService {
   }
 
   private async viewPdfFromElement(element: HTMLElement, isInvoice: boolean): Promise<void> {
-    element.style.position = 'fixed';
-    element.style.left = '0';
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
     element.style.top = '0';
-    element.style.zIndex = '-9999';
-    element.style.visibility = 'hidden';
     
     document.body.appendChild(element);
     
@@ -90,18 +85,17 @@ export class PdfService {
     
     try {
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 1,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        allowTaint: true
       });
       
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'pt', 'a4', true);
       
-      const imgWidth = 595;
-      const imgHeight = 842;
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', 0, 0, 595, 842);
       
       // Open in new tab
       const pdfBlob = pdf.output('blob');
@@ -157,34 +151,32 @@ export class PdfService {
         
         .content {
           margin: calc(20mm * 2);
-          position: relative;
         }
         
         .header2 {
-          position: relative;
           height: calc(95mm * 2);
         }
         
         .logo {
           position: absolute;
           width: calc(30mm * 2);
-          height: auto;
-          top: 0;
           left: calc(18mm * 2);
         }
         
         .info {
-          position: absolute;
+          position: relative;
           width: calc(50mm * 2);
+          height: calc(50mm * 2);
           top: calc(10mm * 2);
-          right: 0;
+          left: calc(120mm * 2);
           font-size: calc(3mm * 2);
           text-align: right;
+          margin: 0;
+          padding: 0;
         }
         
-        .info p {
+        .info > p {
           margin: 0;
-          line-height: calc(4mm * 2);
         }
         
         .info-line-break {
@@ -192,34 +184,33 @@ export class PdfService {
         }
         
         .customer {
-          position: absolute;
+          position: relative;
+          height: calc(13mm * 2);
           width: calc(50mm * 2);
-          top: calc(65mm * 2);
-          left: 0;
+          top: calc(-15mm * 2);
+          left: calc(0mm * 2);
           font-size: calc(3mm * 2);
         }
         
-        .customer p {
+        .customer > p {
           margin: 0;
-          line-height: calc(4mm * 2);
         }
         
         .contract {
-          position: absolute;
-          top: calc(80mm * 2);
-          left: 0;
+          position: relative;
+          left: calc(0mm * 2);
+          top: calc(-2mm * 2);
           font-weight: bold;
           font-size: calc(7mm * 2);
-          margin: 0;
         }
         
         .invoice-info {
-          position: absolute;
+          position: relative;
           border-bottom: black calc(1px * 2) solid;
-          width: 100%;
+          width: calc(170mm * 2);
           height: calc(12mm * 2);
-          top: calc(89mm * 2);
-          left: 0;
+          top: calc(-5mm * 2);
+          left: calc(0mm * 2);
           font-size: calc(3mm * 2);
           font-weight: bold;
         }
@@ -227,129 +218,165 @@ export class PdfService {
         .contract-info-left {
           position: absolute;
           left: 0;
-          top: 0;
-          margin: 0;
+          top: calc(2 * -3mm);
+          width: calc(2 * 50mm);
         }
         
         .contract-info-middle {
           position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
-          top: 0;
-          margin: 0;
+          top: calc(2 * -3mm);
+          left: calc(2 * 60mm);
+          width: calc(2 * 50mm);
+          text-align: center;
         }
         
         .contract-info-right {
           position: absolute;
-          right: 0;
-          top: 0;
-          margin: 0;
+          top: calc(2 * -3mm);
+          left: calc(2 * 120mm);
+          width: calc(2 * 50mm);
+          text-align: right;
         }
         
         .contract-info-worktime {
           position: absolute;
-          left: 0;
-          top: calc(7mm * 2);
-          font-size: calc(4mm * 2);
+          margin-top: calc(2 * 7mm);
+          font-size: calc(2 * 4mm);
           font-weight: normal;
-          margin: 0;
+          top: 0mm;
         }
         
         .positions {
           position: relative;
+          height: calc(2 * 140mm);
+          top: 0;
         }
         
         .table-a {
-          width: 100%;
-          font-size: calc(3mm * 2);
-          font-family: Arial, sans-serif;
+          font-size: calc(2 * 3mm);
+          font-family: arial, sans-serif;
           border-collapse: collapse;
-          margin-bottom: calc(4mm * 2);
+          width: 100%;
         }
         
-        .tr-a td, .tr-a th {
-          border: calc(1px * 2) solid #000000;
+        .tr-a > td, .tr-a > th {
+          border: calc(2 * 1px) solid #000000;
           text-align: left;
-          padding: calc(1mm * 2);
+          padding: calc(2 * 1mm);
         }
         
-        .tr-a th {
+        .tr-a > th {
           background-color: #cbcbcb;
           font-weight: bold;
         }
         
-        .tr-a th:nth-child(1),
-        .tr-a td:nth-child(1) {
+        .tr-a > th:nth-child(1) {
           text-align: center;
-          width: calc(6mm * 2);
+          width: calc(2 * 6mm);
         }
         
-        .tr-a th:nth-child(2),
-        .tr-a td:nth-child(2) {
-          width: calc(90mm * 2);
+        .tr-a > th:nth-child(2) {
+          width: calc(2 * 90mm);
         }
         
-        .tr-a th:nth-child(3),
-        .tr-a td:nth-child(3),
-        .tr-a th:nth-child(4),
-        .tr-a td:nth-child(4),
-        .tr-a th:nth-child(5),
-        .tr-a td:nth-child(5) {
+        .tr-a > th:nth-child(3) {
+          width: calc(2 * 22mm);
           text-align: right;
         }
         
-        .tr-a th:nth-child(4),
-        .tr-a td:nth-child(4) {
+        .tr-a > th:nth-child(4) {
+          width: calc(2 * 20mm);
           text-align: center;
         }
         
+        .tr-a > th:nth-child(5) {
+          width: calc(2 * 22mm);
+          text-align: right;
+        }
+        
+        .tr-a > td:nth-child(1) {
+          text-align: center;
+        }
+        
+        .tr-a > td:nth-child(2) {
+          text-align: left;
+        }
+        
+        .tr-a > td:nth-child(3) {
+          text-align: right;
+        }
+        
+        .tr-a > td:nth-child(4) {
+          text-align: center;
+        }
+        
+        .tr-a > td:nth-child(5) {
+          text-align: right;
+        }
+        
         .bill2 {
-          position: relative;
-          min-height: calc(30mm * 2);
-          font-size: calc(3mm * 2);
+          margin-top: calc(2 * 4mm);
+          height: calc(2 * 30mm);
+          font-size: calc(2 * 3mm);
         }
         
         .bill2-info {
-          width: 100%;
-          margin-bottom: calc(5mm * 2);
+          position: relative;
+          top: 0mm;
+          width: 200mm;
+          height: 10mm;
         }
         
         .bill2-right {
-          float: right;
-          width: calc(80mm * 2);
+          position: relative;
+          width: calc(2 * 60mm);
+          left: calc(2 * 110mm);
+          top: -18mm;
+          height: 100%;
         }
         
         .bill-field {
+          position: relative;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: calc(2 * 5mm);
+          margin-top: calc(2 * -1mm);
           display: flex;
           justify-content: space-between;
-          margin-bottom: calc(2mm * 2);
+          align-content: center;
+          text-align: center;
         }
         
-        .bill-field p {
-          margin: 0;
+        .bill-field > p {
+          position: relative;
+          height: inherit;
+          top: calc(2 * -1mm);
         }
         
         .footer {
-          position: relative;
+          height: calc(2 * 20mm);
           display: flex;
-          justify-content: space-between;
-          margin-top: calc(10mm * 2);
-          padding-top: calc(5mm * 2);
-          font-size: calc(3mm * 2);
         }
         
         .footer > div {
-          flex: 1;
+          position: relative;
+          height: inherit;
+          left: 0;
+          width: 33.3%;
+          text-align: left;
+          font-size: calc(2 * 3mm);
         }
         
-        .footer p {
-          margin: calc(1mm * 2) 0;
-          line-height: calc(4mm * 2);
+        .footer > div > p {
+          position: relative;
+          top: calc(2 * 2mm);
+          margin: calc(2 * 1mm) !important;
         }
       </style>
       <div class="content">
         <div class="header2">
-          <img class="logo" src="/assets/images/logo_v1.png" alt="Logo" crossorigin="anonymous" />
+          <img class="logo" src="/assets/images/logo_v1.png" alt="Logo" />
           <div class="info">
             <p>Melchior Hermann</p>
             <p>Schilterndorf 29</p>
@@ -374,7 +401,6 @@ export class PdfService {
             <p class="contract-info-worktime">Leistungszeitraum vom ${this.formatDate(invoice.startedAt)} bis zum ${this.formatDate(invoice.finishedAt)}</p>
           </div>
         </div>
-        
         <div class="positions">
           <table class="table-a">
             <thead>
@@ -398,14 +424,11 @@ export class PdfService {
               `).join('') || ''}
             </tbody>
           </table>
-          
           <div class="bill2">
-            <p class="bill2-info">
-              ${invoice.type === 'D' ? 
-                'Zahlbar nach Erhalt der Rechnung' : 
-                'Es wird darauf hingewiesen, dass die Steuerschuld gem. § 19 Abs. 1a UStG auf den Leistungsempfänger übergeht'
-              }
-            </p>
+            ${invoice.type === 'D' ? 
+              '<p class="bill2-info">Zahlbar nach Erhalt der Rechnung</p>' : 
+              '<p class="bill2-info">Es wird darauf hingewiesen, dass die Steuerschuld gem. § 19 Abs. 1a UStG auf den Leistungsempfänger übergeht</p>'
+            }
             <div class="bill2-right">
               <div class="bill-field">
                 <p style="font-weight: ${invoice.type === 'D' ? 'normal' : 'bold'};">Nettobetrag:</p>
@@ -422,32 +445,30 @@ export class PdfService {
                     <p>${this.formatCurrency(anzahlungNetto)}</p>
                   </div>
                   <div class="bill-field">
-                    <p>- Umsatzsteuer Anzahlung:</p>
+                    <p>- Umsatzsteuer Anzahlung</p>
                     <p>${this.formatCurrency(anzahlungMwst)}</p>
                   </div>
                 ` : ''}
-                <div class="bill-field" style="font-weight: bold; border-top: calc(1px * 2) solid #000; padding-top: calc(2mm * 2); margin-top: calc(2mm * 2);">
-                  <p>${invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:'}</p>
+                <div class="bill-field">
+                  <p style="font-weight: bold;">${invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:'}</p>
                   <p>${this.formatCurrency(restbetrag)}</p>
                 </div>
               ` : ''}
             </div>
-            <div style="clear: both;"></div>
           </div>
         </div>
-        
         <div class="footer">
-          <div>
-            <p><strong>Melchior-Erdbau</strong></p>
+          <div class="footer-left">
+            <p>Melchior-Erdbau</p>
             <p>Schilterndorf 29</p>
             <p>9150 Bleiburg</p>
           </div>
-          <div>
+          <div class="footer-middle">
             <p>UID: ATU78017548</p>
             <p>Steuernummer: 576570535</p>
             <p>Inhaber: Melchior Hermann</p>
           </div>
-          <div>
+          <div class="footer-right">
             <p>Kärntner Sparkasse Bleiburg</p>
             <p>IBAN: AT142070604600433397</p>
             <p>BIC: KSPKAT2KXXX</p>
@@ -481,34 +502,32 @@ export class PdfService {
         
         .content {
           margin: calc(20mm * 2);
-          position: relative;
         }
         
         .header {
-          position: relative;
           height: calc(90mm * 2);
         }
         
         .logo {
           position: absolute;
           width: calc(30mm * 2);
-          height: auto;
-          top: 0;
           left: calc(18mm * 2);
         }
         
         .info {
-          position: absolute;
+          position: relative;
           width: calc(50mm * 2);
+          height: calc(50mm * 2);
           top: calc(10mm * 2);
-          right: 0;
+          left: calc(120mm * 2);
           font-size: calc(3mm * 2);
           text-align: right;
+          margin: 0;
+          padding: 0;
         }
         
-        .info p {
+        .info > p {
           margin: 0;
-          line-height: calc(4mm * 2);
         }
         
         .info-line-break {
@@ -516,34 +535,33 @@ export class PdfService {
         }
         
         .customer {
-          position: absolute;
+          position: relative;
+          height: calc(13mm * 2);
           width: calc(50mm * 2);
-          top: calc(60mm * 2);
-          left: 0;
+          top: calc(-15mm * 2);
+          left: calc(0mm * 2);
           font-size: calc(3mm * 2);
         }
         
-        .customer p {
+        .customer > p {
           margin: 0;
-          line-height: calc(4mm * 2);
         }
         
         .contract {
-          position: absolute;
-          top: calc(75mm * 2);
-          left: 0;
+          position: relative;
+          left: calc(0mm * 2);
+          top: calc(-2mm * 2);
           font-weight: bold;
           font-size: calc(7mm * 2);
-          margin: 0;
         }
         
         .contract-info {
-          position: absolute;
+          position: relative;
           border-bottom: black calc(1px * 2) solid;
-          width: 100%;
+          width: calc(170mm * 2);
           height: calc(7.5mm * 2);
-          top: calc(84mm * 2);
-          left: 0;
+          top: calc(-5mm * 2);
+          left: calc(0mm * 2);
           font-size: calc(3mm * 2);
           font-weight: bold;
         }
@@ -551,128 +569,176 @@ export class PdfService {
         .contract-info-left {
           position: absolute;
           left: 0;
-          top: 0;
-          margin: 0;
+          top: calc(2 * -3mm);
+          width: calc(2 * 50mm);
         }
         
         .contract-info-middle {
           position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
-          top: 0;
-          margin: 0;
+          top: calc(2 * -3mm);
+          left: calc(2 * 60mm);
+          width: calc(2 * 50mm);
+          text-align: center;
         }
         
         .contract-info-right {
           position: absolute;
-          right: 0;
-          top: 0;
-          margin: 0;
+          top: calc(2 * -3mm);
+          left: calc(2 * 120mm);
+          width: calc(2 * 50mm);
+          text-align: right;
         }
         
         .positions {
           position: relative;
+          height: calc(2 * 140mm);
+          top: 0;
         }
         
         .table-a {
-          width: 100%;
-          font-size: calc(3mm * 2);
-          font-family: Arial, sans-serif;
+          font-size: calc(2 * 3mm);
+          font-family: arial, sans-serif;
           border-collapse: collapse;
-          margin-bottom: calc(4mm * 2);
+          width: 100%;
         }
         
-        .tr-a td, .tr-a th {
-          border: calc(1px * 2) solid #000000;
+        .tr-a > td, .tr-a > th {
+          border: calc(2 * 1px) solid #000000;
           text-align: left;
-          padding: calc(1mm * 2);
+          padding: calc(2 * 1mm);
         }
         
-        .tr-a th {
+        .tr-a > th {
           background-color: #cbcbcb;
           font-weight: bold;
         }
         
-        .tr-a th:nth-child(1),
-        .tr-a td:nth-child(1) {
+        .tr-a > th:nth-child(1) {
           text-align: center;
-          width: calc(6mm * 2);
+          width: calc(2 * 6mm);
         }
         
-        .tr-a th:nth-child(2),
-        .tr-a td:nth-child(2) {
-          width: calc(90mm * 2);
+        .tr-a > th:nth-child(2) {
+          width: calc(2 * 90mm);
         }
         
-        .tr-a th:nth-child(3),
-        .tr-a td:nth-child(3),
-        .tr-a th:nth-child(4),
-        .tr-a td:nth-child(4),
-        .tr-a th:nth-child(5),
-        .tr-a td:nth-child(5) {
+        .tr-a > th:nth-child(3) {
+          width: calc(2 * 22mm);
           text-align: right;
         }
         
-        .tr-a th:nth-child(4),
-        .tr-a td:nth-child(4) {
+        .tr-a > th:nth-child(4) {
+          width: calc(2 * 20mm);
           text-align: center;
         }
         
+        .tr-a > th:nth-child(5) {
+          width: calc(2 * 22mm);
+          text-align: right;
+        }
+        
+        .tr-a > td:nth-child(1) {
+          text-align: center;
+        }
+        
+        .tr-a > td:nth-child(2) {
+          text-align: left;
+        }
+        
+        .tr-a > td:nth-child(3) {
+          text-align: right;
+        }
+        
+        .tr-a > td:nth-child(4) {
+          text-align: center;
+        }
+        
+        .tr-a > td:nth-child(5) {
+          text-align: right;
+        }
+        
         .bill {
+          margin-top: calc(2 * 4mm);
+          height: calc(2 * 20mm);
+          font-size: calc(2 * 3mm);
+        }
+        
+        .bill > p:nth-child(1) {
           position: relative;
-          min-height: calc(20mm * 2);
-          font-size: calc(3mm * 2);
+          top: calc(2 * 1mm);
+          width: fit-content;
         }
         
-        .bill-info {
-          width: 100%;
-          margin-bottom: calc(5mm * 2);
+        .bill > p:nth-child(2) {
+          position: relative;
+          top: calc(2 * -6mm);
+          width: calc(2 * 25mm);
+          left: calc(2 * 115mm);
         }
         
-        .bill-right {
-          float: right;
-          width: calc(60mm * 2);
+        .bill > p:nth-child(3) {
+          position: relative;
+          top: calc(2 * -9mm);
+          width: calc(2 * 25mm);
+          left: calc(2 * 115mm);
         }
         
-        .bill-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: calc(2mm * 2);
-        }
-        
-        .bill-row p {
-          margin: 0;
-        }
-        
-        .bill-row.total {
+        .bill > p:nth-child(4) {
+          position: relative;
           font-weight: bold;
-          border-top: calc(1px * 2) solid #000;
-          padding-top: calc(2mm * 2);
-          margin-top: calc(2mm * 2);
+          top: calc(2 * -12mm);
+          width: calc(2 * 25mm);
+          left: calc(2 * 115mm);
+        }
+        
+        .bill > p:nth-child(5) {
+          position: relative;
+          top: calc(2 * -27mm);
+          width: calc(2 * 20mm);
+          left: calc(2 * 149mm);
+          text-align: right;
+        }
+        
+        .bill > p:nth-child(6) {
+          position: relative;
+          top: calc(2 * -30mm);
+          width: calc(2 * 20mm);
+          left: calc(2 * 149mm);
+          text-align: right;
+        }
+        
+        .bill > p:nth-child(7) {
+          position: relative;
+          font-weight: bold;
+          top: calc(2 * -33mm);
+          width: calc(2 * 20mm);
+          left: calc(2 * 149mm);
+          text-align: right;
         }
         
         .footer {
-          position: relative;
+          height: calc(2 * 20mm);
           display: flex;
-          justify-content: space-between;
-          margin-top: calc(10mm * 2);
-          padding-top: calc(5mm * 2);
-          font-size: calc(3mm * 2);
-          clear: both;
         }
         
         .footer > div {
-          flex: 1;
+          position: relative;
+          height: inherit;
+          left: 0;
+          width: 33.3%;
+          text-align: left;
+          font-size: calc(2 * 3mm);
         }
         
-        .footer p {
-          margin: calc(1mm * 2) 0;
-          line-height: calc(4mm * 2);
+        .footer > div > p {
+          position: relative;
+          top: calc(2 * 2mm);
+          margin: calc(2 * 1mm) !important;
         }
       </style>
       <div class="content">
         <div class="header">
-          <img class="logo" src="/assets/images/logo_v1.png" alt="Logo" crossorigin="anonymous" />
+          <img class="logo" src="/assets/images/logo_v1.png" alt="Logo" />
           <div class="info">
             <p>Melchior Hermann</p>
             <p>Schilterndorf 29</p>
@@ -695,7 +761,6 @@ export class PdfService {
             <p class="contract-info-right">Datum: ${this.formatDate(contract.createdAt)}</p>
           </div>
         </div>
-        
         <div class="positions">
           <table class="table-a">
             <thead>
@@ -719,39 +784,28 @@ export class PdfService {
               `).join('') || ''}
             </tbody>
           </table>
-          
           <div class="bill">
-            <p class="bill-info">Dieses Angebot ist 10 Tage lang gültig</p>
-            <div class="bill-right">
-              <div class="bill-row">
-                <p>Nettobetrag:</p>
-                <p>${this.formatCurrency(nettoBetrag)}</p>
-              </div>
-              <div class="bill-row">
-                <p>zzgl. 20% MwSt.:</p>
-                <p>${this.formatCurrency(mwst)}</p>
-              </div>
-              <div class="bill-row total">
-                <p>Gesamtbetrag:</p>
-                <p>${this.formatCurrency(gesamtBetrag)}</p>
-              </div>
-            </div>
-            <div style="clear: both;"></div>
+            <p>Dieses Angebot ist 10 Tage lang gültig</p>
+            <p>Nettobetrag:</p>
+            <p>zzgl. 20% MwSt.:</p>
+            <p>Gesamtbetrag:</p>
+            <p>${this.formatCurrency(nettoBetrag)}</p>
+            <p>${this.formatCurrency(mwst)}</p>
+            <p>${this.formatCurrency(gesamtBetrag)}</p>
           </div>
         </div>
-        
         <div class="footer">
-          <div>
-            <p><strong>Melchior-Erdbau</strong></p>
+          <div class="footer-left">
+            <p>Melchior-Erdbau</p>
             <p>Schilterndorf 29</p>
             <p>9150 Bleiburg</p>
           </div>
-          <div>
+          <div class="footer-middle">
             <p>UID: ATU78017548</p>
             <p>Steuernummer: 576570535</p>
             <p>Inhaber: Melchior Hermann</p>
           </div>
-          <div>
+          <div class="footer-right">
             <p>Kärntner Sparkasse Bleiburg</p>
             <p>IBAN: AT142070604600433397</p>
             <p>BIC: KSPKAT2KXXX</p>
