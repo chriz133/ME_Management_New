@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { Invoice } from '../models/invoice.model';
 import { Contract } from '../models/contract.model';
 
@@ -8,813 +7,370 @@ import { Contract } from '../models/contract.model';
   providedIn: 'root'
 })
 export class PdfService {
+  private readonly COMPANY_INFO = {
+    name: 'Melchior Hermann',
+    address: 'Schilterndorf 29',
+    city: '9150 Bleiburg',
+    phone: '0676 / 6259929',
+    email: 'office@melchior-erdbau.at',
+    web: 'melchior-erdbau.at',
+    uid: 'ATU78017548',
+    taxNumber: '576570535',
+    owner: 'Melchior Hermann',
+    bank: 'Kärntner Sparkasse Bleiburg',
+    iban: 'AT142070604600433397',
+    bic: 'KSPKAT2KXXX'
+  };
+
   constructor() {}
 
   /**
    * Generate PDF for an invoice
    */
   async generateInvoicePdf(invoice: Invoice): Promise<void> {
-    const element = this.createInvoiceHtmlElement(invoice);
-    await this.generatePdfFromElement(element, this.getInvoiceFilename(invoice), true);
+    const pdf = this.createInvoicePdf(invoice);
+    pdf.save(this.getInvoiceFilename(invoice));
   }
 
   /**
    * Generate PDF for a contract
    */
   async generateContractPdf(contract: Contract): Promise<void> {
-    const element = this.createContractHtmlElement(contract);
-    await this.generatePdfFromElement(element, this.getContractFilename(contract), false);
+    const pdf = this.createContractPdf(contract);
+    pdf.save(this.getContractFilename(contract));
   }
 
   /**
    * View invoice PDF in new tab
    */
   async viewInvoicePdf(invoice: Invoice): Promise<void> {
-    const element = this.createInvoiceHtmlElement(invoice);
-    await this.viewPdfFromElement(element, true);
+    const pdf = this.createInvoicePdf(invoice);
+    const pdfBlob = pdf.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    window.open(url, '_blank');
   }
 
   /**
    * View contract PDF in new tab
    */
   async viewContractPdf(contract: Contract): Promise<void> {
-    const element = this.createContractHtmlElement(contract);
-    await this.viewPdfFromElement(element, false);
+    const pdf = this.createContractPdf(contract);
+    const pdfBlob = pdf.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    window.open(url, '_blank');
   }
 
-  private async generatePdfFromElement(element: HTMLElement, filename: string, isInvoice: boolean): Promise<void> {
-    // Position element off-screen but still rendered
-    element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    element.style.top = '0';
+  private createInvoicePdf(invoice: Invoice): jsPDF {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210;
+    const marginLeft = 20;
+    const marginRight = 20;
+    const contentWidth = pageWidth - marginLeft - marginRight;
     
-    document.body.appendChild(element);
-    
-    // Wait for images to load
-    await this.waitForImagesToLoad(element);
-    
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 1,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        allowTaint: true
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'pt', 'a4', true);
-      
-      // The canvas represents the zoomed (0.5) version, so dimensions are already correct
-      pdf.addImage(imgData, 'PNG', 0, 0, 595, 842);
-      
-      pdf.save(filename);
-    } finally {
-      document.body.removeChild(element);
+    let yPos = 20;
+
+    // Company info (top right)
+    pdf.setFontSize(10);
+    pdf.text(this.COMPANY_INFO.name, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 5;
+    pdf.text(this.COMPANY_INFO.address, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 5;
+    pdf.text(this.COMPANY_INFO.city, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 8;
+    pdf.text(`Telefon: ${this.COMPANY_INFO.phone}`, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 8;
+    pdf.text(`E-Mail: ${this.COMPANY_INFO.email}`, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 5;
+    pdf.text(`Web: ${this.COMPANY_INFO.web}`, pageWidth - marginRight, yPos, { align: 'right' });
+
+    // Customer info (left side)
+    yPos = 80;
+    pdf.setFontSize(10);
+    const customerName = `${invoice.customer?.firstname || ''} ${invoice.customer?.surname || ''}`.trim();
+    pdf.text(customerName, marginLeft, yPos);
+    yPos += 5;
+    pdf.text(`${invoice.customer?.address || ''} ${invoice.customer?.nr || ''}`.trim(), marginLeft, yPos);
+    yPos += 5;
+    pdf.text(`${invoice.customer?.plz || ''} ${invoice.customer?.city || ''}`.trim(), marginLeft, yPos);
+    if (invoice.customer?.uid) {
+      yPos += 5;
+      pdf.text(invoice.customer.uid, marginLeft, yPos);
     }
+
+    // Title
+    yPos = 110;
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Rechnung', marginLeft, yPos);
+
+    // Invoice metadata
+    yPos = 120;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Rechnung Nr. ${invoice.invoiceId}`, marginLeft, yPos);
+    pdf.text(`Kunde Nr. ${invoice.customer?.customerId || ''}`, pageWidth / 2, yPos, { align: 'center' });
+    pdf.text(`Datum: ${this.formatDate(invoice.createdAt)}`, pageWidth - marginRight, yPos, { align: 'right' });
+    
+    yPos += 7;
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Leistungszeitraum vom ${this.formatDate(invoice.startedAt)} bis zum ${this.formatDate(invoice.finishedAt)}`, marginLeft, yPos);
+
+    // Draw line under header
+    yPos += 2;
+    pdf.line(marginLeft, yPos, pageWidth - marginRight, yPos);
+
+    // Positions table
+    yPos += 8;
+    this.drawInvoiceTable(pdf, invoice, marginLeft, yPos, contentWidth);
+
+    return pdf;
   }
 
-  private async viewPdfFromElement(element: HTMLElement, isInvoice: boolean): Promise<void> {
-    element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    element.style.top = '0';
+  private createContractPdf(contract: Contract): jsPDF {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210;
+    const marginLeft = 20;
+    const marginRight = 20;
+    const contentWidth = pageWidth - marginLeft - marginRight;
     
-    document.body.appendChild(element);
-    
-    await this.waitForImagesToLoad(element);
-    
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 1,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        allowTaint: true
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'pt', 'a4', true);
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, 595, 842);
-      
-      // Open in new tab
-      const pdfBlob = pdf.output('blob');
-      const url = URL.createObjectURL(pdfBlob);
-      window.open(url, '_blank');
-    } finally {
-      document.body.removeChild(element);
-    }
+    let yPos = 20;
+
+    // Company info (top right)
+    pdf.setFontSize(10);
+    pdf.text(this.COMPANY_INFO.name, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 5;
+    pdf.text(this.COMPANY_INFO.address, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 5;
+    pdf.text(this.COMPANY_INFO.city, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 8;
+    pdf.text(`Telefon: ${this.COMPANY_INFO.phone}`, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 8;
+    pdf.text(`E-Mail: ${this.COMPANY_INFO.email}`, pageWidth - marginRight, yPos, { align: 'right' });
+    yPos += 5;
+    pdf.text(`Web: ${this.COMPANY_INFO.web}`, pageWidth - marginRight, yPos, { align: 'right' });
+
+    // Customer info (left side)
+    yPos = 80;
+    pdf.setFontSize(10);
+    const customerName = `${contract.customer?.firstname || ''} ${contract.customer?.surname || ''}`.trim();
+    pdf.text(customerName, marginLeft, yPos);
+    yPos += 5;
+    pdf.text(`${contract.customer?.address || ''} ${contract.customer?.nr || ''}`.trim(), marginLeft, yPos);
+    yPos += 5;
+    pdf.text(`${contract.customer?.plz || ''} ${contract.customer?.city || ''}`.trim(), marginLeft, yPos);
+
+    // Title
+    yPos = 105;
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Angebot', marginLeft, yPos);
+
+    // Contract metadata
+    yPos = 115;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Angebot Nr. ${contract.contractId}`, marginLeft, yPos);
+    pdf.text(`Kunde Nr. ${contract.customer?.customerId || ''}`, pageWidth / 2, yPos, { align: 'center' });
+    pdf.text(`Datum: ${this.formatDate(contract.createdAt)}`, pageWidth - marginRight, yPos, { align: 'right' });
+
+    // Draw line under header
+    yPos += 2;
+    pdf.line(marginLeft, yPos, pageWidth - marginRight, yPos);
+
+    // Positions table
+    yPos += 8;
+    this.drawContractTable(pdf, contract, marginLeft, yPos, contentWidth);
+
+    return pdf;
   }
 
-  private async waitForImagesToLoad(element: HTMLElement): Promise<void> {
-    const images = element.getElementsByTagName('img');
-    const promises: Promise<void>[] = [];
-    
-    for (let i = 0; i < images.length; i++) {
-      const img = images[i];
-      if (!img.complete) {
-        promises.push(
-          new Promise((resolve) => {
-            img.onload = () => resolve();
-            img.onerror = () => resolve(); // Resolve even on error to not block
-          })
-        );
-      }
-    }
-    
-    await Promise.all(promises);
-    // Give additional time for rendering
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  private drawInvoiceTable(pdf: jsPDF, invoice: Invoice, x: number, y: number, width: number): void {
+    const colWidths = [15, 90, 25, 20, 25]; // Pos, Description, Price, Qty, Total
+    let yPos = y;
 
-  private createInvoiceHtmlElement(invoice: Invoice): HTMLElement {
-    const container = document.createElement('div');
-    container.className = 'main-two';
+    // Table header
+    pdf.setFillColor(200, 200, 200);
+    pdf.rect(x, yPos, width, 7, 'F');
+    
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Pos', x + 2, yPos + 5);
+    pdf.text('Beschreibung', x + colWidths[0] + 2, yPos + 5);
+    pdf.text('Einzelpreis', x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
+    pdf.text('Anzahl', x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
+    pdf.text('Gesamtpreis', x + width - 2, yPos + 5, { align: 'right' });
 
+    yPos += 7;
+
+    // Draw header border
+    pdf.rect(x, y, width, 7);
+
+    // Table rows
+    pdf.setFont('helvetica', 'normal');
+    invoice.positions?.forEach((pos, index) => {
+      const rowHeight = 7;
+      
+      pdf.text((index + 1).toString(), x + colWidths[0] / 2, yPos + 5, { align: 'center' });
+      pdf.text(pos.position?.text || '', x + colWidths[0] + 2, yPos + 5);
+      pdf.text(this.formatCurrency(pos.position?.price || 0), x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
+      pdf.text(`${pos.amount} ${pos.position?.unit || ''}`, x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
+      pdf.text(this.formatCurrency(pos.lineTotal), x + width - 2, yPos + 5, { align: 'right' });
+      
+      // Draw row border
+      pdf.rect(x, yPos, width, rowHeight);
+      yPos += rowHeight;
+    });
+
+    // Totals section
+    yPos += 5;
     const nettoBetrag = this.calculateInvoiceNetto(invoice);
     const mwst = invoice.type === 'D' ? nettoBetrag * 0.2 : 0;
     const anzahlungNetto = invoice.depositAmount ? (invoice.depositAmount / 1.2) : 0;
     const anzahlungMwst = invoice.depositAmount ? invoice.depositAmount - anzahlungNetto : 0;
     const restbetrag = invoice.type === 'D' ? nettoBetrag + mwst - invoice.depositAmount : nettoBetrag;
 
-    container.innerHTML = `
-      <style>
-        .main-two {
-          zoom: 0.5;
-          width: calc(210mm * 2);
-          height: calc(297mm * 2);
-          border: black 2px solid;
-          -webkit-print-color-adjust: exact;
-          background-color: white;
-          font-family: Arial, sans-serif;
-        }
-        
-        .content {
-          margin: calc(20mm * 2);
-        }
-        
-        .header2 {
-          height: calc(95mm * 2);
-        }
-        
-        .logo {
-          position: absolute;
-          width: calc(30mm * 2);
-          left: calc(18mm * 2);
-        }
-        
-        .info {
-          position: relative;
-          width: calc(50mm * 2);
-          height: calc(50mm * 2);
-          top: calc(10mm * 2);
-          left: calc(120mm * 2);
-          font-size: calc(3mm * 2);
-          text-align: right;
-          margin: 0;
-          padding: 0;
-        }
-        
-        .info > p {
-          margin: 0;
-        }
-        
-        .info-line-break {
-          height: calc(5mm * 2);
-        }
-        
-        .customer {
-          position: relative;
-          height: calc(13mm * 2);
-          width: calc(50mm * 2);
-          top: calc(-15mm * 2);
-          left: calc(0mm * 2);
-          font-size: calc(3mm * 2);
-        }
-        
-        .customer > p {
-          margin: 0;
-        }
-        
-        .contract {
-          position: relative;
-          left: calc(0mm * 2);
-          top: calc(-2mm * 2);
-          font-weight: bold;
-          font-size: calc(7mm * 2);
-        }
-        
-        .invoice-info {
-          position: relative;
-          border-bottom: black calc(1px * 2) solid;
-          width: calc(170mm * 2);
-          height: calc(12mm * 2);
-          top: calc(-5mm * 2);
-          left: calc(0mm * 2);
-          font-size: calc(3mm * 2);
-          font-weight: bold;
-        }
-        
-        .contract-info-left {
-          position: absolute;
-          left: 0;
-          top: calc(2 * -3mm);
-          width: calc(2 * 50mm);
-        }
-        
-        .contract-info-middle {
-          position: absolute;
-          top: calc(2 * -3mm);
-          left: calc(2 * 60mm);
-          width: calc(2 * 50mm);
-          text-align: center;
-        }
-        
-        .contract-info-right {
-          position: absolute;
-          top: calc(2 * -3mm);
-          left: calc(2 * 120mm);
-          width: calc(2 * 50mm);
-          text-align: right;
-        }
-        
-        .contract-info-worktime {
-          position: absolute;
-          margin-top: calc(2 * 7mm);
-          font-size: calc(2 * 4mm);
-          font-weight: normal;
-          top: 0mm;
-        }
-        
-        .positions {
-          position: relative;
-          height: calc(2 * 140mm);
-          top: 0;
-        }
-        
-        .table-a {
-          font-size: calc(2 * 3mm);
-          font-family: arial, sans-serif;
-          border-collapse: collapse;
-          width: 100%;
-        }
-        
-        .tr-a > td, .tr-a > th {
-          border: calc(2 * 1px) solid #000000;
-          text-align: left;
-          padding: calc(2 * 1mm);
-        }
-        
-        .tr-a > th {
-          background-color: #cbcbcb;
-          font-weight: bold;
-        }
-        
-        .tr-a > th:nth-child(1) {
-          text-align: center;
-          width: calc(2 * 6mm);
-        }
-        
-        .tr-a > th:nth-child(2) {
-          width: calc(2 * 90mm);
-        }
-        
-        .tr-a > th:nth-child(3) {
-          width: calc(2 * 22mm);
-          text-align: right;
-        }
-        
-        .tr-a > th:nth-child(4) {
-          width: calc(2 * 20mm);
-          text-align: center;
-        }
-        
-        .tr-a > th:nth-child(5) {
-          width: calc(2 * 22mm);
-          text-align: right;
-        }
-        
-        .tr-a > td:nth-child(1) {
-          text-align: center;
-        }
-        
-        .tr-a > td:nth-child(2) {
-          text-align: left;
-        }
-        
-        .tr-a > td:nth-child(3) {
-          text-align: right;
-        }
-        
-        .tr-a > td:nth-child(4) {
-          text-align: center;
-        }
-        
-        .tr-a > td:nth-child(5) {
-          text-align: right;
-        }
-        
-        .bill2 {
-          margin-top: calc(2 * 4mm);
-          height: calc(2 * 30mm);
-          font-size: calc(2 * 3mm);
-        }
-        
-        .bill2-info {
-          position: relative;
-          top: 0mm;
-          width: 200mm;
-          height: 10mm;
-        }
-        
-        .bill2-right {
-          position: relative;
-          width: calc(2 * 60mm);
-          left: calc(2 * 110mm);
-          top: -18mm;
-          height: 100%;
-        }
-        
-        .bill-field {
-          position: relative;
-          left: 0;
-          top: 0;
-          width: 100%;
-          height: calc(2 * 5mm);
-          margin-top: calc(2 * -1mm);
-          display: flex;
-          justify-content: space-between;
-          align-content: center;
-          text-align: center;
-        }
-        
-        .bill-field > p {
-          position: relative;
-          height: inherit;
-          top: calc(2 * -1mm);
-        }
-        
-        .footer {
-          height: calc(2 * 20mm);
-          display: flex;
-        }
-        
-        .footer > div {
-          position: relative;
-          height: inherit;
-          left: 0;
-          width: 33.3%;
-          text-align: left;
-          font-size: calc(2 * 3mm);
-        }
-        
-        .footer > div > p {
-          position: relative;
-          top: calc(2 * 2mm);
-          margin: calc(2 * 1mm) !important;
-        }
-      </style>
-      <div class="content">
-        <div class="header2">
-          <img class="logo" src="/assets/images/logo_v1.png" alt="Logo" />
-          <div class="info">
-            <p>Melchior Hermann</p>
-            <p>Schilterndorf 29</p>
-            <p>9150 Bleiburg</p>
-            <p class="info-line-break"></p>
-            <p>Telefon: 0676 / 6259929</p>
-            <p class="info-line-break"></p>
-            <p>E-Mail: office@melchior-erdbau.at</p>
-            <p>Web: melchior-erdbau.at</p>
-          </div>
-          <div class="customer">
-            <p>${invoice.customer?.firstname || ''} ${invoice.customer?.surname || ''}</p>
-            <p>${invoice.customer?.address || ''} ${invoice.customer?.nr || ''}</p>
-            <p>${invoice.customer?.plz || ''} ${invoice.customer?.city || ''}</p>
-            ${invoice.customer?.uid ? `<p>${invoice.customer.uid}</p>` : ''}
-          </div>
-          <p class="contract">Rechnung</p>
-          <div class="invoice-info">
-            <p class="contract-info-left">Rechnung Nr. ${invoice.invoiceId}</p>
-            <p class="contract-info-middle">Kunde Nr. ${invoice.customer?.customerId || ''}</p>
-            <p class="contract-info-right">Datum: ${this.formatDate(invoice.createdAt)}</p>
-            <p class="contract-info-worktime">Leistungszeitraum vom ${this.formatDate(invoice.startedAt)} bis zum ${this.formatDate(invoice.finishedAt)}</p>
-          </div>
-        </div>
-        <div class="positions">
-          <table class="table-a">
-            <thead>
-              <tr class="tr-a">
-                <th>Pos</th>
-                <th>Beschreibung</th>
-                <th>Einzelpreis</th>
-                <th>Anzahl</th>
-                <th>Gesamtpreis</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoice.positions?.map((pos, index) => `
-                <tr class="tr-a">
-                  <td>${index + 1}</td>
-                  <td>${pos.position?.text || ''}</td>
-                  <td>${this.formatCurrency(pos.position?.price || 0)}</td>
-                  <td>${pos.amount} ${pos.position?.unit || ''}</td>
-                  <td>${this.formatCurrency(pos.lineTotal)}</td>
-                </tr>
-              `).join('') || ''}
-            </tbody>
-          </table>
-          <div class="bill2">
-            ${invoice.type === 'D' ? 
-              '<p class="bill2-info">Zahlbar nach Erhalt der Rechnung</p>' : 
-              '<p class="bill2-info">Es wird darauf hingewiesen, dass die Steuerschuld gem. § 19 Abs. 1a UStG auf den Leistungsempfänger übergeht</p>'
-            }
-            <div class="bill2-right">
-              <div class="bill-field">
-                <p style="font-weight: ${invoice.type === 'D' ? 'normal' : 'bold'};">Nettobetrag:</p>
-                <p>${this.formatCurrency(nettoBetrag)}</p>
-              </div>
-              ${invoice.type === 'D' ? `
-                <div class="bill-field">
-                  <p>zzgl. 20% MwSt.:</p>
-                  <p>${this.formatCurrency(mwst)}</p>
-                </div>
-                ${invoice.depositAmount > 0 ? `
-                  <div class="bill-field">
-                    <p>- Anzahlung vom ${this.formatDate(invoice.depositPaidOn)}:</p>
-                    <p>${this.formatCurrency(anzahlungNetto)}</p>
-                  </div>
-                  <div class="bill-field">
-                    <p>- Umsatzsteuer Anzahlung</p>
-                    <p>${this.formatCurrency(anzahlungMwst)}</p>
-                  </div>
-                ` : ''}
-                <div class="bill-field">
-                  <p style="font-weight: bold;">${invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:'}</p>
-                  <p>${this.formatCurrency(restbetrag)}</p>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-        </div>
-        <div class="footer">
-          <div class="footer-left">
-            <p>Melchior-Erdbau</p>
-            <p>Schilterndorf 29</p>
-            <p>9150 Bleiburg</p>
-          </div>
-          <div class="footer-middle">
-            <p>UID: ATU78017548</p>
-            <p>Steuernummer: 576570535</p>
-            <p>Inhaber: Melchior Hermann</p>
-          </div>
-          <div class="footer-right">
-            <p>Kärntner Sparkasse Bleiburg</p>
-            <p>IBAN: AT142070604600433397</p>
-            <p>BIC: KSPKAT2KXXX</p>
-          </div>
-        </div>
-      </div>
-    `;
+    if (invoice.type !== 'D') {
+      pdf.setFontSize(9);
+      pdf.text('Es wird darauf hingewiesen, dass die Steuerschuld gem. § 19 Abs. 1a UStG', x, yPos);
+      yPos += 4;
+      pdf.text('auf den Leistungsempfänger übergeht', x, yPos);
+      yPos += 6;
+    } else {
+      pdf.setFontSize(9);
+      pdf.text('Zahlbar nach Erhalt der Rechnung', x, yPos);
+      yPos += 6;
+    }
 
-    return container;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', invoice.type === 'D' ? 'normal' : 'bold');
+    pdf.text('Nettobetrag:', x + width - 60, yPos);
+    pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, yPos, { align: 'right' });
+    yPos += 5;
+
+    if (invoice.type === 'D') {
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('zzgl. 20% MwSt.:', x + width - 60, yPos);
+      pdf.text(this.formatCurrency(mwst), x + width - 2, yPos, { align: 'right' });
+      yPos += 5;
+
+      if (invoice.depositAmount > 0) {
+        pdf.text(`- Anzahlung vom ${this.formatDate(invoice.depositPaidOn)}:`, x + width - 60, yPos);
+        pdf.text(this.formatCurrency(anzahlungNetto), x + width - 2, yPos, { align: 'right' });
+        yPos += 5;
+
+        pdf.text('- Umsatzsteuer Anzahlung:', x + width - 60, yPos);
+        pdf.text(this.formatCurrency(anzahlungMwst), x + width - 2, yPos, { align: 'right' });
+        yPos += 5;
+      }
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:', x + width - 60, yPos);
+      pdf.text(this.formatCurrency(restbetrag), x + width - 2, yPos, { align: 'right' });
+    }
+
+    // Footer
+    yPos = 270;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    
+    const col1X = x;
+    const col2X = x + (width / 3);
+    const col3X = x + (width / 3) * 2;
+
+    pdf.text('Melchior-Erdbau', col1X, yPos);
+    pdf.text(`UID: ${this.COMPANY_INFO.uid}`, col2X, yPos);
+    pdf.text(this.COMPANY_INFO.bank, col3X, yPos);
+    yPos += 4;
+    
+    pdf.text(this.COMPANY_INFO.address, col1X, yPos);
+    pdf.text(`Steuernummer: ${this.COMPANY_INFO.taxNumber}`, col2X, yPos);
+    pdf.text(`IBAN: ${this.COMPANY_INFO.iban}`, col3X, yPos);
+    yPos += 4;
+    
+    pdf.text(this.COMPANY_INFO.city, col1X, yPos);
+    pdf.text(`Inhaber: ${this.COMPANY_INFO.owner}`, col2X, yPos);
+    pdf.text(`BIC: ${this.COMPANY_INFO.bic}`, col3X, yPos);
   }
 
-  private createContractHtmlElement(contract: Contract): HTMLElement {
-    const container = document.createElement('div');
-    container.className = 'main-two';
+  private drawContractTable(pdf: jsPDF, contract: Contract, x: number, y: number, width: number): void {
+    const colWidths = [15, 90, 25, 20, 25];
+    let yPos = y;
 
+    // Table header
+    pdf.setFillColor(200, 200, 200);
+    pdf.rect(x, yPos, width, 7, 'F');
+    
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Pos', x + 2, yPos + 5);
+    pdf.text('Beschreibung', x + colWidths[0] + 2, yPos + 5);
+    pdf.text('Einzelpreis', x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
+    pdf.text('Anzahl', x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
+    pdf.text('Gesamtpreis', x + width - 2, yPos + 5, { align: 'right' });
+
+    yPos += 7;
+    pdf.rect(x, y, width, 7);
+
+    // Table rows
+    pdf.setFont('helvetica', 'normal');
+    contract.positions?.forEach((pos, index) => {
+      const rowHeight = 7;
+      
+      pdf.text((index + 1).toString(), x + colWidths[0] / 2, yPos + 5, { align: 'center' });
+      pdf.text(pos.position?.text || '', x + colWidths[0] + 2, yPos + 5);
+      pdf.text(this.formatCurrency(pos.position?.price || 0), x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
+      pdf.text(`${pos.amount} ${pos.position?.unit || ''}`, x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
+      pdf.text(this.formatCurrency((pos.amount || 0) * (pos.position?.price || 0)), x + width - 2, yPos + 5, { align: 'right' });
+      
+      pdf.rect(x, yPos, width, rowHeight);
+      yPos += rowHeight;
+    });
+
+    // Totals
+    yPos += 5;
     const nettoBetrag = this.calculateContractNetto(contract);
     const mwst = nettoBetrag * 0.2;
     const gesamtBetrag = nettoBetrag + mwst;
 
-    container.innerHTML = `
-      <style>
-        .main-two {
-          zoom: 0.5;
-          width: calc(210mm * 2);
-          height: calc(297mm * 2);
-          border: black 2px solid;
-          -webkit-print-color-adjust: exact;
-          background-color: white;
-          font-family: Arial, sans-serif;
-        }
-        
-        .content {
-          margin: calc(20mm * 2);
-        }
-        
-        .header {
-          height: calc(90mm * 2);
-        }
-        
-        .logo {
-          position: absolute;
-          width: calc(30mm * 2);
-          left: calc(18mm * 2);
-        }
-        
-        .info {
-          position: relative;
-          width: calc(50mm * 2);
-          height: calc(50mm * 2);
-          top: calc(10mm * 2);
-          left: calc(120mm * 2);
-          font-size: calc(3mm * 2);
-          text-align: right;
-          margin: 0;
-          padding: 0;
-        }
-        
-        .info > p {
-          margin: 0;
-        }
-        
-        .info-line-break {
-          height: calc(5mm * 2);
-        }
-        
-        .customer {
-          position: relative;
-          height: calc(13mm * 2);
-          width: calc(50mm * 2);
-          top: calc(-15mm * 2);
-          left: calc(0mm * 2);
-          font-size: calc(3mm * 2);
-        }
-        
-        .customer > p {
-          margin: 0;
-        }
-        
-        .contract {
-          position: relative;
-          left: calc(0mm * 2);
-          top: calc(-2mm * 2);
-          font-weight: bold;
-          font-size: calc(7mm * 2);
-        }
-        
-        .contract-info {
-          position: relative;
-          border-bottom: black calc(1px * 2) solid;
-          width: calc(170mm * 2);
-          height: calc(7.5mm * 2);
-          top: calc(-5mm * 2);
-          left: calc(0mm * 2);
-          font-size: calc(3mm * 2);
-          font-weight: bold;
-        }
-        
-        .contract-info-left {
-          position: absolute;
-          left: 0;
-          top: calc(2 * -3mm);
-          width: calc(2 * 50mm);
-        }
-        
-        .contract-info-middle {
-          position: absolute;
-          top: calc(2 * -3mm);
-          left: calc(2 * 60mm);
-          width: calc(2 * 50mm);
-          text-align: center;
-        }
-        
-        .contract-info-right {
-          position: absolute;
-          top: calc(2 * -3mm);
-          left: calc(2 * 120mm);
-          width: calc(2 * 50mm);
-          text-align: right;
-        }
-        
-        .positions {
-          position: relative;
-          height: calc(2 * 140mm);
-          top: 0;
-        }
-        
-        .table-a {
-          font-size: calc(2 * 3mm);
-          font-family: arial, sans-serif;
-          border-collapse: collapse;
-          width: 100%;
-        }
-        
-        .tr-a > td, .tr-a > th {
-          border: calc(2 * 1px) solid #000000;
-          text-align: left;
-          padding: calc(2 * 1mm);
-        }
-        
-        .tr-a > th {
-          background-color: #cbcbcb;
-          font-weight: bold;
-        }
-        
-        .tr-a > th:nth-child(1) {
-          text-align: center;
-          width: calc(2 * 6mm);
-        }
-        
-        .tr-a > th:nth-child(2) {
-          width: calc(2 * 90mm);
-        }
-        
-        .tr-a > th:nth-child(3) {
-          width: calc(2 * 22mm);
-          text-align: right;
-        }
-        
-        .tr-a > th:nth-child(4) {
-          width: calc(2 * 20mm);
-          text-align: center;
-        }
-        
-        .tr-a > th:nth-child(5) {
-          width: calc(2 * 22mm);
-          text-align: right;
-        }
-        
-        .tr-a > td:nth-child(1) {
-          text-align: center;
-        }
-        
-        .tr-a > td:nth-child(2) {
-          text-align: left;
-        }
-        
-        .tr-a > td:nth-child(3) {
-          text-align: right;
-        }
-        
-        .tr-a > td:nth-child(4) {
-          text-align: center;
-        }
-        
-        .tr-a > td:nth-child(5) {
-          text-align: right;
-        }
-        
-        .bill {
-          margin-top: calc(2 * 4mm);
-          height: calc(2 * 20mm);
-          font-size: calc(2 * 3mm);
-        }
-        
-        .bill > p:nth-child(1) {
-          position: relative;
-          top: calc(2 * 1mm);
-          width: fit-content;
-        }
-        
-        .bill > p:nth-child(2) {
-          position: relative;
-          top: calc(2 * -6mm);
-          width: calc(2 * 25mm);
-          left: calc(2 * 115mm);
-        }
-        
-        .bill > p:nth-child(3) {
-          position: relative;
-          top: calc(2 * -9mm);
-          width: calc(2 * 25mm);
-          left: calc(2 * 115mm);
-        }
-        
-        .bill > p:nth-child(4) {
-          position: relative;
-          font-weight: bold;
-          top: calc(2 * -12mm);
-          width: calc(2 * 25mm);
-          left: calc(2 * 115mm);
-        }
-        
-        .bill > p:nth-child(5) {
-          position: relative;
-          top: calc(2 * -27mm);
-          width: calc(2 * 20mm);
-          left: calc(2 * 149mm);
-          text-align: right;
-        }
-        
-        .bill > p:nth-child(6) {
-          position: relative;
-          top: calc(2 * -30mm);
-          width: calc(2 * 20mm);
-          left: calc(2 * 149mm);
-          text-align: right;
-        }
-        
-        .bill > p:nth-child(7) {
-          position: relative;
-          font-weight: bold;
-          top: calc(2 * -33mm);
-          width: calc(2 * 20mm);
-          left: calc(2 * 149mm);
-          text-align: right;
-        }
-        
-        .footer {
-          height: calc(2 * 20mm);
-          display: flex;
-        }
-        
-        .footer > div {
-          position: relative;
-          height: inherit;
-          left: 0;
-          width: 33.3%;
-          text-align: left;
-          font-size: calc(2 * 3mm);
-        }
-        
-        .footer > div > p {
-          position: relative;
-          top: calc(2 * 2mm);
-          margin: calc(2 * 1mm) !important;
-        }
-      </style>
-      <div class="content">
-        <div class="header">
-          <img class="logo" src="/assets/images/logo_v1.png" alt="Logo" />
-          <div class="info">
-            <p>Melchior Hermann</p>
-            <p>Schilterndorf 29</p>
-            <p>9150 Bleiburg</p>
-            <p class="info-line-break"></p>
-            <p>Telefon: 0676 / 6259929</p>
-            <p class="info-line-break"></p>
-            <p>E-Mail: office@melchior-erdbau.at</p>
-            <p>Web: melchior-erdbau.at</p>
-          </div>
-          <div class="customer">
-            <p>${contract.customer?.firstname || ''} ${contract.customer?.surname || ''}</p>
-            <p>${contract.customer?.address || ''} ${contract.customer?.nr || ''}</p>
-            <p>${contract.customer?.plz || ''} ${contract.customer?.city || ''}</p>
-          </div>
-          <p class="contract">Angebot</p>
-          <div class="contract-info">
-            <p class="contract-info-left">Angebot Nr. ${contract.contractId}</p>
-            <p class="contract-info-middle">Kunde Nr. ${contract.customer?.customerId || ''}</p>
-            <p class="contract-info-right">Datum: ${this.formatDate(contract.createdAt)}</p>
-          </div>
-        </div>
-        <div class="positions">
-          <table class="table-a">
-            <thead>
-              <tr class="tr-a">
-                <th>Pos</th>
-                <th>Beschreibung</th>
-                <th>Einzelpreis</th>
-                <th>Anzahl</th>
-                <th>Gesamtpreis</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${contract.positions?.map((pos, index) => `
-                <tr class="tr-a">
-                  <td>${index + 1}</td>
-                  <td>${pos.position?.text || ''}</td>
-                  <td>${this.formatCurrency(pos.position?.price || 0)}</td>
-                  <td>${pos.amount} ${pos.position?.unit || ''}</td>
-                  <td>${this.formatCurrency((pos.amount || 0) * (pos.position?.price || 0))}</td>
-                </tr>
-              `).join('') || ''}
-            </tbody>
-          </table>
-          <div class="bill">
-            <p>Dieses Angebot ist 10 Tage lang gültig</p>
-            <p>Nettobetrag:</p>
-            <p>zzgl. 20% MwSt.:</p>
-            <p>Gesamtbetrag:</p>
-            <p>${this.formatCurrency(nettoBetrag)}</p>
-            <p>${this.formatCurrency(mwst)}</p>
-            <p>${this.formatCurrency(gesamtBetrag)}</p>
-          </div>
-        </div>
-        <div class="footer">
-          <div class="footer-left">
-            <p>Melchior-Erdbau</p>
-            <p>Schilterndorf 29</p>
-            <p>9150 Bleiburg</p>
-          </div>
-          <div class="footer-middle">
-            <p>UID: ATU78017548</p>
-            <p>Steuernummer: 576570535</p>
-            <p>Inhaber: Melchior Hermann</p>
-          </div>
-          <div class="footer-right">
-            <p>Kärntner Sparkasse Bleiburg</p>
-            <p>IBAN: AT142070604600433397</p>
-            <p>BIC: KSPKAT2KXXX</p>
-          </div>
-        </div>
-      </div>
-    `;
+    pdf.setFontSize(9);
+    pdf.text('Dieses Angebot ist 10 Tage lang gültig', x, yPos);
+    yPos += 6;
 
-    return container;
+    pdf.setFontSize(10);
+    pdf.text('Nettobetrag:', x + width - 60, yPos);
+    pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, yPos, { align: 'right' });
+    yPos += 5;
+
+    pdf.text('zzgl. 20% MwSt.:', x + width - 60, yPos);
+    pdf.text(this.formatCurrency(mwst), x + width - 2, yPos, { align: 'right' });
+    yPos += 5;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Gesamtbetrag:', x + width - 60, yPos);
+    pdf.text(this.formatCurrency(gesamtBetrag), x + width - 2, yPos, { align: 'right' });
+
+    // Footer
+    yPos = 270;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    
+    const col1X = x;
+    const col2X = x + (width / 3);
+    const col3X = x + (width / 3) * 2;
+
+    pdf.text('Melchior-Erdbau', col1X, yPos);
+    pdf.text(`UID: ${this.COMPANY_INFO.uid}`, col2X, yPos);
+    pdf.text(this.COMPANY_INFO.bank, col3X, yPos);
+    yPos += 4;
+    
+    pdf.text(this.COMPANY_INFO.address, col1X, yPos);
+    pdf.text(`Steuernummer: ${this.COMPANY_INFO.taxNumber}`, col2X, yPos);
+    pdf.text(`IBAN: ${this.COMPANY_INFO.iban}`, col3X, yPos);
+    yPos += 4;
+    
+    pdf.text(this.COMPANY_INFO.city, col1X, yPos);
+    pdf.text(`Inhaber: ${this.COMPANY_INFO.owner}`, col2X, yPos);
+    pdf.text(`BIC: ${this.COMPANY_INFO.bic}`, col3X, yPos);
   }
 
   private calculateInvoiceNetto(invoice: Invoice): number {
