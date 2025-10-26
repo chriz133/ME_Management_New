@@ -16,6 +16,10 @@ public class SystemController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<SystemController> _logger;
 
+    // Default PDF save paths
+    private const string DefaultInvoiceSavePath = "./PDFs/Invoices";
+    private const string DefaultContractSavePath = "./PDFs/Contracts";
+
     public SystemController(IConfiguration configuration, ILogger<SystemController> logger)
     {
         _configuration = configuration;
@@ -75,8 +79,8 @@ public class SystemController : ControllerBase
     {
         try
         {
-            var invoicePath = _configuration["PdfSettings:InvoiceSavePath"] ?? "C:\\PDFs\\Invoices";
-            var contractPath = _configuration["PdfSettings:ContractSavePath"] ?? "C:\\PDFs\\Contracts";
+            var invoicePath = _configuration["PdfSettings:InvoiceSavePath"] ?? DefaultInvoiceSavePath;
+            var contractPath = _configuration["PdfSettings:ContractSavePath"] ?? DefaultContractSavePath;
 
             _logger.LogDebug("Retrieved PDF settings successfully");
 
@@ -91,8 +95,8 @@ public class SystemController : ControllerBase
             _logger.LogError(ex, "Error retrieving PDF settings");
             return Ok(new PdfSettingsResponse
             {
-                InvoiceSavePath = "C:\\PDFs\\Invoices",
-                ContractSavePath = "C:\\PDFs\\Contracts"
+                InvoiceSavePath = DefaultInvoiceSavePath,
+                ContractSavePath = DefaultContractSavePath
             });
         }
     }
