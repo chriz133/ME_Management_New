@@ -69,6 +69,14 @@ export class PdfService {
     
     let yPos = 20;
 
+    // Add logo (top left)
+    try {
+      const logoData = this.getLogoDataUrl();
+      pdf.addImage(logoData, 'PNG', marginLeft, yPos, 30, 15); // 30mm width, 15mm height
+    } catch (error) {
+      console.error('Failed to load logo:', error);
+    }
+
     // Company info (top right)
     pdf.setFontSize(10);
     pdf.text(this.COMPANY_INFO.name, pageWidth - marginRight, yPos, { align: 'right' });
@@ -119,8 +127,8 @@ export class PdfService {
     yPos += 2;
     pdf.line(marginLeft, yPos, pageWidth - marginRight, yPos);
 
-    // Positions table
-    yPos += 8;
+    // Positions table - reduced gap from 8 to 5mm
+    yPos += 5;
     this.drawInvoiceTable(pdf, invoice, marginLeft, yPos, contentWidth);
 
     return pdf;
@@ -134,6 +142,14 @@ export class PdfService {
     const contentWidth = pageWidth - marginLeft - marginRight;
     
     let yPos = 20;
+
+    // Add logo (top left)
+    try {
+      const logoData = this.getLogoDataUrl();
+      pdf.addImage(logoData, 'PNG', marginLeft, yPos, 30, 15); // 30mm width, 15mm height
+    } catch (error) {
+      console.error('Failed to load logo:', error);
+    }
 
     // Company info (top right)
     pdf.setFontSize(10);
@@ -177,8 +193,8 @@ export class PdfService {
     yPos += 2;
     pdf.line(marginLeft, yPos, pageWidth - marginRight, yPos);
 
-    // Positions table
-    yPos += 8;
+    // Positions table - reduced gap from 8 to 5mm
+    yPos += 5;
     this.drawContractTable(pdf, contract, marginLeft, yPos, contentWidth);
 
     return pdf;
@@ -222,50 +238,52 @@ export class PdfService {
     });
 
     // Totals section
-    yPos += 5;
+    yPos += 8; // Better spacing after table
     const nettoBetrag = this.calculateInvoiceNetto(invoice);
     const mwst = invoice.type === 'D' ? nettoBetrag * 0.2 : 0;
     const anzahlungNetto = invoice.depositAmount ? (invoice.depositAmount / 1.2) : 0;
     const anzahlungMwst = invoice.depositAmount ? invoice.depositAmount - anzahlungNetto : 0;
     const restbetrag = invoice.type === 'D' ? nettoBetrag + mwst - invoice.depositAmount : nettoBetrag;
 
+    const infoTextYPos = yPos; // Store starting position for alignment
+
     if (invoice.type !== 'D') {
       pdf.setFontSize(9);
       pdf.text('Es wird darauf hingewiesen, dass die Steuerschuld gem. § 19 Abs. 1a UStG', x, yPos);
       yPos += 4;
       pdf.text('auf den Leistungsempfänger übergeht', x, yPos);
-      yPos += 6;
     } else {
       pdf.setFontSize(9);
       pdf.text('Zahlbar nach Erhalt der Rechnung', x, yPos);
-      yPos += 6;
     }
 
+    // Align totals with the info text baseline
+    let totalsYPos = infoTextYPos;
     pdf.setFontSize(10);
     pdf.setFont('helvetica', invoice.type === 'D' ? 'normal' : 'bold');
-    pdf.text('Nettobetrag:', x + width - 60, yPos);
-    pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, yPos, { align: 'right' });
-    yPos += 5;
+    pdf.text('Nettobetrag:', x + width - 60, totalsYPos);
+    pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, totalsYPos, { align: 'right' });
+    totalsYPos += 5;
 
     if (invoice.type === 'D') {
       pdf.setFont('helvetica', 'normal');
-      pdf.text('zzgl. 20% MwSt.:', x + width - 60, yPos);
-      pdf.text(this.formatCurrency(mwst), x + width - 2, yPos, { align: 'right' });
-      yPos += 5;
+      pdf.text('zzgl. 20% MwSt.:', x + width - 60, totalsYPos);
+      pdf.text(this.formatCurrency(mwst), x + width - 2, totalsYPos, { align: 'right' });
+      totalsYPos += 5;
 
       if (invoice.depositAmount > 0) {
-        pdf.text(`- Anzahlung vom ${this.formatDate(invoice.depositPaidOn)}:`, x + width - 60, yPos);
-        pdf.text(this.formatCurrency(anzahlungNetto), x + width - 2, yPos, { align: 'right' });
-        yPos += 5;
+        pdf.text(`- Anzahlung vom ${this.formatDate(invoice.depositPaidOn)}:`, x + width - 90, totalsYPos);
+        pdf.text(this.formatCurrency(anzahlungNetto), x + width - 2, totalsYPos, { align: 'right' });
+        totalsYPos += 5;
 
-        pdf.text('- Umsatzsteuer Anzahlung:', x + width - 60, yPos);
-        pdf.text(this.formatCurrency(anzahlungMwst), x + width - 2, yPos, { align: 'right' });
-        yPos += 5;
+        pdf.text('- Umsatzsteuer Anzahlung:', x + width - 60, totalsYPos);
+        pdf.text(this.formatCurrency(anzahlungMwst), x + width - 2, totalsYPos, { align: 'right' });
+        totalsYPos += 5;
       }
 
       pdf.setFont('helvetica', 'bold');
-      pdf.text(invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:', x + width - 60, yPos);
-      pdf.text(this.formatCurrency(restbetrag), x + width - 2, yPos, { align: 'right' });
+      pdf.text(invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:', x + width - 60, totalsYPos);
+      pdf.text(this.formatCurrency(restbetrag), x + width - 2, totalsYPos, { align: 'right' });
     }
 
     // Footer
@@ -327,27 +345,29 @@ export class PdfService {
     });
 
     // Totals
-    yPos += 5;
+    yPos += 8; // Better spacing after table
     const nettoBetrag = this.calculateContractNetto(contract);
     const mwst = nettoBetrag * 0.2;
     const gesamtBetrag = nettoBetrag + mwst;
 
+    const infoTextYPos = yPos; // Store starting position for alignment
     pdf.setFontSize(9);
     pdf.text('Dieses Angebot ist 10 Tage lang gültig', x, yPos);
-    yPos += 6;
 
+    // Align totals with the info text baseline
+    let totalsYPos = infoTextYPos;
     pdf.setFontSize(10);
-    pdf.text('Nettobetrag:', x + width - 60, yPos);
-    pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, yPos, { align: 'right' });
-    yPos += 5;
+    pdf.text('Nettobetrag:', x + width - 60, totalsYPos);
+    pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, totalsYPos, { align: 'right' });
+    totalsYPos += 5;
 
-    pdf.text('zzgl. 20% MwSt.:', x + width - 60, yPos);
-    pdf.text(this.formatCurrency(mwst), x + width - 2, yPos, { align: 'right' });
-    yPos += 5;
+    pdf.text('zzgl. 20% MwSt.:', x + width - 60, totalsYPos);
+    pdf.text(this.formatCurrency(mwst), x + width - 2, totalsYPos, { align: 'right' });
+    totalsYPos += 5;
 
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Gesamtbetrag:', x + width - 60, yPos);
-    pdf.text(this.formatCurrency(gesamtBetrag), x + width - 2, yPos, { align: 'right' });
+    pdf.text('Gesamtbetrag:', x + width - 60, totalsYPos);
+    pdf.text(this.formatCurrency(gesamtBetrag), x + width - 2, totalsYPos, { align: 'right' });
 
     // Footer
     yPos = 270;
@@ -413,5 +433,12 @@ export class PdfService {
     const firstname = contract.customer?.firstname || '';
     const date = this.formatDate(contract.createdAt).replace(/\./g, '-');
     return `${contractNum}_Angebot_${surname}_${firstname}_${date}.pdf`;
+  }
+
+  private getLogoDataUrl(): string {
+    // Base64 encoded logo - this is a simple approach
+    // In a production environment, you might load this from the assets folder
+    // For now, we'll return the path and jsPDF will handle loading it
+    return '/assets/images/logo_v1.png';
   }
 }
