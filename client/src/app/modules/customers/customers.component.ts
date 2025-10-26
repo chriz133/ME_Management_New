@@ -307,9 +307,8 @@ export class CustomersComponent implements OnInit {
   }
 
   editCustomer(customer: Customer): void {
-    // For now, we'll navigate to the detail page which could be extended for editing
-    // In a full implementation, you'd navigate to an edit page or open an edit dialog
-    this.router.navigate(['/customers', customer.customerId]);
+    // Navigate to the edit page
+    this.router.navigate(['/customers', customer.customerId, 'edit']);
   }
 
   deleteCustomer(customer: Customer): void {

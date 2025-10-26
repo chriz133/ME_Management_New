@@ -44,6 +44,10 @@ export const routes: Routes = [
         component: CustomerCreateComponent
       },
       {
+        path: 'customers/:id/edit',
+        component: CustomerCreateComponent
+      },
+      {
         path: 'customers/:id',
         component: CustomerDetailComponent
       },
@@ -56,6 +60,10 @@ export const routes: Routes = [
         component: InvoiceCreateComponent
       },
       {
+        path: 'invoices/:id/edit',
+        component: InvoiceCreateComponent
+      },
+      {
         path: 'invoices/:id',
         component: InvoiceDetailComponent
       },
@@ -65,6 +73,10 @@ export const routes: Routes = [
       },
       {
         path: 'contracts/create',
+        component: ContractCreateComponent
+      },
+      {
+        path: 'contracts/:id/edit',
         component: ContractCreateComponent
       },
       {

@@ -306,28 +306,8 @@ export class ContractsComponent implements OnInit {
   }
 
   editContract(contract: Contract) {
-    // Navigate to edit page (we'd need to create an edit component)
-    // For now, let's implement update of acceptance status
-    const updatedAccepted = !contract.accepted;
-    
-    this.contractService.update(contract.contractId, { accepted: updatedAccepted }).subscribe({
-      next: () => {
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Erfolg', 
-          detail: 'Angebot wurde aktualisiert' 
-        });
-        this.loadContracts();
-      },
-      error: (error) => {
-        console.error('Error updating contract:', error);
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Fehler', 
-          detail: 'Angebot konnte nicht aktualisiert werden' 
-        });
-      }
-    });
+    // Navigate to edit page
+    this.router.navigate(['/contracts', contract.contractId, 'edit']);
   }
 
   navigateToCreate() {

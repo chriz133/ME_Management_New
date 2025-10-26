@@ -329,8 +329,8 @@ export class InvoicesComponent implements OnInit {
   }
 
   editInvoice(invoice: Invoice): void {
-    // Navigate to detail page which could be extended for editing
-    this.router.navigate(['/invoices', invoice.invoiceId]);
+    // Navigate to the edit page
+    this.router.navigate(['/invoices', invoice.invoiceId, 'edit']);
   }
 
   deleteInvoice(invoice: Invoice): void {
