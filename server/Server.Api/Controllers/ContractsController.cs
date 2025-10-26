@@ -64,21 +64,21 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
-    /// Update contract acceptance status (requires User or Admin role)
+    /// Update contract (requires User or Admin role)
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,User")]
-    public async Task<ActionResult> UpdateContract(int id, [FromBody] UpdateContractRequest request)
+    public async Task<ActionResult<ContractDto>> UpdateContract(int id, [FromBody] UpdateContractRequest request)
     {
         try
         {
-            await _contractBusinessLogic.UpdateContractAsync(id, request.Accepted);
+            var contractDto = await _contractBusinessLogic.UpdateContractAsync(id, request);
             _logger.LogInformation("Contract {ContractId} updated by user", id);
-            return Ok(new { message = "Contract updated successfully" });
+            return Ok(contractDto);
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Contract {ContractId} not found", id);
+            _logger.LogWarning(ex, "Contract {ContractId} not found or validation error", id);
             return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
@@ -160,12 +160,4 @@ public class ContractsController : ControllerBase
             return StatusCode(500, new { message = "Error converting contract to invoice", error = ex.Message });
         }
     }
-}
-
-/// <summary>
-/// Request model for updating contract
-/// </summary>
-public class UpdateContractRequest
-{
-    public bool Accepted { get; set; }
 }
