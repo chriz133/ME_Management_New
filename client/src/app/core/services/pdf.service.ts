@@ -134,6 +134,7 @@ export class PdfService {
           border: black 2px solid;
           -webkit-print-color-adjust: exact;
           background-color: white;
+          font-family: Arial, sans-serif;
         }
         
         .content {
@@ -141,6 +142,7 @@ export class PdfService {
         }
         
         .header2 {
+          position: relative;
           height: calc(95mm * 2);
         }
         
@@ -148,10 +150,11 @@ export class PdfService {
           position: absolute;
           width: calc(2 * 30mm);
           left: calc(2 * 18mm);
+          top: 0;
         }
         
         .info {
-          position: relative;
+          position: absolute;
           width: calc(50mm * 2);
           height: calc(50mm * 2);
           top: calc(10mm * 2);
@@ -164,6 +167,7 @@ export class PdfService {
         
         .info > p {
           margin: 0;
+          line-height: 1.2;
         }
         
         .info-line-break {
@@ -171,32 +175,34 @@ export class PdfService {
         }
         
         .customer {
-          position: relative;
+          position: absolute;
           height: calc(13mm * 2);
           width: calc(50mm * 2);
-          top: calc(-15mm * 2);
+          top: calc(80mm * 2);
           left: calc(0mm * 2);
           font-size: calc(3mm * 2);
         }
         
         .customer > p {
           margin: 0;
+          line-height: 1.2;
         }
         
         .contract {
-          position: relative;
+          position: absolute;
           left: calc(0mm * 2);
-          top: calc(-2mm * 2);
+          top: calc(93mm * 2);
           font-weight: bold;
           font-size: calc(7mm * 2);
+          margin: 0;
         }
         
         .invoice-info {
-          position: relative;
+          position: absolute;
           border-bottom: black calc(1px * 2) solid;
           width: calc(170mm * 2);
           height: calc(12mm * 2);
-          top: calc(-5mm * 2);
+          top: calc(102mm * 2);
           left: calc(0mm * 2);
           font-size: calc(3mm * 2);
           font-weight: bold;
@@ -205,32 +211,35 @@ export class PdfService {
         .contract-info-left {
           position: absolute;
           left: 0;
-          top: calc(2 * -3mm);
+          top: 0;
           width: calc(2 * 50mm);
+          margin: 0;
         }
         
         .contract-info-middle {
           position: absolute;
-          top: calc(2 * -3mm);
+          top: 0;
           left: calc(2 * 60mm);
           width: calc(2 * 50mm);
           text-align: center;
+          margin: 0;
         }
         
         .contract-info-right {
           position: absolute;
-          top: calc(2 * -3mm);
+          top: 0;
           left: calc(2 * 120mm);
           width: calc(2 * 50mm);
           text-align: right;
+          margin: 0;
         }
         
         .contract-info-worktime {
           position: absolute;
-          margin-top: calc(2 * 7mm);
+          margin: 0;
+          top: calc(2 * 7mm);
           font-size: calc(2 * 4mm);
           font-weight: normal;
-          top: 0mm;
         }
         
         .positions {
@@ -339,6 +348,7 @@ export class PdfService {
           position: relative;
           height: inherit;
           top: calc(2 * -1mm);
+          margin: 0;
         }
         
         .footer {
@@ -489,6 +499,7 @@ export class PdfService {
           border: black 2px solid;
           -webkit-print-color-adjust: exact;
           background-color: white;
+          font-family: Arial, sans-serif;
         }
         
         .content {
@@ -496,6 +507,7 @@ export class PdfService {
         }
         
         .header {
+          position: relative;
           height: calc(90mm * 2);
         }
         
@@ -503,10 +515,11 @@ export class PdfService {
           position: absolute;
           width: calc(2 * 30mm);
           left: calc(2 * 18mm);
+          top: 0;
         }
         
         .info {
-          position: relative;
+          position: absolute;
           width: calc(50mm * 2);
           height: calc(50mm * 2);
           top: calc(10mm * 2);
@@ -519,6 +532,7 @@ export class PdfService {
         
         .info > p {
           margin: 0;
+          line-height: 1.2;
         }
         
         .info-line-break {
@@ -526,32 +540,34 @@ export class PdfService {
         }
         
         .customer {
-          position: relative;
+          position: absolute;
           height: calc(13mm * 2);
           width: calc(50mm * 2);
-          top: calc(-15mm * 2);
+          top: calc(75mm * 2);
           left: calc(0mm * 2);
           font-size: calc(3mm * 2);
         }
         
         .customer > p {
           margin: 0;
+          line-height: 1.2;
         }
         
         .contract {
-          position: relative;
+          position: absolute;
           left: calc(0mm * 2);
-          top: calc(-2mm * 2);
+          top: calc(88mm * 2);
           font-weight: bold;
           font-size: calc(7mm * 2);
+          margin: 0;
         }
         
         .contract-info {
-          position: relative;
+          position: absolute;
           border-bottom: black calc(1px * 2) solid;
           width: calc(170mm * 2);
           height: calc(7.5mm * 2);
-          top: calc(-5mm * 2);
+          top: calc(97mm * 2);
           left: calc(0mm * 2);
           font-size: calc(3mm * 2);
           font-weight: bold;
@@ -560,24 +576,27 @@ export class PdfService {
         .contract-info-left {
           position: absolute;
           left: 0;
-          top: calc(2 * -3mm);
+          top: 0;
           width: calc(2 * 50mm);
+          margin: 0;
         }
         
         .contract-info-middle {
           position: absolute;
-          top: calc(2 * -3mm);
+          top: 0;
           left: calc(2 * 60mm);
           width: calc(2 * 50mm);
           text-align: center;
+          margin: 0;
         }
         
         .contract-info-right {
           position: absolute;
-          top: calc(2 * -3mm);
+          top: 0;
           left: calc(2 * 120mm);
           width: calc(2 * 50mm);
           text-align: right;
+          margin: 0;
         }
         
         .positions {
@@ -652,59 +671,68 @@ export class PdfService {
           margin-top: calc(2 * 4mm);
           height: calc(2 * 20mm);
           font-size: calc(2 * 3mm);
+          position: relative;
         }
         
         .bill > p:nth-child(1) {
-          position: relative;
+          position: absolute;
           top: calc(2 * 1mm);
+          left: 0;
           width: fit-content;
+          margin: 0;
         }
         
         .bill > p:nth-child(2) {
-          position: relative;
-          top: calc(2 * -6mm);
+          position: absolute;
+          top: calc(2 * 1mm);
           width: calc(2 * 25mm);
           left: calc(2 * 115mm);
+          margin: 0;
         }
         
         .bill > p:nth-child(3) {
-          position: relative;
-          top: calc(2 * -9mm);
+          position: absolute;
+          top: calc(2 * 4mm);
           width: calc(2 * 25mm);
           left: calc(2 * 115mm);
+          margin: 0;
         }
         
         .bill > p:nth-child(4) {
-          position: relative;
+          position: absolute;
           font-weight: bold;
-          top: calc(2 * -12mm);
+          top: calc(2 * 7mm);
           width: calc(2 * 25mm);
           left: calc(2 * 115mm);
+          margin: 0;
         }
         
         .bill > p:nth-child(5) {
-          position: relative;
-          top: calc(2 * -27mm);
+          position: absolute;
+          top: calc(2 * 1mm);
           width: calc(2 * 20mm);
           left: calc(2 * 149mm);
           text-align: right;
+          margin: 0;
         }
         
         .bill > p:nth-child(6) {
-          position: relative;
-          top: calc(2 * -30mm);
+          position: absolute;
+          top: calc(2 * 4mm);
           width: calc(2 * 20mm);
           left: calc(2 * 149mm);
           text-align: right;
+          margin: 0;
         }
         
         .bill > p:nth-child(7) {
-          position: relative;
+          position: absolute;
           font-weight: bold;
-          top: calc(2 * -33mm);
+          top: calc(2 * 7mm);
           width: calc(2 * 20mm);
           left: calc(2 * 149mm);
           text-align: right;
+          margin: 0;
         }
         
         .footer {
