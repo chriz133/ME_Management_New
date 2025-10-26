@@ -67,6 +67,37 @@ public class SystemController : ControllerBase
     }
 
     /// <summary>
+    /// Get PDF save path settings.
+    /// </summary>
+    [HttpGet("pdf-settings")]
+    [ProducesResponseType(typeof(PdfSettingsResponse), StatusCodes.Status200OK)]
+    public ActionResult<PdfSettingsResponse> GetPdfSettings()
+    {
+        try
+        {
+            var invoicePath = _configuration["PdfSettings:InvoiceSavePath"] ?? "C:\\PDFs\\Invoices";
+            var contractPath = _configuration["PdfSettings:ContractSavePath"] ?? "C:\\PDFs\\Contracts";
+
+            _logger.LogDebug("Retrieved PDF settings successfully");
+
+            return Ok(new PdfSettingsResponse
+            {
+                InvoiceSavePath = invoicePath,
+                ContractSavePath = contractPath
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving PDF settings");
+            return Ok(new PdfSettingsResponse
+            {
+                InvoiceSavePath = "C:\\PDFs\\Invoices",
+                ContractSavePath = "C:\\PDFs\\Contracts"
+            });
+        }
+    }
+
+    /// <summary>
     /// Extract a value from a connection string by key.
     /// Handles values that may contain '=' characters.
     /// </summary>
@@ -96,4 +127,13 @@ public class DatabaseInfoResponse
 {
     public string DatabaseName { get; set; } = string.Empty;
     public string ServerAddress { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Response model for PDF settings.
+/// </summary>
+public class PdfSettingsResponse
+{
+    public string InvoiceSavePath { get; set; } = string.Empty;
+    public string ContractSavePath { get; set; } = string.Empty;
 }
