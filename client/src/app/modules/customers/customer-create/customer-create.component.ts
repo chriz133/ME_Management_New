@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -27,8 +27,8 @@ import { ToastService } from '../../../core/services/toast.service';
       <p-card>
         <ng-template pTemplate="header">
           <div class="card-header">
-            <h2><i class="pi pi-user-plus"></i> Neuen Kunden erstellen</h2>
-            <p class="subtitle">Erfassen Sie hier die Kundendaten</p>
+            <h2><i class="pi pi-user-plus"></i> {{ isEditMode ? 'Kunde bearbeiten' : 'Neuen Kunden erstellen' }}</h2>
+            <p class="subtitle">{{ isEditMode ? 'Bearbeiten Sie die Kundendaten' : 'Erfassen Sie hier die Kundendaten' }}</p>
           </div>
         </ng-template>
 
@@ -43,16 +43,13 @@ import { ToastService } from '../../../core/services/toast.service';
                 <i class="pi pi-user"></i>
                 Vorname *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-user"></i>
-                <input 
-                  pInputText 
-                  id="firstname" 
-                  [(ngModel)]="customer.firstname" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Max"
-                  required />
-              </span>
+              <input 
+                pInputText 
+                id="firstname" 
+                [(ngModel)]="customer.firstname" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Max"
+                required />
             </div>
 
             <div class="form-field">
@@ -60,16 +57,13 @@ import { ToastService } from '../../../core/services/toast.service';
                 <i class="pi pi-user"></i>
                 Nachname *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-user"></i>
-                <input 
-                  pInputText 
-                  id="surname" 
-                  [(ngModel)]="customer.surname" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Mustermann"
-                  required />
-              </span>
+              <input 
+                pInputText 
+                id="surname" 
+                [(ngModel)]="customer.surname" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Mustermann"
+                required />
             </div>
           </div>
         </div>
@@ -85,15 +79,12 @@ import { ToastService } from '../../../core/services/toast.service';
                 <i class="pi pi-home"></i>
                 Straße
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-home"></i>
-                <input 
-                  pInputText 
-                  id="address" 
-                  [(ngModel)]="customer.address" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Hauptstraße" />
-              </span>
+              <input 
+                pInputText 
+                id="address" 
+                [(ngModel)]="customer.address" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Hauptstraße" />
             </div>
 
             <div class="form-field">
@@ -101,15 +92,12 @@ import { ToastService } from '../../../core/services/toast.service';
                 <i class="pi pi-hashtag"></i>
                 Hausnummer
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-hashtag"></i>
-                <p-inputNumber 
-                  id="nr" 
-                  [(ngModel)]="customer.nr" 
-                  [style]="{'width': '100%'}" 
-                  [useGrouping]="false"
-                  placeholder="z.B. 123" />
-              </span>
+              <p-inputNumber 
+                id="nr" 
+                [(ngModel)]="customer.nr" 
+                [style]="{'width': '100%'}" 
+                [useGrouping]="false"
+                placeholder="z.B. 123" />
             </div>
 
             <div class="form-field">
@@ -117,16 +105,13 @@ import { ToastService } from '../../../core/services/toast.service';
                 <i class="pi pi-map"></i>
                 Postleitzahl *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-map"></i>
-                <p-inputNumber 
-                  id="plz" 
-                  [(ngModel)]="customer.plz" 
-                  [style]="{'width': '100%'}" 
-                  [useGrouping]="false"
-                  placeholder="z.B. 1010"
-                  required />
-              </span>
+              <p-inputNumber 
+                id="plz" 
+                [(ngModel)]="customer.plz" 
+                [style]="{'width': '100%'}" 
+                [useGrouping]="false"
+                placeholder="z.B. 1010"
+                required />
             </div>
 
             <div class="form-field">
@@ -134,16 +119,13 @@ import { ToastService } from '../../../core/services/toast.service';
                 <i class="pi pi-building"></i>
                 Stadt *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-building"></i>
-                <input 
-                  pInputText 
-                  id="city" 
-                  [(ngModel)]="customer.city" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Wien"
-                  required />
-              </span>
+              <input 
+                pInputText 
+                id="city" 
+                [(ngModel)]="customer.city" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Wien"
+                required />
             </div>
           </div>
         </div>
@@ -159,15 +141,12 @@ import { ToastService } from '../../../core/services/toast.service';
                 <i class="pi pi-id-card"></i>
                 Umsatzsteuer-Identifikationsnummer (UID)
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-id-card"></i>
-                <input 
-                  pInputText 
-                  id="uid" 
-                  [(ngModel)]="customer.uid" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. ATU12345678" />
-              </span>
+              <input 
+                pInputText 
+                id="uid" 
+                [(ngModel)]="customer.uid" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. ATU12345678" />
               <small class="field-hint">Optional - für Firmenkunden relevant</small>
             </div>
           </div>
@@ -182,7 +161,7 @@ import { ToastService } from '../../../core/services/toast.service';
               [outlined]="true"
               (onClick)="cancel()" />
             <p-button 
-              label="Kunde speichern" 
+              [label]="isEditMode ? 'Änderungen speichern' : 'Kunde speichern'" 
               icon="pi pi-check" 
               (onClick)="save()" 
               [disabled]="!isValid()" />
@@ -305,10 +284,15 @@ import { ToastService } from '../../../core/services/toast.service';
     }
   `]
 })
-export class CustomerCreateComponent {
+export class CustomerCreateComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly customerService = inject(CustomerService);
   private readonly toastService = inject(ToastService);
+
+  isEditMode = false;
+  customerId: number | null = null;
+  loading = false;
 
   customer: any = {
     firstname: '',
@@ -320,6 +304,43 @@ export class CustomerCreateComponent {
     uid: ''
   };
 
+  ngOnInit(): void {
+    // Check if we're in edit mode by looking for an ID in the route
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.customerId = +params['id'];
+        this.loadCustomer();
+      }
+    });
+  }
+
+  loadCustomer(): void {
+    if (!this.customerId) return;
+    
+    this.loading = true;
+    this.customerService.getById(this.customerId).subscribe({
+      next: (data) => {
+        this.customer = {
+          firstname: data.firstname || '',
+          surname: data.surname || '',
+          address: data.address || '',
+          nr: data.nr,
+          plz: data.plz,
+          city: data.city || '',
+          uid: data.uid || ''
+        };
+        this.loading = false;
+      },
+      error: (error) => {
+        this.toastService.error('Fehler beim Laden des Kunden');
+        console.error(error);
+        this.loading = false;
+        this.router.navigate(['/customers']);
+      }
+    });
+  }
+
   isValid(): boolean {
     return !!(this.customer.firstname && this.customer.surname && this.customer.plz && this.customer.city);
   }
@@ -329,16 +350,31 @@ export class CustomerCreateComponent {
       return;
     }
 
-    this.customerService.create(this.customer).subscribe({
-      next: (result) => {
-        this.toastService.success('Kunde erfolgreich erstellt');
-        this.router.navigate(['/customers', result.customerId]);
-      },
-      error: (error) => {
-        this.toastService.error('Fehler beim Erstellen des Kunden');
-        console.error(error);
-      }
-    });
+    if (this.isEditMode && this.customerId) {
+      // Update existing customer
+      this.customerService.update(this.customerId, this.customer).subscribe({
+        next: (result) => {
+          this.toastService.success('Kunde erfolgreich aktualisiert');
+          this.router.navigate(['/customers', this.customerId]);
+        },
+        error: (error) => {
+          this.toastService.error('Fehler beim Aktualisieren des Kunden');
+          console.error(error);
+        }
+      });
+    } else {
+      // Create new customer
+      this.customerService.create(this.customer).subscribe({
+        next: (result) => {
+          this.toastService.success('Kunde erfolgreich erstellt');
+          this.router.navigate(['/customers', result.customerId]);
+        },
+        error: (error) => {
+          this.toastService.error('Fehler beim Erstellen des Kunden');
+          console.error(error);
+        }
+      });
+    }
   }
 
   cancel(): void {

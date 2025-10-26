@@ -4,7 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { routes } from './app.routes';
@@ -29,6 +29,7 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     MessageService,
+    ConfirmationService,
     { provide: LOCALE_ID, useValue: 'de' }
   ]
 };

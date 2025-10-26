@@ -40,7 +40,7 @@ import { Customer } from '../../../core/models/customer.model';
           <div class="card-header">
             <h2>
               <i class="pi pi-file-invoice"></i> 
-              {{ isFromContract ? 'Rechnung aus Angebot erstellen' : 'Neue Rechnung erstellen' }}
+              {{ isEditMode ? 'Rechnung bearbeiten' : (isFromContract ? 'Rechnung aus Angebot erstellen' : 'Neue Rechnung erstellen') }}
             </h2>
             @if (isFromContract) {
               <p class="subtitle">Die Daten aus dem Angebot wurden übernommen. Sie können diese noch anpassen.</p>
@@ -265,7 +265,7 @@ import { Customer } from '../../../core/models/customer.model';
               [outlined]="true"
               (onClick)="cancel()" />
             <p-button
-              label="Rechnung speichern"
+              [label]="isEditMode ? 'Änderungen speichern' : 'Rechnung speichern'"
               icon="pi pi-check"
               (onClick)="save()"
               [disabled]="!isValid()" />
@@ -463,6 +463,9 @@ export class InvoiceCreateComponent implements OnInit {
 
   customers: Customer[] = [];
   isFromContract = false;
+  isEditMode = false;
+  invoiceId: number | null = null;
+  loading = false;
   hasDeposit = false;
 
   typeOptions = [
@@ -493,12 +496,55 @@ export class InvoiceCreateComponent implements OnInit {
   ngOnInit(): void {
     this.loadCustomers();
 
-    // Check if creating from contract
+    // Check if we're in edit mode by looking for an ID in the route
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.invoiceId = +params['id'];
+        this.loadInvoice();
+        return; // Don't check for contract if in edit mode
+      }
+    });
+
+    // Check if creating from contract (only if not in edit mode)
     this.route.queryParams.subscribe(params => {
       const contractId = params['contractId'];
-      if (contractId) {
+      if (contractId && !this.isEditMode) {
         this.isFromContract = true;
         this.loadFromContract(Number(contractId));
+      }
+    });
+  }
+
+  loadInvoice(): void {
+    if (!this.invoiceId) return;
+    
+    this.loading = true;
+    this.invoiceService.getById(this.invoiceId).subscribe({
+      next: (data) => {
+        this.invoice = {
+          customerId: data.customerId,
+          startedAt: data.startedAt ? new Date(data.startedAt) : new Date(),
+          finishedAt: data.finishedAt ? new Date(data.finishedAt) : new Date(),
+          type: data.type || 'D',
+          depositAmount: data.depositAmount || 0,
+          depositPaidOn: data.depositPaidOn || '1111-11-11',
+          positions: data.positions?.map((p: any) => ({
+            positionId: p.position?.positionId,
+            text: p.position?.text || '',
+            price: p.position?.price || 0,
+            unit: p.position?.unit || 'Pauschal',
+            amount: p.amount || 1
+          })) || []
+        };
+        this.hasDeposit = this.invoice.depositAmount > 0;
+        this.loading = false;
+      },
+      error: (error) => {
+        this.toastService.error('Fehler beim Laden der Rechnung');
+        console.error(error);
+        this.loading = false;
+        this.router.navigate(['/invoices']);
       }
     });
   }
@@ -593,18 +639,33 @@ export class InvoiceCreateComponent implements OnInit {
       }))
     };
 
-    console.log('Creating invoice with data:', requestData);
-
-    this.invoiceService.create(requestData).subscribe({
-      next: (result) => {
-        this.toastService.success('Rechnung erfolgreich erstellt');
-        this.router.navigate(['/invoices', result.invoiceId]);
-      },
-      error: (error) => {
-        this.toastService.error('Fehler beim Erstellen der Rechnung');
-        console.error('Invoice creation error:', error);
-      }
-    });
+    if (this.isEditMode && this.invoiceId) {
+      // Update existing invoice
+      console.log('Updating invoice with data:', requestData);
+      this.invoiceService.update(this.invoiceId, requestData).subscribe({
+        next: (result) => {
+          this.toastService.success('Rechnung erfolgreich aktualisiert');
+          this.router.navigate(['/invoices', this.invoiceId]);
+        },
+        error: (error) => {
+          this.toastService.error('Fehler beim Aktualisieren der Rechnung');
+          console.error('Invoice update error:', error);
+        }
+      });
+    } else {
+      // Create new invoice
+      console.log('Creating invoice with data:', requestData);
+      this.invoiceService.create(requestData).subscribe({
+        next: (result) => {
+          this.toastService.success('Rechnung erfolgreich erstellt');
+          this.router.navigate(['/invoices', result.invoiceId]);
+        },
+        error: (error) => {
+          this.toastService.error('Fehler beim Erstellen der Rechnung');
+          console.error('Invoice creation error:', error);
+        }
+      });
+    }
   }
 
   cancel(): void {

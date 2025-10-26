@@ -11,6 +11,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CustomerService } from '../../core/services/customer.service';
 import { Customer } from '../../core/models/customer.model';
 import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-customers',
@@ -114,7 +116,7 @@ import { ToastService } from '../../core/services/toast.service';
               </th>
               <th>PLZ</th>
               <th>UID</th>
-              <th class="text-center" style="width: 100px;">Aktionen</th>
+              <th class="text-center" style="width: 150px;">Aktionen</th>
             </tr>
           </ng-template>
 
@@ -156,6 +158,26 @@ import { ToastService } from '../../core/services/toast.service';
                   (onClick)="viewCustomer(customer)"
                   pTooltip="Details anzeigen"
                   tooltipPosition="left"
+                />
+                <p-button
+                  *ngIf="canEdit"
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="warn"
+                  (onClick)="editCustomer(customer); $event.stopPropagation()"
+                  pTooltip="Bearbeiten"
+                  tooltipPosition="top"
+                />
+                <p-button
+                  *ngIf="canDelete"
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="deleteCustomer(customer); $event.stopPropagation()"
+                  pTooltip="Löschen"
+                  tooltipPosition="right"
                 />
               </td>
             </tr>
@@ -244,9 +266,19 @@ export class CustomersComponent implements OnInit {
   private readonly customerService = inject(CustomerService);
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   customers: Customer[] = [];
   loading = true;
+
+  get canEdit(): boolean {
+    return this.authService.canEdit();
+  }
+
+  get canDelete(): boolean {
+    return this.authService.canDelete();
+  }
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -272,5 +304,37 @@ export class CustomersComponent implements OnInit {
 
   navigateToCreate(): void {
     this.router.navigate(['/customers/create']);
+  }
+
+  editCustomer(customer: Customer): void {
+    // Navigate to the edit page
+    this.router.navigate(['/customers', customer.customerId, 'edit']);
+  }
+
+  deleteCustomer(customer: Customer): void {
+    if (!this.canDelete) {
+      this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Kunden löschen');
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Möchten Sie den Kunden "${customer.fullName}" wirklich löschen?`,
+      header: 'Löschen bestätigen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, löschen',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.customerService.delete(customer.customerId).subscribe({
+          next: () => {
+            this.toastService.success('Erfolg', 'Kunde wurde gelöscht');
+            this.loadCustomers();
+          },
+          error: () => {
+            this.toastService.error('Fehler', 'Kunde konnte nicht gelöscht werden');
+          }
+        });
+      }
+    });
   }
 }

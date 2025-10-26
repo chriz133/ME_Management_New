@@ -6,8 +6,12 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 import { PositionService } from '../../core/services/position.service';
 import { Position } from '../../core/models/position.model';
+import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-positions',
@@ -19,7 +23,8 @@ import { Position } from '../../core/models/position.model';
     TableModule,
     ButtonModule,
     InputTextModule,
-    SkeletonModule
+    SkeletonModule,
+    TooltipModule
   ],
   template: `
     <div class="positions-container">
@@ -69,6 +74,7 @@ import { Position } from '../../core/models/position.model';
               <th pSortableColumn="text">Beschreibung <p-sortIcon field="text"></p-sortIcon></th>
               <th pSortableColumn="price">Preis <p-sortIcon field="price"></p-sortIcon></th>
               <th pSortableColumn="unit">Einheit <p-sortIcon field="unit"></p-sortIcon></th>
+              <th class="text-center" style="width: 150px;">Aktionen</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-position>
@@ -77,11 +83,33 @@ import { Position } from '../../core/models/position.model';
               <td>{{ position.text }}</td>
               <td>{{ position.price | currency:'EUR':'symbol':'1.2-2':'de' }}</td>
               <td>{{ position.unit }}</td>
+              <td class="text-center">
+                <p-button
+                  *ngIf="canEdit"
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="warn"
+                  (onClick)="editPosition(position); $event.stopPropagation()"
+                  pTooltip="Bearbeiten"
+                  tooltipPosition="top"
+                />
+                <p-button
+                  *ngIf="canDelete"
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="deletePosition(position); $event.stopPropagation()"
+                  pTooltip="Löschen"
+                  tooltipPosition="right"
+                />
+              </td>
             </tr>
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="4" class="text-center">Keine Positionen gefunden</td>
+              <td colspan="5" class="text-center">Keine Positionen gefunden</td>
             </tr>
           </ng-template>
         </p-table>
@@ -135,10 +163,21 @@ import { Position } from '../../core/models/position.model';
 })
 export class PositionsComponent implements OnInit {
   private readonly positionService = inject(PositionService);
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   positions: Position[] = [];
   loading = false;
   searchText = '';
+
+  get canEdit(): boolean {
+    return this.authService.canEdit();
+  }
+
+  get canDelete(): boolean {
+    return this.authService.canDelete();
+  }
 
   ngOnInit(): void {
     this.loadPositions();
@@ -154,6 +193,40 @@ export class PositionsComponent implements OnInit {
       error: (error) => {
         console.error(error);
         this.loading = false;
+      }
+    });
+  }
+
+  editPosition(position: Position): void {
+    // For now, show a placeholder message
+    // In a full implementation, you'd have a proper edit dialog or form
+    this.toastService.info('Info', 'Bearbeitungsfunktion in Entwicklung');
+  }
+
+  deletePosition(position: Position): void {
+    if (!this.canDelete) {
+      this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Positionen löschen');
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Möchten Sie die Position "${position.text}" wirklich löschen?`,
+      header: 'Löschen bestätigen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, löschen',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.positionService.delete(position.positionId).subscribe({
+          next: () => {
+            this.toastService.success('Erfolg', 'Position wurde gelöscht');
+            this.loadPositions();
+          },
+          error: (error) => {
+            console.error(error);
+            this.toastService.error('Fehler', 'Position konnte nicht gelöscht werden');
+          }
+        });
       }
     });
   }

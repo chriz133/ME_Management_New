@@ -45,20 +45,17 @@ import { ToastService } from '../../core/services/toast.service';
                 <i class="pi pi-euro"></i>
                 Betrag (EUR) *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-euro"></i>
-                <p-inputNumber
-                  id="amount"
-                  [(ngModel)]="transaction.amount"
-                  [style]="{'width': '100%'}"
-                  [minFractionDigits]="2"
-                  [maxFractionDigits]="2"
-                  mode="currency"
-                  currency="EUR"
-                  locale="de-DE"
-                  placeholder="0,00"
-                  required />
-              </span>
+              <p-inputNumber
+                id="amount"
+                [(ngModel)]="transaction.amount"
+                [style]="{'width': '100%'}"
+                [minFractionDigits]="2"
+                [maxFractionDigits]="2"
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                placeholder="0,00"
+                required />
             </div>
 
             <div class="form-field">
@@ -66,17 +63,14 @@ import { ToastService } from '../../core/services/toast.service';
                 <i class="pi pi-calendar"></i>
                 Datum *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-calendar"></i>
-                <p-datePicker
-                  id="date"
-                  [(ngModel)]="transaction.date"
-                  [style]="{'width': '100%'}"
-                  dateFormat="dd.mm.yy"
-                  [showIcon]="true"
-                  placeholder="Datum auswählen..."
-                  required />
-              </span>
+              <p-datePicker
+                id="date"
+                [(ngModel)]="transaction.date"
+                [style]="{'width': '100%'}"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                placeholder="Datum auswählen..."
+                required />
             </div>
 
             <div class="form-field">

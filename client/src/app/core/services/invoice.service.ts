@@ -25,4 +25,12 @@ export class InvoiceService {
   create(invoice: any): Observable<Invoice> {
     return this.http.post<Invoice>(this.apiUrl, invoice);
   }
+
+  update(id: number, invoice: any): Observable<Invoice> {
+    return this.http.put<Invoice>(`${this.apiUrl}/${id}`, invoice);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

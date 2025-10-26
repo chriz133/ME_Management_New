@@ -79,4 +79,53 @@ public class PositionsController : ControllerBase
             return StatusCode(500, new { message = "Error creating position", error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Update an existing position (requires Admin or User role)
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<PositionDto>> UpdatePosition(int id, [FromBody] UpdatePositionRequest request)
+    {
+        try
+        {
+            var positionDto = await _positionBusinessLogic.UpdatePositionAsync(id, request);
+            return Ok(positionDto);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Position {PositionId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating position {PositionId}", id);
+            return StatusCode(500, new { message = "Error updating position", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete a position (requires Admin role only)
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> DeletePosition(int id)
+    {
+        try
+        {
+            await _positionBusinessLogic.DeletePositionAsync(id);
+            _logger.LogInformation("Position {PositionId} deleted by admin", id);
+            return Ok(new { message = "Position deleted successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Position {PositionId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting position {PositionId}", id);
+            return StatusCode(500, new { message = "Error deleting position", error = ex.Message });
+        }
+    }
 }

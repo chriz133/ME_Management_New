@@ -30,4 +30,26 @@ public class TransactionDataAccess : ITransactionDataAccess
         await _context.SaveChangesAsync();
         return transaction;
     }
+
+    public async Task<TransactionEntity> UpdateTransactionAsync(TransactionEntity transaction)
+    {
+        _context.Transactions.Update(transaction);
+        await _context.SaveChangesAsync();
+        return transaction;
+    }
+
+    public async Task DeleteTransactionAsync(int transactionId)
+    {
+        var transaction = await _context.Transactions.FindAsync(transactionId);
+        if (transaction != null)
+        {
+            _context.Transactions.Remove(transaction);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<bool> TransactionExistsAsync(int transactionId)
+    {
+        return await _context.Transactions.AnyAsync(t => t.TransactionId == transactionId);
+    }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { Select } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
@@ -33,7 +33,7 @@ import { Customer } from '../../../core/models/customer.model';
       <p-card>
         <ng-template pTemplate="header">
           <div class="card-header">
-            <h2><i class="pi pi-file-edit"></i> Neues Angebot erstellen</h2>
+            <h2><i class="pi pi-file-edit"></i> {{ isEditMode ? 'Angebot bearbeiten' : 'Neues Angebot erstellen' }}</h2>
           </div>
         </ng-template>
 
@@ -170,7 +170,7 @@ import { Customer } from '../../../core/models/customer.model';
               [outlined]="true"
               (onClick)="cancel()" />
             <p-button
-              label="Angebot speichern"
+              [label]="isEditMode ? 'Änderungen speichern' : 'Angebot speichern'"
               icon="pi pi-check"
               (onClick)="save()"
               [disabled]="!isValid()" />
@@ -353,9 +353,14 @@ import { Customer } from '../../../core/models/customer.model';
 })
 export class ContractCreateComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly customerService = inject(CustomerService);
   private readonly contractService = inject(ContractService);
   private readonly toastService = inject(ToastService);
+
+  isEditMode = false;
+  contractId: number | null = null;
+  loading = false;
 
   unitOptions = [
     { label: 'Pauschal', value: 'Pauschal' },
@@ -377,6 +382,42 @@ export class ContractCreateComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
+    
+    // Check if we're in edit mode by looking for an ID in the route
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.contractId = +params['id'];
+        this.loadContract();
+      }
+    });
+  }
+
+  loadContract(): void {
+    if (!this.contractId) return;
+    
+    this.loading = true;
+    this.contractService.getById(this.contractId).subscribe({
+      next: (data) => {
+        this.contract = {
+          customerId: data.customerId,
+          accepted: data.accepted,
+          positions: data.positions?.map((p: any) => ({
+            text: p.position?.text || '',
+            price: p.position?.price || 0,
+            unit: p.position?.unit || 'Pauschal',
+            amount: p.amount || 1
+          })) || []
+        };
+        this.loading = false;
+      },
+      error: (error) => {
+        this.toastService.error('Fehler beim Laden des Angebots');
+        console.error(error);
+        this.loading = false;
+        this.router.navigate(['/contracts']);
+      }
+    });
   }
 
   loadCustomers(): void {
@@ -436,18 +477,33 @@ export class ContractCreateComponent implements OnInit {
       }))
     };
 
-    console.log('Creating contract with data:', requestData);
-
-    this.contractService.create(requestData).subscribe({
-      next: (result) => {
-        this.toastService.success('Angebot erfolgreich erstellt');
-        this.router.navigate(['/contracts', result.contractId]);
-      },
-      error: (error) => {
-        this.toastService.error('Fehler beim Erstellen des Angebots');
-        console.error('Contract creation error:', error);
-      }
-    });
+    if (this.isEditMode && this.contractId) {
+      // Update existing contract
+      console.log('Updating contract with data:', requestData);
+      this.contractService.update(this.contractId, requestData).subscribe({
+        next: (result) => {
+          this.toastService.success('Angebot erfolgreich aktualisiert');
+          this.router.navigate(['/contracts', this.contractId]);
+        },
+        error: (error) => {
+          this.toastService.error('Fehler beim Aktualisieren des Angebots');
+          console.error('Contract update error:', error);
+        }
+      });
+    } else {
+      // Create new contract
+      console.log('Creating contract with data:', requestData);
+      this.contractService.create(requestData).subscribe({
+        next: (result) => {
+          this.toastService.success('Angebot erfolgreich erstellt');
+          this.router.navigate(['/contracts', result.contractId]);
+        },
+        error: (error) => {
+          this.toastService.error('Fehler beim Erstellen des Angebots');
+          console.error('Contract creation error:', error);
+        }
+      });
+    }
   }
 
   cancel(): void {

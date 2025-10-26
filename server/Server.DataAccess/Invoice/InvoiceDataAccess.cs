@@ -69,4 +69,26 @@ public class InvoiceDataAccess : IInvoiceDataAccess
     {
         await _context.SaveChangesAsync();
     }
+
+    public async Task<InvoiceEntity> UpdateInvoiceAsync(InvoiceEntity invoice)
+    {
+        _context.InvoicesDb.Update(invoice);
+        await _context.SaveChangesAsync();
+        return invoice;
+    }
+
+    public async Task DeleteInvoiceAsync(int invoiceId)
+    {
+        var invoice = await _context.InvoicesDb.FindAsync(invoiceId);
+        if (invoice != null)
+        {
+            _context.InvoicesDb.Remove(invoice);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<bool> InvoiceExistsAsync(int invoiceId)
+    {
+        return await _context.InvoicesDb.AnyAsync(i => i.InvoiceId == invoiceId);
+    }
 }
