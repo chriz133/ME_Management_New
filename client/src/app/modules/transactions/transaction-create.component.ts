@@ -42,43 +42,40 @@ import { ToastService } from '../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field">
               <label for="amount">
+                <i class="pi pi-euro"></i>
                 Betrag (EUR) *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-euro"></i>
-                <p-inputNumber
-                  id="amount"
-                  [(ngModel)]="transaction.amount"
-                  [style]="{'width': '100%'}"
-                  [minFractionDigits]="2"
-                  [maxFractionDigits]="2"
-                  mode="currency"
-                  currency="EUR"
-                  locale="de-DE"
-                  placeholder="0,00"
-                  required />
-              </span>
+              <p-inputNumber
+                id="amount"
+                [(ngModel)]="transaction.amount"
+                [style]="{'width': '100%'}"
+                [minFractionDigits]="2"
+                [maxFractionDigits]="2"
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                placeholder="0,00"
+                required />
             </div>
 
             <div class="form-field">
               <label for="date">
+                <i class="pi pi-calendar"></i>
                 Datum *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-calendar"></i>
-                <p-datePicker
-                  id="date"
-                  [(ngModel)]="transaction.date"
-                  [style]="{'width': '100%'}"
-                  dateFormat="dd.mm.yy"
-                  [showIcon]="true"
-                  placeholder="Datum auswählen..."
-                  required />
-              </span>
+              <p-datePicker
+                id="date"
+                [(ngModel)]="transaction.date"
+                [style]="{'width': '100%'}"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                placeholder="Datum auswählen..."
+                required />
             </div>
 
             <div class="form-field">
               <label for="type">
+                <i class="pi pi-tag"></i>
                 Typ *
               </label>
               <p-select
@@ -95,6 +92,7 @@ import { ToastService } from '../../core/services/toast.service';
 
             <div class="form-field">
               <label for="medium">
+                <i class="pi pi-wallet"></i>
                 Zahlungsmittel *
               </label>
               <p-select
@@ -112,6 +110,7 @@ import { ToastService } from '../../core/services/toast.service';
 
           <div class="form-field full-width">
             <label for="description">
+              <i class="pi pi-file-edit"></i>
               Beschreibung *
             </label>
             <textarea 

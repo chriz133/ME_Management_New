@@ -40,34 +40,30 @@ import { ToastService } from '../../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field">
               <label for="firstname">
+                <i class="pi pi-user"></i>
                 Vorname *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-user"></i>
-                <input 
-                  pInputText 
-                  id="firstname" 
-                  [(ngModel)]="customer.firstname" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Max"
-                  required />
-              </span>
+              <input 
+                pInputText 
+                id="firstname" 
+                [(ngModel)]="customer.firstname" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Max"
+                required />
             </div>
 
             <div class="form-field">
               <label for="surname">
+                <i class="pi pi-user"></i>
                 Nachname *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-user"></i>
-                <input 
-                  pInputText 
-                  id="surname" 
-                  [(ngModel)]="customer.surname" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Mustermann"
-                  required />
-              </span>
+              <input 
+                pInputText 
+                id="surname" 
+                [(ngModel)]="customer.surname" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Mustermann"
+                required />
             </div>
           </div>
         </div>
@@ -80,64 +76,56 @@ import { ToastService } from '../../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field">
               <label for="address">
+                <i class="pi pi-home"></i>
                 Straße
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-home"></i>
-                <input 
-                  pInputText 
-                  id="address" 
-                  [(ngModel)]="customer.address" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Hauptstraße" />
-              </span>
+              <input 
+                pInputText 
+                id="address" 
+                [(ngModel)]="customer.address" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Hauptstraße" />
             </div>
 
             <div class="form-field">
               <label for="nr">
+                <i class="pi pi-hashtag"></i>
                 Hausnummer
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-hashtag"></i>
-                <p-inputNumber 
-                  id="nr" 
-                  [(ngModel)]="customer.nr" 
-                  [style]="{'width': '100%'}" 
-                  [useGrouping]="false"
-                  placeholder="z.B. 123" />
-              </span>
+              <p-inputNumber 
+                id="nr" 
+                [(ngModel)]="customer.nr" 
+                [style]="{'width': '100%'}" 
+                [useGrouping]="false"
+                placeholder="z.B. 123" />
             </div>
 
             <div class="form-field">
               <label for="plz">
+                <i class="pi pi-map"></i>
                 Postleitzahl *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-map"></i>
-                <p-inputNumber 
-                  id="plz" 
-                  [(ngModel)]="customer.plz" 
-                  [style]="{'width': '100%'}" 
-                  [useGrouping]="false"
-                  placeholder="z.B. 1010"
-                  required />
-              </span>
+              <p-inputNumber 
+                id="plz" 
+                [(ngModel)]="customer.plz" 
+                [style]="{'width': '100%'}" 
+                [useGrouping]="false"
+                placeholder="z.B. 1010"
+                required />
             </div>
 
             <div class="form-field">
               <label for="city">
+                <i class="pi pi-building"></i>
                 Stadt *
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-building"></i>
-                <input 
-                  pInputText 
-                  id="city" 
-                  [(ngModel)]="customer.city" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. Wien"
-                  required />
-              </span>
+              <input 
+                pInputText 
+                id="city" 
+                [(ngModel)]="customer.city" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. Wien"
+                required />
             </div>
           </div>
         </div>
@@ -150,17 +138,15 @@ import { ToastService } from '../../../core/services/toast.service';
           <div class="form-grid">
             <div class="form-field full-width">
               <label for="uid">
+                <i class="pi pi-id-card"></i>
                 Umsatzsteuer-Identifikationsnummer (UID)
               </label>
-              <span class="p-input-icon-left" style="width: 100%">
-                <i class="pi pi-id-card"></i>
-                <input 
-                  pInputText 
-                  id="uid" 
-                  [(ngModel)]="customer.uid" 
-                  [style]="{'width': '100%'}"
-                  placeholder="z.B. ATU12345678" />
-              </span>
+              <input 
+                pInputText 
+                id="uid" 
+                [(ngModel)]="customer.uid" 
+                [style]="{'width': '100%'}"
+                placeholder="z.B. ATU12345678" />
               <small class="field-hint">Optional - für Firmenkunden relevant</small>
             </div>
           </div>
