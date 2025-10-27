@@ -102,6 +102,7 @@ public class InvoiceDataAccess : IInvoiceDataAccess
         return await _context.InvoicesDb
             .Include(i => i.Customer)
             .Include(i => i.InvoicePositions)
+                .ThenInclude(ip => ip.Position)
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
     }
