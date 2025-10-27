@@ -18,6 +18,10 @@ export class InvoiceService {
     return this.http.get<Invoice[]>(this.apiUrl);
   }
 
+  getSummary(): Observable<Invoice[]> {
+    return this.http.get<Invoice[]>(`${this.apiUrl}/summary`);
+  }
+
   getCount(): Observable<{ count: number }> {
     return this.http.get<{ count: number }>(`${this.apiUrl}/count`);
   }

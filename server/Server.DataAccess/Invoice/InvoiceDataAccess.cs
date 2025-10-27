@@ -96,4 +96,13 @@ public class InvoiceDataAccess : IInvoiceDataAccess
     {
         return await _context.InvoicesDb.CountAsync();
     }
+
+    public async Task<IEnumerable<InvoiceEntity>> GetAllInvoicesSummaryAsync()
+    {
+        return await _context.InvoicesDb
+            .Include(i => i.Customer)
+            .Include(i => i.InvoicePositions)
+            .OrderByDescending(i => i.CreatedAt)
+            .ToListAsync();
+    }
 }

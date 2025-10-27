@@ -11,4 +11,5 @@ public interface IContractBusinessLogic
     Task DeleteContractAsync(int contractId);
     Task<CreateInvoiceRequest> GetContractForInvoiceConversionAsync(int contractId);
     Task<int> GetContractsCountAsync();
+    Task<IEnumerable<ContractSummaryDto>> GetAllContractsSummaryAsync();
 }

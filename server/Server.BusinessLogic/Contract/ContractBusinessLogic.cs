@@ -265,4 +265,33 @@ public class ContractBusinessLogic : IContractBusinessLogic
     {
         return await _contractDataAccess.GetContractsCountAsync();
     }
+
+    public async Task<IEnumerable<ContractSummaryDto>> GetAllContractsSummaryAsync()
+    {
+        var contracts = await _contractDataAccess.GetAllContractsSummaryAsync();
+        return contracts.Select(MapToSummaryDto);
+    }
+
+    private static ContractSummaryDto MapToSummaryDto(ContractEntity contract)
+    {
+        return new ContractSummaryDto
+        {
+            ContractId = contract.ContractId,
+            CreatedAt = contract.CreatedAt,
+            Accepted = contract.Accepted,
+            CustomerId = contract.CustomerId,
+            Customer = contract.Customer == null ? null : new CustomerDto
+            {
+                CustomerId = contract.Customer.CustomerId,
+                Firstname = contract.Customer.Firstname,
+                Surname = contract.Customer.Surname,
+                Plz = contract.Customer.Plz,
+                City = contract.Customer.City,
+                Address = contract.Customer.Address,
+                Nr = contract.Customer.Nr,
+                Uid = contract.Customer.Uid
+            },
+            PositionCount = contract.ContractPositions?.Count ?? 0
+        };
+    }
 }

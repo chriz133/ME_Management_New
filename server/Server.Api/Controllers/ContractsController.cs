@@ -40,6 +40,24 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
+    /// Get all contracts with summary data (optimized for list views)
+    /// </summary>
+    [HttpGet("summary")]
+    public async Task<ActionResult<IEnumerable<ContractSummaryDto>>> GetContractsSummary()
+    {
+        try
+        {
+            var contracts = await _contractBusinessLogic.GetAllContractsSummaryAsync();
+            return Ok(contracts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching contracts summary");
+            return StatusCode(500, new { message = "Error fetching contracts summary", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get count of all contracts
     /// </summary>
     [HttpGet("count")]

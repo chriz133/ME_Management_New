@@ -10,4 +10,5 @@ public interface IInvoiceBusinessLogic
     Task<InvoiceDto> UpdateInvoiceAsync(int invoiceId, UpdateInvoiceRequest request);
     Task DeleteInvoiceAsync(int invoiceId);
     Task<int> GetInvoicesCountAsync();
+    Task<IEnumerable<InvoiceSummaryDto>> GetAllInvoicesSummaryAsync();
 }

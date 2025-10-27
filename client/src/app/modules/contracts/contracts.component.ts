@@ -269,7 +269,7 @@ export class ContractsComponent implements OnInit {
 
   loadContracts() {
     this.loading = true;
-    this.contractService.getAll().subscribe({
+    this.contractService.getSummary().subscribe({
       next: (data) => {
         this.contracts = data;
         this.filteredContracts = data;
