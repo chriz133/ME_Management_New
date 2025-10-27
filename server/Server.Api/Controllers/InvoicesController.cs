@@ -40,6 +40,24 @@ public class InvoicesController : ControllerBase
     }
 
     /// <summary>
+    /// Get count of all invoices
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetInvoicesCount()
+    {
+        try
+        {
+            var count = await _invoiceBusinessLogic.GetInvoicesCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching invoices count");
+            return StatusCode(500, new { message = "Error fetching invoices count", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get invoice by ID
     /// </summary>
     [HttpGet("{id}")]

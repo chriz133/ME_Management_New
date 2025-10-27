@@ -260,4 +260,9 @@ public class ContractBusinessLogic : IContractBusinessLogic
             }).ToList() ?? new List<ContractPositionDto>()
         };
     }
+
+    public async Task<int> GetContractsCountAsync()
+    {
+        return await _contractDataAccess.GetContractsCountAsync();
+    }
 }

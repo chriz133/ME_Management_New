@@ -15,4 +15,5 @@ public interface IContractDataAccess
     Task<PositionEntity?> GetPositionByIdAsync(int positionId);
     Task<PositionEntity> CreatePositionAsync(PositionEntity position);
     Task SaveChangesAsync();
+    Task<int> GetContractsCountAsync();
 }

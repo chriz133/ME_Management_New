@@ -190,4 +190,9 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
             }).ToList() ?? new List<InvoicePositionDto>()
         };
     }
+
+    public async Task<int> GetInvoicesCountAsync()
+    {
+        return await _invoiceDataAccess.GetInvoicesCountAsync();
+    }
 }

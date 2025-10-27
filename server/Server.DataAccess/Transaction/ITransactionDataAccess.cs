@@ -10,4 +10,5 @@ public interface ITransactionDataAccess
     Task<TransactionEntity> UpdateTransactionAsync(TransactionEntity transaction);
     Task DeleteTransactionAsync(int transactionId);
     Task<bool> TransactionExistsAsync(int transactionId);
+    Task<int> GetTransactionsCountAsync();
 }

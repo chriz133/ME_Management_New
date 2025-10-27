@@ -9,4 +9,5 @@ public interface ITransactionBusinessLogic
     Task<TransactionDto> CreateTransactionAsync(CreateTransactionRequest request);
     Task<TransactionDto> UpdateTransactionAsync(int transactionId, UpdateTransactionRequest request);
     Task DeleteTransactionAsync(int transactionId);
+    Task<int> GetTransactionsCountAsync();
 }

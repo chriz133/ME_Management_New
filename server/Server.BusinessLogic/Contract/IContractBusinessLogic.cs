@@ -10,4 +10,5 @@ public interface IContractBusinessLogic
     Task<ContractDto> UpdateContractAsync(int contractId, UpdateContractRequest request);
     Task DeleteContractAsync(int contractId);
     Task<CreateInvoiceRequest> GetContractForInvoiceConversionAsync(int contractId);
+    Task<int> GetContractsCountAsync();
 }

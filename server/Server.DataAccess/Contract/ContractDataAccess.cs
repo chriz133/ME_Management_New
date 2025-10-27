@@ -95,4 +95,9 @@ public class ContractDataAccess : IContractDataAccess
     {
         await _context.SaveChangesAsync();
     }
+
+    public async Task<int> GetContractsCountAsync()
+    {
+        return await _context.ContractsDb.CountAsync();
+    }
 }

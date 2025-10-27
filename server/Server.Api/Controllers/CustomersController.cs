@@ -38,6 +38,24 @@ public class CustomersController : ControllerBase
     }
 
     /// <summary>
+    /// Get count of all customers
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetCustomersCount()
+    {
+        try
+        {
+            var count = await _customerBusinessLogic.GetCustomersCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching customers count");
+            return StatusCode(500, new { message = "Error fetching customers count", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get customer by ID
     /// </summary>
     [HttpGet("{id}")]

@@ -70,4 +70,9 @@ public class CustomerDataAccess : ICustomerDataAccess
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<int> GetCustomersCountAsync()
+    {
+        return await _context.CustomersDb.CountAsync();
+    }
 }

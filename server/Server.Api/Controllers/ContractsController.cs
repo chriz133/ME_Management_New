@@ -40,6 +40,24 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
+    /// Get count of all contracts
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetContractsCount()
+    {
+        try
+        {
+            var count = await _contractBusinessLogic.GetContractsCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching contracts count");
+            return StatusCode(500, new { message = "Error fetching contracts count", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get contract by ID
     /// </summary>
     [HttpGet("{id}")]

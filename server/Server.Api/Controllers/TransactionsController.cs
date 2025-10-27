@@ -38,6 +38,24 @@ public class TransactionsController : ControllerBase
     }
 
     /// <summary>
+    /// Get count of all transactions
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetTransactionsCount()
+    {
+        try
+        {
+            var count = await _transactionBusinessLogic.GetTransactionsCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching transactions count");
+            return StatusCode(500, new { message = "Error fetching transactions count", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get transaction by ID
     /// </summary>
     [HttpGet("{id}")]
