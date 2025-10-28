@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.BusinessLogic.Contract;
+using Server.BusinessLogic.Pdf;
 using Server.BusinessObjects.DTOs;
 
 namespace Server.Api.Controllers;
@@ -11,13 +12,16 @@ namespace Server.Api.Controllers;
 public class ContractsController : ControllerBase
 {
     private readonly IContractBusinessLogic _contractBusinessLogic;
+    private readonly IPdfService _pdfService;
     private readonly ILogger<ContractsController> _logger;
 
     public ContractsController(
         IContractBusinessLogic contractBusinessLogic,
+        IPdfService pdfService,
         ILogger<ContractsController> logger)
     {
         _contractBusinessLogic = contractBusinessLogic;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -158,6 +162,34 @@ public class ContractsController : ControllerBase
         {
             _logger.LogError(ex, "Error converting contract {ContractId} to invoice", id);
             return StatusCode(500, new { message = "Error converting contract to invoice", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Generate and download PDF for a contract
+    /// </summary>
+    [HttpGet("{id}/pdf")]
+    public async Task<IActionResult> GetContractPdf(int id)
+    {
+        try
+        {
+            var contract = await _contractBusinessLogic.GetContractByIdAsync(id);
+            if (contract == null)
+            {
+                return NotFound(new { message = $"Contract with ID {id} not found" });
+            }
+
+            var pdfBytes = await _pdfService.GenerateContractPdfAsync(id);
+            
+            var customerName = $"{contract.Customer?.Surname}_{contract.Customer?.Firstname}".Replace(" ", "_");
+            var fileName = $"{id:D5}_Angebot_{customerName}_{contract.CreatedAt:yyyy-MM-dd}.pdf";
+            
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating PDF for contract {ContractId}", id);
+            return StatusCode(500, new { message = "Error generating PDF", error = ex.Message });
         }
     }
 }

@@ -8,6 +8,7 @@ using Server.BusinessLogic.Invoice;
 using Server.BusinessLogic.Contract;
 using Server.BusinessLogic.Position;
 using Server.BusinessLogic.Transaction;
+using Server.BusinessLogic.Pdf;
 using Server.BusinessObjects.Entities;
 using Server.DataAccess;
 using Server.DataAccess.Customer;
@@ -44,6 +45,7 @@ builder.Services.AddScoped<IInvoiceBusinessLogic, InvoiceBusinessLogic>();
 builder.Services.AddScoped<IContractBusinessLogic, ContractBusinessLogic>();
 builder.Services.AddScoped<IPositionBusinessLogic, PositionBusinessLogic>();
 builder.Services.AddScoped<ITransactionBusinessLogic, TransactionBusinessLogic>();
+builder.Services.AddScoped<IPdfService, PdfService>();
 
 // Configure JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
