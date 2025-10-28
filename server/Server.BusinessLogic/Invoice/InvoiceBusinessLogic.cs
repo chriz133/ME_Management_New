@@ -214,16 +214,10 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
             DepositAmount = invoice.DepositAmount,
             DepositPaidOn = invoice.DepositPaidOn,
             Type = invoice.Type,
-            Customer = invoice.Customer == null ? null : new CustomerDto
+            Customer = invoice.Customer == null ? null : new CustomerSummaryDto
             {
                 CustomerId = invoice.Customer.CustomerId,
-                Firstname = invoice.Customer.Firstname,
-                Surname = invoice.Customer.Surname,
-                Plz = invoice.Customer.Plz,
-                City = invoice.Customer.City,
-                Address = invoice.Customer.Address,
-                Nr = invoice.Customer.Nr,
-                Uid = invoice.Customer.Uid
+                FullName = $"{invoice.Customer.Firstname} {invoice.Customer.Surname}".Trim()
             },
             PositionCount = invoice.InvoicePositions?.Count ?? 0,
             TotalAmount = invoice.InvoicePositions?.Sum(ip => ip.Amount * (ip.Position?.Price ?? 0)) ?? 0

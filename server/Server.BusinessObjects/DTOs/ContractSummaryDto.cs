@@ -9,6 +9,6 @@ public class ContractSummaryDto
     public DateTime CreatedAt { get; set; }
     public bool Accepted { get; set; }
     public int CustomerId { get; set; }
-    public CustomerDto? Customer { get; set; }
+    public CustomerSummaryDto? Customer { get; set; }
     public int PositionCount { get; set; }
 }

@@ -13,7 +13,7 @@ public class InvoiceSummaryDto
     public double DepositAmount { get; set; }
     public DateTime DepositPaidOn { get; set; }
     public string? Type { get; set; }
-    public CustomerDto? Customer { get; set; }
+    public CustomerSummaryDto? Customer { get; set; }
     public int PositionCount { get; set; }
     public double TotalAmount { get; set; }
 }

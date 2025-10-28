@@ -280,16 +280,10 @@ public class ContractBusinessLogic : IContractBusinessLogic
             CreatedAt = contract.CreatedAt,
             Accepted = contract.Accepted,
             CustomerId = contract.CustomerId,
-            Customer = contract.Customer == null ? null : new CustomerDto
+            Customer = contract.Customer == null ? null : new CustomerSummaryDto
             {
                 CustomerId = contract.Customer.CustomerId,
-                Firstname = contract.Customer.Firstname,
-                Surname = contract.Customer.Surname,
-                Plz = contract.Customer.Plz,
-                City = contract.Customer.City,
-                Address = contract.Customer.Address,
-                Nr = contract.Customer.Nr,
-                Uid = contract.Customer.Uid
+                FullName = $"{contract.Customer.Firstname} {contract.Customer.Surname}".Trim()
             },
             PositionCount = contract.ContractPositions?.Count ?? 0
         };
