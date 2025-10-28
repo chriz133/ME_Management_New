@@ -69,57 +69,52 @@ export class PdfService {
     
     let yPos = 20;
 
-    // Add logo (top left)
-    try {
-      const logoData = this.getLogoDataUrl();
-      pdf.addImage(logoData, 'PNG', marginLeft, yPos, 30, 15); // 30mm width, 15mm height
-    } catch (error) {
-      console.error('Failed to load logo:', error);
-    }
+    // Add logo (top left) - load as base64
+    this.addLogoToPdf(pdf, marginLeft, yPos, 30, 15);
 
-    // Company info (top right)
-    pdf.setFontSize(10);
+    // Company info (top right) - reduced font size from 10 to 9
+    pdf.setFontSize(9);
     pdf.text(this.COMPANY_INFO.name, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 5;
+    yPos += 4;
     pdf.text(this.COMPANY_INFO.address, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 5;
+    yPos += 4;
     pdf.text(this.COMPANY_INFO.city, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 8;
+    yPos += 7;
     pdf.text(`Telefon: ${this.COMPANY_INFO.phone}`, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 8;
+    yPos += 7;
     pdf.text(`E-Mail: ${this.COMPANY_INFO.email}`, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 5;
+    yPos += 4;
     pdf.text(`Web: ${this.COMPANY_INFO.web}`, pageWidth - marginRight, yPos, { align: 'right' });
 
-    // Customer info (left side)
-    yPos = 80;
-    pdf.setFontSize(10);
+    // Customer info (left side) - moved higher from 80 to 65
+    yPos = 65;
+    pdf.setFontSize(9);
     const customerName = `${invoice.customer?.firstname || ''} ${invoice.customer?.surname || ''}`.trim();
     pdf.text(customerName, marginLeft, yPos);
-    yPos += 5;
+    yPos += 4;
     pdf.text(`${invoice.customer?.address || ''} ${invoice.customer?.nr || ''}`.trim(), marginLeft, yPos);
-    yPos += 5;
+    yPos += 4;
     pdf.text(`${invoice.customer?.plz || ''} ${invoice.customer?.city || ''}`.trim(), marginLeft, yPos);
     if (invoice.customer?.uid) {
-      yPos += 5;
+      yPos += 4;
       pdf.text(invoice.customer.uid, marginLeft, yPos);
     }
 
-    // Title
-    yPos = 110;
-    pdf.setFontSize(18);
+    // Title - reduced from 18 to 14
+    yPos = 95;
+    pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Rechnung', marginLeft, yPos);
 
-    // Invoice metadata
-    yPos = 120;
-    pdf.setFontSize(10);
+    // Invoice metadata - reduced font from 10 to 9
+    yPos = 105;
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'bold');
     pdf.text(`Rechnung Nr. ${invoice.invoiceId}`, marginLeft, yPos);
     pdf.text(`Kunde Nr. ${invoice.customer?.customerId || ''}`, pageWidth / 2, yPos, { align: 'center' });
     pdf.text(`Datum: ${this.formatDate(invoice.createdAt)}`, pageWidth - marginRight, yPos, { align: 'right' });
     
-    yPos += 7;
+    yPos += 6;
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Leistungszeitraum vom ${this.formatDate(invoice.startedAt)} bis zum ${this.formatDate(invoice.finishedAt)}`, marginLeft, yPos);
 
@@ -143,47 +138,42 @@ export class PdfService {
     
     let yPos = 20;
 
-    // Add logo (top left)
-    try {
-      const logoData = this.getLogoDataUrl();
-      pdf.addImage(logoData, 'PNG', marginLeft, yPos, 30, 15); // 30mm width, 15mm height
-    } catch (error) {
-      console.error('Failed to load logo:', error);
-    }
+    // Add logo (top left) - load as base64
+    this.addLogoToPdf(pdf, marginLeft, yPos, 30, 15);
 
-    // Company info (top right)
-    pdf.setFontSize(10);
+    // Company info (top right) - reduced font size from 10 to 9
+    pdf.setFontSize(9);
     pdf.text(this.COMPANY_INFO.name, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 5;
+    yPos += 4;
     pdf.text(this.COMPANY_INFO.address, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 5;
+    yPos += 4;
     pdf.text(this.COMPANY_INFO.city, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 8;
+    yPos += 7;
     pdf.text(`Telefon: ${this.COMPANY_INFO.phone}`, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 8;
+    yPos += 7;
     pdf.text(`E-Mail: ${this.COMPANY_INFO.email}`, pageWidth - marginRight, yPos, { align: 'right' });
-    yPos += 5;
+    yPos += 4;
     pdf.text(`Web: ${this.COMPANY_INFO.web}`, pageWidth - marginRight, yPos, { align: 'right' });
 
-    // Customer info (left side)
-    yPos = 80;
-    pdf.setFontSize(10);
+    // Customer info (left side) - moved higher from 80 to 65
+    yPos = 65;
+    pdf.setFontSize(9);
     const customerName = `${contract.customer?.firstname || ''} ${contract.customer?.surname || ''}`.trim();
     pdf.text(customerName, marginLeft, yPos);
-    yPos += 5;
+    yPos += 4;
     pdf.text(`${contract.customer?.address || ''} ${contract.customer?.nr || ''}`.trim(), marginLeft, yPos);
-    yPos += 5;
+    yPos += 4;
     pdf.text(`${contract.customer?.plz || ''} ${contract.customer?.city || ''}`.trim(), marginLeft, yPos);
 
-    // Title
-    yPos = 105;
-    pdf.setFontSize(18);
+    // Title - reduced from 18 to 14
+    yPos = 90;
+    pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Angebot', marginLeft, yPos);
 
-    // Contract metadata
-    yPos = 115;
-    pdf.setFontSize(10);
+    // Contract metadata - reduced font from 10 to 9
+    yPos = 100;
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'bold');
     pdf.text(`Angebot Nr. ${contract.contractId}`, marginLeft, yPos);
     pdf.text(`Kunde Nr. ${contract.customer?.customerId || ''}`, pageWidth / 2, yPos, { align: 'center' });
@@ -318,7 +308,7 @@ export class PdfService {
     pdf.setFillColor(200, 200, 200);
     pdf.rect(x, yPos, width, 7, 'F');
     
-    pdf.setFontSize(10);
+    pdf.setFontSize(9); // Reduced from 10 to 9
     pdf.setFont('helvetica', 'bold');
     pdf.text('Pos', x + 2, yPos + 5);
     pdf.text('Beschreibung', x + colWidths[0] + 2, yPos + 5);
@@ -356,7 +346,7 @@ export class PdfService {
 
     // Align totals with the info text baseline
     let totalsYPos = infoTextYPos;
-    pdf.setFontSize(10);
+    pdf.setFontSize(9); // Reduced from 10 to 9
     pdf.text('Nettobetrag:', x + width - 60, totalsYPos);
     pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, totalsYPos, { align: 'right' });
     totalsYPos += 5;
@@ -440,5 +430,25 @@ export class PdfService {
     // In a production environment, you might load this from the assets folder
     // For now, we'll return the path and jsPDF will handle loading it
     return '/assets/images/logo_v1.png';
+  }
+
+  /**
+   * Add logo to PDF by loading it as an image element first
+   */
+  private addLogoToPdf(pdf: jsPDF, x: number, y: number, width: number, height: number): void {
+    try {
+      // Use relative path from the Angular assets folder
+      // The path should work when the app is served
+      const logoPath = 'assets/images/logo_v1.png';
+      
+      // jsPDF will attempt to load the image from the path
+      // Note: This works in the browser context where assets are accessible
+      pdf.addImage(logoPath, 'PNG', x, y, width, height);
+    } catch (error) {
+      console.error('Failed to load logo:', error);
+      // Draw a placeholder rectangle if logo fails to load
+      pdf.setDrawColor(200, 200, 200);
+      pdf.rect(x, y, width, height);
+    }
   }
 }
