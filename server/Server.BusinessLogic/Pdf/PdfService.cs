@@ -31,13 +31,11 @@ public class PdfService : IPdfService
     private const string COMPANY_IBAN = "AT142070604600433397";
     private const string COMPANY_BIC = "KSPKAT2KXXX";
 
-    // Modern color scheme
-    private static readonly Color PRIMARY_COLOR = Color.FromHex("#2563eb"); // Modern blue
-    private static readonly Color ACCENT_COLOR = Color.FromHex("#f59e0b"); // Warm amber
-    private static readonly Color GRAY_LIGHT = Color.FromHex("#f3f4f6");
-    private static readonly Color GRAY_MEDIUM = Color.FromHex("#9ca3af");
-    private static readonly Color GRAY_DARK = Color.FromHex("#374151");
-    private static readonly Color TEXT_PRIMARY = Color.FromHex("#111827");
+    // Minimalist color scheme - subtle and professional
+    private static readonly Color TEXT_PRIMARY = Color.FromHex("#1f2937"); // Dark gray for text
+    private static readonly Color TEXT_SECONDARY = Color.FromHex("#6b7280"); // Medium gray for labels
+    private static readonly Color BORDER_COLOR = Color.FromHex("#e5e7eb"); // Light gray for borders
+    private static readonly Color TABLE_HEADER_BG = Color.FromHex("#f9fafb"); // Very light gray for table header
 
     public PdfService(
         IInvoiceBusinessLogic invoiceBusinessLogic,
@@ -117,171 +115,150 @@ public class PdfService : IPdfService
                 row.RelativeItem().Column(leftColumn =>
                 {
                     leftColumn.Item().Text(COMPANY_NAME)
-                        .FontSize(20)
+                        .FontSize(16)
                         .Bold()
-                        .FontColor(PRIMARY_COLOR);
+                        .FontColor(TEXT_PRIMARY);
                     
-                    leftColumn.Item().PaddingTop(8).Text(text =>
+                    leftColumn.Item().PaddingTop(6).Text(text =>
                     {
-                        text.Span(COMPANY_ADDRESS).FontSize(9);
+                        text.Span(COMPANY_ADDRESS).FontSize(9).FontColor(TEXT_SECONDARY);
                         text.Span("\n");
-                        text.Span(COMPANY_CITY).FontSize(9);
+                        text.Span(COMPANY_CITY).FontSize(9).FontColor(TEXT_SECONDARY);
                     });
 
-                    leftColumn.Item().PaddingTop(8).Text(text =>
+                    leftColumn.Item().PaddingTop(6).Text(text =>
                     {
-                        text.Span("Tel: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(COMPANY_PHONE).FontSize(9);
-                        text.Span("\n");
-                        text.Span("E-Mail: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(COMPANY_EMAIL).FontSize(9);
-                        text.Span("\n");
-                        text.Span("Web: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(COMPANY_WEB).FontSize(9);
+                        text.Span(COMPANY_PHONE).FontSize(9).FontColor(TEXT_SECONDARY);
+                        text.Span(" | ");
+                        text.Span(COMPANY_EMAIL).FontSize(9).FontColor(TEXT_SECONDARY);
                     });
                 });
 
                 // Right: Customer info
                 row.RelativeItem().Column(rightColumn =>
                 {
-                    rightColumn.Item().AlignRight().Text("RECHNUNG")
-                        .FontSize(28)
+                    rightColumn.Item().AlignRight().Text("Rechnung")
+                        .FontSize(20)
                         .Bold()
-                        .FontColor(PRIMARY_COLOR);
+                        .FontColor(TEXT_PRIMARY);
 
                     if (invoice.Customer != null)
                     {
-                        rightColumn.Item().PaddingTop(12).AlignRight().Text(text =>
+                        rightColumn.Item().PaddingTop(10).AlignRight().Text(text =>
                         {
                             var customerName = $"{invoice.Customer.Firstname} {invoice.Customer.Surname}".Trim();
-                            text.Span(customerName).Bold().FontSize(11);
+                            text.Span(customerName).Bold().FontSize(10).FontColor(TEXT_PRIMARY);
                             text.Span("\n");
-                            text.Span($"{invoice.Customer.Address} {invoice.Customer.Nr}").FontSize(9);
+                            text.Span($"{invoice.Customer.Address} {invoice.Customer.Nr}").FontSize(9).FontColor(TEXT_SECONDARY);
                             text.Span("\n");
-                            text.Span($"{invoice.Customer.Plz} {invoice.Customer.City}").FontSize(9);
+                            text.Span($"{invoice.Customer.Plz} {invoice.Customer.City}").FontSize(9).FontColor(TEXT_SECONDARY);
                             
                             if (!string.IsNullOrWhiteSpace(invoice.Customer.Uid))
                             {
                                 text.Span("\n");
-                                text.Span($"UID: {invoice.Customer.Uid}").FontSize(9);
+                                text.Span($"UID: {invoice.Customer.Uid}").FontSize(9).FontColor(TEXT_SECONDARY);
                             }
                         });
                     }
                 });
             });
 
-            // Divider
-            column.Item().PaddingTop(20).PaddingBottom(15).LineHorizontal(2).LineColor(PRIMARY_COLOR);
+            // Simple divider line
+            column.Item().PaddingTop(15).PaddingBottom(15).LineHorizontal(1).LineColor(BORDER_COLOR);
 
-            // Invoice metadata in a modern card-style layout
-            column.Item().Background(GRAY_LIGHT).Padding(12).Row(row =>
+            // Invoice metadata - clean and simple
+            column.Item().PaddingBottom(10).Row(row =>
             {
-                row.RelativeItem().Column(col =>
+                row.RelativeItem().Text(text =>
                 {
-                    col.Item().Text(text =>
-                    {
-                        text.Span("Rechnung Nr. ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span($"#{invoice.InvoiceId:D5}").FontSize(11).Bold();
-                    });
-                    col.Item().PaddingTop(4).Text(text =>
-                    {
-                        text.Span("Kunde Nr. ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span($"{invoice.Customer?.CustomerId}").FontSize(9);
-                    });
+                    text.Span("Rechnung Nr. ").FontSize(9).FontColor(TEXT_SECONDARY);
+                    text.Span($"{invoice.InvoiceId:D5}").FontSize(9).Bold().FontColor(TEXT_PRIMARY);
                 });
 
-                row.RelativeItem().Column(col =>
+                row.RelativeItem().Text(text =>
                 {
-                    col.Item().Text(text =>
-                    {
-                        text.Span("Datum: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(invoice.CreatedAt.ToString("dd.MM.yyyy")).FontSize(9);
-                    });
-                    col.Item().PaddingTop(4).Text(text =>
-                    {
-                        text.Span("Leistungszeitraum: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                    });
-                    col.Item().Text(text =>
-                    {
-                        text.Span($"{invoice.StartedAt:dd.MM.yyyy} - {invoice.FinishedAt:dd.MM.yyyy}").FontSize(9);
-                    });
+                    text.Span("Datum: ").FontSize(9).FontColor(TEXT_SECONDARY);
+                    text.Span(invoice.CreatedAt.ToString("dd.MM.yyyy")).FontSize(9).FontColor(TEXT_PRIMARY);
                 });
 
-                row.RelativeItem().Column(col =>
+                row.RelativeItem().AlignRight().Text(text =>
                 {
-                    col.Item().AlignRight().Text(text =>
-                    {
-                        text.Span("Typ: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        var typeLabel = invoice.Type == "D" ? "Dienstleistung" : "Bauleistung";
-                        text.Span(typeLabel).FontSize(9).Bold().FontColor(ACCENT_COLOR);
-                    });
+                    text.Span("Kunde Nr. ").FontSize(9).FontColor(TEXT_SECONDARY);
+                    text.Span($"{invoice.Customer?.CustomerId}").FontSize(9).FontColor(TEXT_PRIMARY);
                 });
+            });
+
+            column.Item().PaddingBottom(5).Text(text =>
+            {
+                text.Span("Leistungszeitraum: ").FontSize(9).FontColor(TEXT_SECONDARY);
+                text.Span($"{invoice.StartedAt:dd.MM.yyyy} - {invoice.FinishedAt:dd.MM.yyyy}").FontSize(9).FontColor(TEXT_PRIMARY);
+                var typeLabel = invoice.Type == "D" ? " | Dienstleistung" : " | Bauleistung";
+                text.Span(typeLabel).FontSize(9).FontColor(TEXT_SECONDARY);
             });
         });
     }
 
     private void ComposeInvoiceContent(IContainer container, InvoiceDto invoice)
     {
-        container.PaddingTop(20).Column(column =>
+        container.PaddingTop(15).Column(column =>
         {
-            // Positions table with modern styling
+            // Positions table with clean, minimal styling
             column.Item().Table(table =>
             {
-                // Define columns
+                // Define columns with better proportions to prevent text wrapping
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(40); // Pos
-                    columns.RelativeColumn(4); // Description
-                    columns.ConstantColumn(80); // Unit Price
-                    columns.ConstantColumn(60); // Quantity
-                    columns.ConstantColumn(90); // Total
+                    columns.ConstantColumn(30); // Pos - smaller
+                    columns.RelativeColumn(5); // Description - more space
+                    columns.ConstantColumn(70); // Unit Price
+                    columns.ConstantColumn(55); // Quantity
+                    columns.ConstantColumn(75); // Total
                 });
 
-                // Header with modern styling
+                // Clean table header with subtle background
                 table.Header(header =>
                 {
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).Text("Pos")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .Text("Pos").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).Text("Beschreibung")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .Text("Beschreibung").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignRight().Text("Einzelpreis")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text("Einzelpreis").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignCenter().Text("Anzahl")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignCenter().Text("Anzahl").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignRight().Text("Gesamtpreis")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text("Gesamtpreis").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                 });
 
-                // Rows with alternating colors
+                // Rows with subtle borders, no alternating colors
                 int index = 0;
                 foreach (var position in invoice.Positions ?? Enumerable.Empty<InvoicePositionDto>())
                 {
                     index++;
-                    var bgColor = index % 2 == 0 ? GRAY_LIGHT : Colors.White;
 
-                    table.Cell().Background(bgColor).Padding(8).AlignCenter()
-                        .Text(index.ToString()).FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignCenter().Text(index.ToString()).FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8)
-                        .Text(position.Position?.Text ?? "-").FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .Text(position.Position?.Text ?? "-").FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8).AlignRight()
-                        .Text($"€ {position.Position?.Price:N2}").FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text($"€ {position.Position?.Price:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8).AlignCenter()
-                        .Text($"{position.Amount:N2} {position.Position?.Unit ?? ""}").FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignCenter().Text($"{position.Amount:N2} {position.Position?.Unit ?? ""}").FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8).AlignRight()
-                        .Text($"€ {position.LineTotal:N2}").FontSize(9).Bold();
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text($"€ {position.LineTotal:N2}").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                 }
             });
 
-            // Summary section with modern calculations
-            column.Item().PaddingTop(20).AlignRight().Width(300).Column(summaryColumn =>
+            // Summary section - clean and minimal
+            column.Item().PaddingTop(15).AlignRight().Width(280).Column(summaryColumn =>
             {
                 var nettoBetrag = CalculateInvoiceNetto(invoice);
                 var mwst = invoice.Type == "D" ? nettoBetrag * 0.2m : 0;
@@ -290,10 +267,10 @@ public class PdfService : IPdfService
                 var restbetrag = invoice.Type == "D" ? nettoBetrag + mwst - (decimal)invoice.DepositAmount : nettoBetrag;
 
                 // Nettobetrag
-                summaryColumn.Item().Row(row =>
+                summaryColumn.Item().BorderBottom(1).BorderColor(BORDER_COLOR).PaddingBottom(4).Row(row =>
                 {
-                    row.RelativeItem().Text("Nettobetrag:").FontSize(10);
-                    row.ConstantItem(100).AlignRight().Text($"€ {nettoBetrag:N2}").FontSize(10);
+                    row.RelativeItem().Text("Nettobetrag:").FontSize(9).FontColor(TEXT_SECONDARY);
+                    row.ConstantItem(90).AlignRight().Text($"€ {nettoBetrag:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                 });
 
                 // MwSt for Dienstleistung
@@ -301,8 +278,8 @@ public class PdfService : IPdfService
                 {
                     summaryColumn.Item().PaddingTop(4).Row(row =>
                     {
-                        row.RelativeItem().Text("zzgl. 20% MwSt.:").FontSize(10);
-                        row.ConstantItem(100).AlignRight().Text($"€ {mwst:N2}").FontSize(10);
+                        row.RelativeItem().Text("zzgl. 20% MwSt.:").FontSize(9).FontColor(TEXT_SECONDARY);
+                        row.ConstantItem(90).AlignRight().Text($"€ {mwst:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                     });
 
                     // Deposit deductions
@@ -310,52 +287,52 @@ public class PdfService : IPdfService
                     {
                         summaryColumn.Item().PaddingTop(4).Row(row =>
                         {
-                            row.RelativeItem().Text($"- Anzahlung vom {invoice.DepositPaidOn:dd.MM.yyyy}:").FontSize(10);
-                            row.ConstantItem(100).AlignRight().Text($"€ {anzahlungNetto:N2}").FontSize(10);
+                            row.RelativeItem().Text($"- Anzahlung vom {invoice.DepositPaidOn:dd.MM.yyyy}:").FontSize(9).FontColor(TEXT_SECONDARY);
+                            row.ConstantItem(90).AlignRight().Text($"€ {anzahlungNetto:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                         });
 
                         summaryColumn.Item().PaddingTop(4).Row(row =>
                         {
-                            row.RelativeItem().Text("- Umsatzsteuer Anzahlung:").FontSize(10);
-                            row.ConstantItem(100).AlignRight().Text($"€ {anzahlungMwst:N2}").FontSize(10);
+                            row.RelativeItem().Text("- Umsatzsteuer Anzahlung:").FontSize(9).FontColor(TEXT_SECONDARY);
+                            row.ConstantItem(90).AlignRight().Text($"€ {anzahlungMwst:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                         });
                     }
 
-                    // Total with highlight
-                    summaryColumn.Item().PaddingTop(8).Background(PRIMARY_COLOR).Padding(8).Row(row =>
+                    // Total with subtle highlight
+                    summaryColumn.Item().PaddingTop(8).BorderTop(2).BorderColor(TEXT_PRIMARY).PaddingTop(6).Row(row =>
                     {
                         row.RelativeItem().Text(invoice.DepositAmount > 0 ? "Restbetrag:" : "Betrag:")
-                            .FontSize(12).Bold().FontColor(Colors.White);
-                        row.ConstantItem(100).AlignRight().Text($"€ {restbetrag:N2}")
-                            .FontSize(12).Bold().FontColor(Colors.White);
+                            .FontSize(11).Bold().FontColor(TEXT_PRIMARY);
+                        row.ConstantItem(90).AlignRight().Text($"€ {restbetrag:N2}")
+                            .FontSize(11).Bold().FontColor(TEXT_PRIMARY);
                     });
                 }
                 else
                 {
-                    // For Bauleistung, show netto in bold
-                    summaryColumn.Item().PaddingTop(8).Background(PRIMARY_COLOR).Padding(8).Row(row =>
+                    // For Bauleistung, show netto as total
+                    summaryColumn.Item().PaddingTop(8).BorderTop(2).BorderColor(TEXT_PRIMARY).PaddingTop(6).Row(row =>
                     {
                         row.RelativeItem().Text("Nettobetrag:")
-                            .FontSize(12).Bold().FontColor(Colors.White);
-                        row.ConstantItem(100).AlignRight().Text($"€ {nettoBetrag:N2}")
-                            .FontSize(12).Bold().FontColor(Colors.White);
+                            .FontSize(11).Bold().FontColor(TEXT_PRIMARY);
+                        row.ConstantItem(90).AlignRight().Text($"€ {nettoBetrag:N2}")
+                            .FontSize(11).Bold().FontColor(TEXT_PRIMARY);
                     });
                 }
             });
 
-            // Tax notice
-            column.Item().PaddingTop(15).Text(text =>
+            // Tax notice - subtle and small
+            column.Item().PaddingTop(12).Text(text =>
             {
                 if (invoice.Type == "D")
                 {
-                    text.Span("Zahlbar nach Erhalt der Rechnung").FontSize(9).Italic().FontColor(GRAY_MEDIUM);
+                    text.Span("Zahlbar nach Erhalt der Rechnung").FontSize(8).Italic().FontColor(TEXT_SECONDARY);
                 }
                 else
                 {
                     text.Span("Es wird darauf hingewiesen, dass die Steuerschuld gem. § 19 Abs. 1a UStG ")
-                        .FontSize(9).Italic().FontColor(GRAY_MEDIUM);
+                        .FontSize(8).Italic().FontColor(TEXT_SECONDARY);
                     text.Span("auf den Leistungsempfänger übergeht")
-                        .FontSize(9).Italic().FontColor(GRAY_MEDIUM);
+                        .FontSize(8).Italic().FontColor(TEXT_SECONDARY);
                 }
             });
         });
@@ -365,32 +342,29 @@ public class PdfService : IPdfService
     {
         container.AlignBottom().Column(column =>
         {
-            column.Item().PaddingBottom(10).LineHorizontal(1).LineColor(GRAY_MEDIUM);
+            column.Item().PaddingBottom(8).LineHorizontal(1).LineColor(BORDER_COLOR);
             
-            column.Item().PaddingTop(10).Row(row =>
+            column.Item().PaddingTop(8).Row(row =>
             {
                 // Company details
                 row.RelativeItem().Column(col =>
                 {
-                    col.Item().Text("Melchior-Erdbau").FontSize(8).Bold();
-                    col.Item().Text(COMPANY_ADDRESS).FontSize(8).FontColor(GRAY_DARK);
-                    col.Item().Text(COMPANY_CITY).FontSize(8).FontColor(GRAY_DARK);
+                    col.Item().Text(COMPANY_NAME).FontSize(8).FontColor(TEXT_SECONDARY);
+                    col.Item().Text($"{COMPANY_ADDRESS}, {COMPANY_CITY}").FontSize(8).FontColor(TEXT_SECONDARY);
                 });
 
                 // Tax info
                 row.RelativeItem().Column(col =>
                 {
-                    col.Item().Text($"UID: {COMPANY_UID}").FontSize(8).FontColor(GRAY_DARK);
-                    col.Item().Text($"Steuernummer: {COMPANY_TAX_NUMBER}").FontSize(8).FontColor(GRAY_DARK);
-                    col.Item().Text($"Inhaber: {COMPANY_OWNER}").FontSize(8).FontColor(GRAY_DARK);
+                    col.Item().Text($"UID: {COMPANY_UID}").FontSize(8).FontColor(TEXT_SECONDARY);
+                    col.Item().Text($"Steuernummer: {COMPANY_TAX_NUMBER}").FontSize(8).FontColor(TEXT_SECONDARY);
                 });
 
                 // Banking info
                 row.RelativeItem().Column(col =>
                 {
-                    col.Item().Text(COMPANY_BANK).FontSize(8).FontColor(GRAY_DARK);
-                    col.Item().Text($"IBAN: {COMPANY_IBAN}").FontSize(8).FontColor(GRAY_DARK);
-                    col.Item().Text($"BIC: {COMPANY_BIC}").FontSize(8).FontColor(GRAY_DARK);
+                    col.Item().Text(COMPANY_BANK).FontSize(8).FontColor(TEXT_SECONDARY);
+                    col.Item().Text($"IBAN: {COMPANY_IBAN}").FontSize(8).FontColor(TEXT_SECONDARY);
                 });
             });
         });
@@ -413,203 +387,184 @@ public class PdfService : IPdfService
                 row.RelativeItem().Column(leftColumn =>
                 {
                     leftColumn.Item().Text(COMPANY_NAME)
-                        .FontSize(20)
+                        .FontSize(16)
                         .Bold()
-                        .FontColor(PRIMARY_COLOR);
+                        .FontColor(TEXT_PRIMARY);
                     
-                    leftColumn.Item().PaddingTop(8).Text(text =>
+                    leftColumn.Item().PaddingTop(6).Text(text =>
                     {
-                        text.Span(COMPANY_ADDRESS).FontSize(9);
+                        text.Span(COMPANY_ADDRESS).FontSize(9).FontColor(TEXT_SECONDARY);
                         text.Span("\n");
-                        text.Span(COMPANY_CITY).FontSize(9);
+                        text.Span(COMPANY_CITY).FontSize(9).FontColor(TEXT_SECONDARY);
                     });
 
-                    leftColumn.Item().PaddingTop(8).Text(text =>
+                    leftColumn.Item().PaddingTop(6).Text(text =>
                     {
-                        text.Span("Tel: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(COMPANY_PHONE).FontSize(9);
-                        text.Span("\n");
-                        text.Span("E-Mail: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(COMPANY_EMAIL).FontSize(9);
-                        text.Span("\n");
-                        text.Span("Web: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(COMPANY_WEB).FontSize(9);
+                        text.Span(COMPANY_PHONE).FontSize(9).FontColor(TEXT_SECONDARY);
+                        text.Span(" | ");
+                        text.Span(COMPANY_EMAIL).FontSize(9).FontColor(TEXT_SECONDARY);
                     });
                 });
 
                 // Right: Customer info
                 row.RelativeItem().Column(rightColumn =>
                 {
-                    rightColumn.Item().AlignRight().Text("ANGEBOT")
-                        .FontSize(28)
+                    rightColumn.Item().AlignRight().Text("Angebot")
+                        .FontSize(20)
                         .Bold()
-                        .FontColor(ACCENT_COLOR);
+                        .FontColor(TEXT_PRIMARY);
 
                     if (contract.Customer != null)
                     {
-                        rightColumn.Item().PaddingTop(12).AlignRight().Text(text =>
+                        rightColumn.Item().PaddingTop(10).AlignRight().Text(text =>
                         {
                             var customerName = $"{contract.Customer.Firstname} {contract.Customer.Surname}".Trim();
-                            text.Span(customerName).Bold().FontSize(11);
+                            text.Span(customerName).Bold().FontSize(10).FontColor(TEXT_PRIMARY);
                             text.Span("\n");
-                            text.Span($"{contract.Customer.Address} {contract.Customer.Nr}").FontSize(9);
+                            text.Span($"{contract.Customer.Address} {contract.Customer.Nr}").FontSize(9).FontColor(TEXT_SECONDARY);
                             text.Span("\n");
-                            text.Span($"{contract.Customer.Plz} {contract.Customer.City}").FontSize(9);
+                            text.Span($"{contract.Customer.Plz} {contract.Customer.City}").FontSize(9).FontColor(TEXT_SECONDARY);
                             
                             if (!string.IsNullOrWhiteSpace(contract.Customer.Uid))
                             {
                                 text.Span("\n");
-                                text.Span($"UID: {contract.Customer.Uid}").FontSize(9);
+                                text.Span($"UID: {contract.Customer.Uid}").FontSize(9).FontColor(TEXT_SECONDARY);
                             }
                         });
                     }
                 });
             });
 
-            // Divider
-            column.Item().PaddingTop(20).PaddingBottom(15).LineHorizontal(2).LineColor(ACCENT_COLOR);
+            // Simple divider line
+            column.Item().PaddingTop(15).PaddingBottom(15).LineHorizontal(1).LineColor(BORDER_COLOR);
 
-            // Contract metadata in a modern card-style layout
-            column.Item().Background(GRAY_LIGHT).Padding(12).Row(row =>
+            // Contract metadata - clean and simple
+            column.Item().PaddingBottom(10).Row(row =>
             {
-                row.RelativeItem().Column(col =>
+                row.RelativeItem().Text(text =>
                 {
-                    col.Item().Text(text =>
-                    {
-                        text.Span("Angebot Nr. ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span($"#{contract.ContractId:D5}").FontSize(11).Bold();
-                    });
-                    col.Item().PaddingTop(4).Text(text =>
-                    {
-                        text.Span("Kunde Nr. ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span($"{contract.Customer?.CustomerId}").FontSize(9);
-                    });
+                    text.Span("Angebot Nr. ").FontSize(9).FontColor(TEXT_SECONDARY);
+                    text.Span($"{contract.ContractId:D5}").FontSize(9).Bold().FontColor(TEXT_PRIMARY);
                 });
 
-                row.RelativeItem().Column(col =>
+                row.RelativeItem().Text(text =>
                 {
-                    col.Item().Text(text =>
-                    {
-                        text.Span("Datum: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(contract.CreatedAt.ToString("dd.MM.yyyy")).FontSize(9);
-                    });
-                    col.Item().PaddingTop(4).Text(text =>
-                    {
-                        text.Span("Status: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span(contract.Accepted ? "Angenommen" : "Ausstehend")
-                            .FontSize(9).Bold()
-                            .FontColor(contract.Accepted ? Colors.Green.Medium : Colors.Orange.Medium);
-                    });
+                    text.Span("Datum: ").FontSize(9).FontColor(TEXT_SECONDARY);
+                    text.Span(contract.CreatedAt.ToString("dd.MM.yyyy")).FontSize(9).FontColor(TEXT_PRIMARY);
                 });
 
-                row.RelativeItem().Column(col =>
+                row.RelativeItem().AlignRight().Text(text =>
                 {
-                    col.Item().AlignRight().Text(text =>
-                    {
-                        text.Span("Gültigkeit: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span("10 Tage").FontSize(9).Bold().FontColor(ACCENT_COLOR);
-                    });
+                    text.Span("Kunde Nr. ").FontSize(9).FontColor(TEXT_SECONDARY);
+                    text.Span($"{contract.Customer?.CustomerId}").FontSize(9).FontColor(TEXT_PRIMARY);
                 });
+            });
+
+            column.Item().PaddingBottom(5).Text(text =>
+            {
+                text.Span("Status: ").FontSize(9).FontColor(TEXT_SECONDARY);
+                text.Span(contract.Accepted ? "Angenommen" : "Ausstehend")
+                    .FontSize(9).FontColor(TEXT_PRIMARY);
+                text.Span(" | Gültigkeit: 10 Tage").FontSize(9).FontColor(TEXT_SECONDARY);
             });
         });
     }
 
     private void ComposeContractContent(IContainer container, ContractDto contract)
     {
-        container.PaddingTop(20).Column(column =>
+        container.PaddingTop(15).Column(column =>
         {
-            // Positions table with modern styling
+            // Positions table with clean, minimal styling
             column.Item().Table(table =>
             {
-                // Define columns
+                // Define columns with better proportions to prevent text wrapping
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(40); // Pos
-                    columns.RelativeColumn(4); // Description
-                    columns.ConstantColumn(80); // Unit Price
-                    columns.ConstantColumn(60); // Quantity
-                    columns.ConstantColumn(90); // Total
+                    columns.ConstantColumn(30); // Pos - smaller
+                    columns.RelativeColumn(5); // Description - more space
+                    columns.ConstantColumn(70); // Unit Price
+                    columns.ConstantColumn(55); // Quantity
+                    columns.ConstantColumn(75); // Total
                 });
 
-                // Header with modern styling
+                // Clean table header with subtle background
                 table.Header(header =>
                 {
-                    header.Cell().Background(ACCENT_COLOR).Padding(8).Text("Pos")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .Text("Pos").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(ACCENT_COLOR).Padding(8).Text("Beschreibung")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .Text("Beschreibung").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(ACCENT_COLOR).Padding(8).AlignRight().Text("Einzelpreis")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text("Einzelpreis").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(ACCENT_COLOR).Padding(8).AlignCenter().Text("Anzahl")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignCenter().Text("Anzahl").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                     
-                    header.Cell().Background(ACCENT_COLOR).Padding(8).AlignRight().Text("Gesamtpreis")
-                        .FontSize(10).Bold().FontColor(Colors.White);
+                    header.Cell().Background(TABLE_HEADER_BG).Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text("Gesamtpreis").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                 });
 
-                // Rows with alternating colors
+                // Rows with subtle borders, no alternating colors
                 int index = 0;
                 foreach (var position in contract.Positions ?? Enumerable.Empty<ContractPositionDto>())
                 {
                     index++;
-                    var bgColor = index % 2 == 0 ? GRAY_LIGHT : Colors.White;
                     var lineTotal = (decimal)position.Amount * (decimal)(position.Position?.Price ?? 0);
 
-                    table.Cell().Background(bgColor).Padding(8).AlignCenter()
-                        .Text(index.ToString()).FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignCenter().Text(index.ToString()).FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8)
-                        .Text(position.Position?.Text ?? "-").FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .Text(position.Position?.Text ?? "-").FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8).AlignRight()
-                        .Text($"€ {position.Position?.Price:N2}").FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text($"€ {position.Position?.Price:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8).AlignCenter()
-                        .Text($"{position.Amount:N2} {position.Position?.Unit ?? ""}").FontSize(9);
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignCenter().Text($"{position.Amount:N2} {position.Position?.Unit ?? ""}").FontSize(9).FontColor(TEXT_PRIMARY);
                     
-                    table.Cell().Background(bgColor).Padding(8).AlignRight()
-                        .Text($"€ {lineTotal:N2}").FontSize(9).Bold();
+                    table.Cell().Padding(6).BorderBottom(1).BorderColor(BORDER_COLOR)
+                        .AlignRight().Text($"€ {lineTotal:N2}").FontSize(9).SemiBold().FontColor(TEXT_PRIMARY);
                 }
             });
 
-            // Summary section with modern calculations
-            column.Item().PaddingTop(20).AlignRight().Width(300).Column(summaryColumn =>
+            // Summary section - clean and minimal
+            column.Item().PaddingTop(15).AlignRight().Width(280).Column(summaryColumn =>
             {
                 var nettoBetrag = CalculateContractNetto(contract);
                 var mwst = nettoBetrag * 0.2m;
                 var gesamtBetrag = nettoBetrag + mwst;
 
                 // Nettobetrag
-                summaryColumn.Item().Row(row =>
+                summaryColumn.Item().BorderBottom(1).BorderColor(BORDER_COLOR).PaddingBottom(4).Row(row =>
                 {
-                    row.RelativeItem().Text("Nettobetrag:").FontSize(10);
-                    row.ConstantItem(100).AlignRight().Text($"€ {nettoBetrag:N2}").FontSize(10);
+                    row.RelativeItem().Text("Nettobetrag:").FontSize(9).FontColor(TEXT_SECONDARY);
+                    row.ConstantItem(90).AlignRight().Text($"€ {nettoBetrag:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                 });
 
                 // MwSt
                 summaryColumn.Item().PaddingTop(4).Row(row =>
                 {
-                    row.RelativeItem().Text("zzgl. 20% MwSt.:").FontSize(10);
-                    row.ConstantItem(100).AlignRight().Text($"€ {mwst:N2}").FontSize(10);
+                    row.RelativeItem().Text("zzgl. 20% MwSt.:").FontSize(9).FontColor(TEXT_SECONDARY);
+                    row.ConstantItem(90).AlignRight().Text($"€ {mwst:N2}").FontSize(9).FontColor(TEXT_PRIMARY);
                 });
 
-                // Total with highlight
-                summaryColumn.Item().PaddingTop(8).Background(ACCENT_COLOR).Padding(8).Row(row =>
+                // Total with subtle highlight
+                summaryColumn.Item().PaddingTop(8).BorderTop(2).BorderColor(TEXT_PRIMARY).PaddingTop(6).Row(row =>
                 {
                     row.RelativeItem().Text("Gesamtbetrag:")
-                        .FontSize(12).Bold().FontColor(Colors.White);
-                    row.ConstantItem(100).AlignRight().Text($"€ {gesamtBetrag:N2}")
-                        .FontSize(12).Bold().FontColor(Colors.White);
+                        .FontSize(11).Bold().FontColor(TEXT_PRIMARY);
+                    row.ConstantItem(90).AlignRight().Text($"€ {gesamtBetrag:N2}")
+                        .FontSize(11).Bold().FontColor(TEXT_PRIMARY);
                 });
             });
 
-            // Validity notice
-            column.Item().PaddingTop(15).Text(text =>
+            // Validity notice - subtle and small
+            column.Item().PaddingTop(12).Text(text =>
             {
-                text.Span("Dieses Angebot ist 10 Tage lang gültig.").FontSize(9).Italic().FontColor(GRAY_MEDIUM);
+                text.Span("Dieses Angebot ist 10 Tage lang gültig.").FontSize(8).Italic().FontColor(TEXT_SECONDARY);
             });
         });
     }
