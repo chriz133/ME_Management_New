@@ -31,11 +31,17 @@ public class PdfService : IPdfService
     private const string COMPANY_IBAN = "AT142070604600433397";
     private const string COMPANY_BIC = "KSPKAT2KXXX";
     
-    // Logo path - adjust this to match your deployment structure
-    private const string LOGO_PATH = "../../../client/src/assets/images/logo_v1.png";
+    // Logo path - uses absolute path from repository root
+    private static readonly string LOGO_PATH = Path.GetFullPath(
+        Path.Combine(
+            Directory.GetCurrentDirectory(), 
+            "..", "..", "..", "client", "src", "assets", "images", "logo_v1.png"
+        )
+    );
 
-    // Subtle, professional color scheme - single color approach
-    private static readonly Color PRIMARY_COLOR = Color.FromHex("#3b82f6"); // Subtle professional blue
+    // Gentler color scheme - different colors for invoices and contracts
+    private static readonly Color INVOICE_COLOR = Color.FromHex("#60a5fa"); // Gentler blue for invoices
+    private static readonly Color CONTRACT_COLOR = Color.FromHex("#34d399"); // Gentler green for contracts
     private static readonly Color GRAY_LIGHT = Color.FromHex("#f3f4f6");
     private static readonly Color GRAY_MEDIUM = Color.FromHex("#9ca3af");
     private static readonly Color GRAY_DARK = Color.FromHex("#374151");
@@ -52,6 +58,9 @@ public class PdfService : IPdfService
 
         // Set QuestPDF license for community use
         QuestPDF.Settings.License = LicenseType.Community;
+        
+        // Log logo path for debugging
+        _logger.LogInformation("Logo path: {LogoPath}, Exists: {Exists}", LOGO_PATH, File.Exists(LOGO_PATH));
     }
 
     public async Task<byte[]> GenerateInvoicePdfAsync(int invoiceId)
@@ -128,7 +137,7 @@ public class PdfService : IPdfService
                     leftColumn.Item().Text(COMPANY_NAME)
                         .FontSize(20)
                         .Bold()
-                        .FontColor(PRIMARY_COLOR);
+                        .FontColor(INVOICE_COLOR);
                     
                     leftColumn.Item().PaddingTop(8).Text(text =>
                     {
@@ -156,7 +165,7 @@ public class PdfService : IPdfService
                     rightColumn.Item().AlignRight().Text("RECHNUNG")
                         .FontSize(28)
                         .Bold()
-                        .FontColor(PRIMARY_COLOR);
+                        .FontColor(INVOICE_COLOR);
 
                     if (invoice.Customer != null)
                     {
@@ -180,7 +189,7 @@ public class PdfService : IPdfService
             });
 
             // Divider
-            column.Item().PaddingTop(20).PaddingBottom(15).LineHorizontal(2).LineColor(PRIMARY_COLOR);
+            column.Item().PaddingTop(20).PaddingBottom(15).LineHorizontal(2).LineColor(INVOICE_COLOR);
 
             // Invoice metadata in a modern card-style layout
             column.Item().Background(GRAY_LIGHT).Padding(12).Row(row =>
@@ -222,7 +231,7 @@ public class PdfService : IPdfService
                     {
                         text.Span("Typ: ").FontSize(9).FontColor(GRAY_MEDIUM);
                         var typeLabel = invoice.Type == "D" ? "Dienstleistung" : "Bauleistung";
-                        text.Span(typeLabel).FontSize(9).Bold().FontColor(PRIMARY_COLOR);
+                        text.Span(typeLabel).FontSize(9).Bold().FontColor(INVOICE_COLOR);
                     });
                 });
             });
@@ -249,19 +258,19 @@ public class PdfService : IPdfService
                 // Header with modern styling
                 table.Header(header =>
                 {
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).Text("Pos")
+                    header.Cell().Background(INVOICE_COLOR).Padding(8).Text("Pos")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).Text("Beschreibung")
+                    header.Cell().Background(INVOICE_COLOR).Padding(8).Text("Beschreibung")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignRight().Text("Einzelpreis")
+                    header.Cell().Background(INVOICE_COLOR).Padding(8).AlignRight().Text("Einzelpreis")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignCenter().Text("Anzahl")
+                    header.Cell().Background(INVOICE_COLOR).Padding(8).AlignCenter().Text("Anzahl")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignRight().Text("Gesamtpreis")
+                    header.Cell().Background(INVOICE_COLOR).Padding(8).AlignRight().Text("Gesamtpreis")
                         .FontSize(10).Bold().FontColor(Colors.White);
                 });
 
@@ -331,7 +340,7 @@ public class PdfService : IPdfService
                     }
 
                     // Total with highlight
-                    summaryColumn.Item().PaddingTop(8).Background(PRIMARY_COLOR).Padding(8).Row(row =>
+                    summaryColumn.Item().PaddingTop(8).Background(INVOICE_COLOR).Padding(8).Row(row =>
                     {
                         row.RelativeItem().Text(invoice.DepositAmount > 0 ? "Restbetrag:" : "Betrag:")
                             .FontSize(12).Bold().FontColor(Colors.White);
@@ -342,7 +351,7 @@ public class PdfService : IPdfService
                 else
                 {
                     // For Bauleistung, show netto in bold
-                    summaryColumn.Item().PaddingTop(8).Background(PRIMARY_COLOR).Padding(8).Row(row =>
+                    summaryColumn.Item().PaddingTop(8).Background(INVOICE_COLOR).Padding(8).Row(row =>
                     {
                         row.RelativeItem().Text("Nettobetrag:")
                             .FontSize(12).Bold().FontColor(Colors.White);
@@ -431,7 +440,7 @@ public class PdfService : IPdfService
                     leftColumn.Item().Text(COMPANY_NAME)
                         .FontSize(20)
                         .Bold()
-                        .FontColor(PRIMARY_COLOR);
+                        .FontColor(CONTRACT_COLOR);
                     
                     leftColumn.Item().PaddingTop(8).Text(text =>
                     {
@@ -459,7 +468,7 @@ public class PdfService : IPdfService
                     rightColumn.Item().AlignRight().Text("ANGEBOT")
                         .FontSize(28)
                         .Bold()
-                        .FontColor(PRIMARY_COLOR);
+                        .FontColor(CONTRACT_COLOR);
 
                     if (contract.Customer != null)
                     {
@@ -483,7 +492,7 @@ public class PdfService : IPdfService
             });
 
             // Divider
-            column.Item().PaddingTop(20).PaddingBottom(15).LineHorizontal(2).LineColor(PRIMARY_COLOR);
+            column.Item().PaddingTop(20).PaddingBottom(15).LineHorizontal(2).LineColor(CONTRACT_COLOR);
 
             // Contract metadata in a modern card-style layout
             column.Item().Background(GRAY_LIGHT).Padding(12).Row(row =>
@@ -514,7 +523,7 @@ public class PdfService : IPdfService
                         text.Span("Status: ").FontSize(9).FontColor(GRAY_MEDIUM);
                         text.Span(contract.Accepted ? "Angenommen" : "Ausstehend")
                             .FontSize(9).Bold()
-                            .FontColor(contract.Accepted ? Colors.Green.Medium : PRIMARY_COLOR);
+                            .FontColor(contract.Accepted ? Colors.Green.Medium : CONTRACT_COLOR);
                     });
                 });
 
@@ -523,7 +532,7 @@ public class PdfService : IPdfService
                     col.Item().AlignRight().Text(text =>
                     {
                         text.Span("Gültigkeit: ").FontSize(9).FontColor(GRAY_MEDIUM);
-                        text.Span("10 Tage").FontSize(9).Bold().FontColor(PRIMARY_COLOR);
+                        text.Span("10 Tage").FontSize(9).Bold().FontColor(CONTRACT_COLOR);
                     });
                 });
             });
@@ -550,19 +559,19 @@ public class PdfService : IPdfService
                 // Header with modern styling
                 table.Header(header =>
                 {
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).Text("Pos")
+                    header.Cell().Background(CONTRACT_COLOR).Padding(8).Text("Pos")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).Text("Beschreibung")
+                    header.Cell().Background(CONTRACT_COLOR).Padding(8).Text("Beschreibung")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignRight().Text("Einzelpreis")
+                    header.Cell().Background(CONTRACT_COLOR).Padding(8).AlignRight().Text("Einzelpreis")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignCenter().Text("Anzahl")
+                    header.Cell().Background(CONTRACT_COLOR).Padding(8).AlignCenter().Text("Anzahl")
                         .FontSize(10).Bold().FontColor(Colors.White);
                     
-                    header.Cell().Background(PRIMARY_COLOR).Padding(8).AlignRight().Text("Gesamtpreis")
+                    header.Cell().Background(CONTRACT_COLOR).Padding(8).AlignRight().Text("Gesamtpreis")
                         .FontSize(10).Bold().FontColor(Colors.White);
                 });
 
@@ -613,7 +622,7 @@ public class PdfService : IPdfService
                 });
 
                 // Total with highlight
-                summaryColumn.Item().PaddingTop(8).Background(PRIMARY_COLOR).Padding(8).Row(row =>
+                summaryColumn.Item().PaddingTop(8).Background(CONTRACT_COLOR).Padding(8).Row(row =>
                 {
                     row.RelativeItem().Text("Gesamtbetrag:")
                         .FontSize(12).Bold().FontColor(Colors.White);
