@@ -86,7 +86,8 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
-              .WithExposedHeaders("*");  // Expose all headers
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(10))  // Cache preflight for 10 minutes
+              .WithExposedHeaders("Content-Length", "Content-Type", "Authorization", "X-Requested-With");
     });
 });
 
@@ -210,18 +211,23 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline
+
+// IMPORTANT: UseCors must be called FIRST, before any other middleware
+app.UseCors("AllowAngularApp");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// IMPORTANT: UseCors must be called before UseAuthentication and UseAuthorization
-app.UseCors("AllowAngularApp");
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Log successful startup with CORS info
+Console.WriteLine("API started successfully with CORS enabled for Angular frontend");
+Console.WriteLine("Allowed origins: http://localhost:4200, http://localhost:4201, http://localhost:4202, http://127.0.0.1:4200");
 
 app.Run();
