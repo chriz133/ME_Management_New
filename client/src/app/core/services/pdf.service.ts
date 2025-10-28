@@ -28,7 +28,7 @@ export class PdfService {
    * Generate PDF for an invoice
    */
   async generateInvoicePdf(invoice: Invoice): Promise<void> {
-    const pdf = this.createInvoicePdf(invoice);
+    const pdf = await this.createInvoicePdf(invoice);
     pdf.save(this.getInvoiceFilename(invoice));
   }
 
@@ -36,7 +36,7 @@ export class PdfService {
    * Generate PDF for a contract
    */
   async generateContractPdf(contract: Contract): Promise<void> {
-    const pdf = this.createContractPdf(contract);
+    const pdf = await this.createContractPdf(contract);
     pdf.save(this.getContractFilename(contract));
   }
 
@@ -44,7 +44,7 @@ export class PdfService {
    * View invoice PDF in new tab
    */
   async viewInvoicePdf(invoice: Invoice): Promise<void> {
-    const pdf = this.createInvoicePdf(invoice);
+    const pdf = await this.createInvoicePdf(invoice);
     const pdfBlob = pdf.output('blob');
     const url = URL.createObjectURL(pdfBlob);
     window.open(url, '_blank');
@@ -54,13 +54,13 @@ export class PdfService {
    * View contract PDF in new tab
    */
   async viewContractPdf(contract: Contract): Promise<void> {
-    const pdf = this.createContractPdf(contract);
+    const pdf = await this.createContractPdf(contract);
     const pdfBlob = pdf.output('blob');
     const url = URL.createObjectURL(pdfBlob);
     window.open(url, '_blank');
   }
 
-  private createInvoicePdf(invoice: Invoice): jsPDF {
+  private async createInvoicePdf(invoice: Invoice): Promise<jsPDF> {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = 210;
     const marginLeft = 20;
@@ -118,8 +118,10 @@ export class PdfService {
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Leistungszeitraum vom ${this.formatDate(invoice.startedAt)} bis zum ${this.formatDate(invoice.finishedAt)}`, marginLeft, yPos);
 
-    // Draw line under header
+    // Draw line under header - using 0.5mm line width (matching 2px at scale in old CSS)
     yPos += 2;
+    pdf.setLineWidth(0.5);
+    pdf.setDrawColor(0, 0, 0);
     pdf.line(marginLeft, yPos, pageWidth - marginRight, yPos);
 
     // Positions table - reduced gap from 8 to 5mm
@@ -129,7 +131,7 @@ export class PdfService {
     return pdf;
   }
 
-  private createContractPdf(contract: Contract): jsPDF {
+  private async createContractPdf(contract: Contract): Promise<jsPDF> {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = 210;
     const marginLeft = 20;
@@ -139,7 +141,7 @@ export class PdfService {
     let yPos = 20;
 
     // Add logo (top left) - load as base64
-    this.addLogoToPdf(pdf, marginLeft, yPos, 30, 15);
+    await this.addLogoToPdf(pdf, marginLeft, yPos, 30, 15);
 
     // Company info (top right) - reduced font size from 10 to 9
     pdf.setFontSize(9);
@@ -179,8 +181,10 @@ export class PdfService {
     pdf.text(`Kunde Nr. ${contract.customer?.customerId || ''}`, pageWidth / 2, yPos, { align: 'center' });
     pdf.text(`Datum: ${this.formatDate(contract.createdAt)}`, pageWidth - marginRight, yPos, { align: 'right' });
 
-    // Draw line under header
+    // Draw line under header - using 0.5mm line width (matching 2px at scale in old CSS)
     yPos += 2;
+    pdf.setLineWidth(0.5);
+    pdf.setDrawColor(0, 0, 0);
     pdf.line(marginLeft, yPos, pageWidth - marginRight, yPos);
 
     // Positions table - reduced gap from 8 to 5mm
@@ -191,44 +195,62 @@ export class PdfService {
   }
 
   private drawInvoiceTable(pdf: jsPDF, invoice: Invoice, x: number, y: number, width: number): void {
-    const colWidths = [15, 90, 25, 20, 25]; // Pos, Description, Price, Qty, Total
+    const colWidths = [12, 90, 22, 20, 22]; // Adjusted to match old CSS
     let yPos = y;
 
-    // Table header
-    pdf.setFillColor(200, 200, 200);
-    pdf.rect(x, yPos, width, 7, 'F');
+    // Table header - use #cbcbcb background color (203, 203, 203)
+    pdf.setFillColor(203, 203, 203);
+    pdf.setDrawColor(0, 0, 0); // Black borders
+    pdf.setLineWidth(0.5); // Thicker border to match old CSS (2px at scale)
+    pdf.rect(x, yPos, width, 6, 'FD'); // Fill and Draw
     
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Pos', x + 2, yPos + 5);
-    pdf.text('Beschreibung', x + colWidths[0] + 2, yPos + 5);
-    pdf.text('Einzelpreis', x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
-    pdf.text('Anzahl', x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
-    pdf.text('Gesamtpreis', x + width - 2, yPos + 5, { align: 'right' });
+    
+    // Pos column - centered
+    pdf.text('Pos', x + colWidths[0] / 2, yPos + 4, { align: 'center' });
+    // Description - left aligned
+    pdf.text('Beschreibung', x + colWidths[0] + 2, yPos + 4);
+    // Einzelpreis - right aligned
+    pdf.text('Einzelpreis', x + colWidths[0] + colWidths[1] + colWidths[2] - 2, yPos + 4, { align: 'right' });
+    // Anzahl - centered
+    pdf.text('Anzahl', x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 4, { align: 'center' });
+    // Gesamtpreis - right aligned
+    pdf.text('Gesamtpreis', x + width - 2, yPos + 4, { align: 'right' });
 
-    yPos += 7;
+    yPos += 6;
 
-    // Draw header border
-    pdf.rect(x, y, width, 7);
-
-    // Table rows
+    // Draw individual cell borders for each row
     pdf.setFont('helvetica', 'normal');
     invoice.positions?.forEach((pos, index) => {
-      const rowHeight = 7;
+      const rowHeight = 6;
+      let colX = x;
       
-      pdf.text((index + 1).toString(), x + colWidths[0] / 2, yPos + 5, { align: 'center' });
-      pdf.text(pos.position?.text || '', x + colWidths[0] + 2, yPos + 5);
-      pdf.text(this.formatCurrency(pos.position?.price || 0), x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
-      pdf.text(`${pos.amount} ${pos.position?.unit || ''}`, x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
-      pdf.text(this.formatCurrency(pos.lineTotal), x + width - 2, yPos + 5, { align: 'right' });
+      // Draw all cell borders
+      pdf.rect(colX, yPos, colWidths[0], rowHeight); // Pos column
+      pdf.text((index + 1).toString(), colX + colWidths[0] / 2, yPos + 4, { align: 'center' });
       
-      // Draw row border
-      pdf.rect(x, yPos, width, rowHeight);
+      colX += colWidths[0];
+      pdf.rect(colX, yPos, colWidths[1], rowHeight); // Description column
+      pdf.text(pos.position?.text || '', colX + 2, yPos + 4);
+      
+      colX += colWidths[1];
+      pdf.rect(colX, yPos, colWidths[2], rowHeight); // Price column
+      pdf.text(this.formatCurrency(pos.position?.price || 0), colX + colWidths[2] - 2, yPos + 4, { align: 'right' });
+      
+      colX += colWidths[2];
+      pdf.rect(colX, yPos, colWidths[3], rowHeight); // Quantity column
+      pdf.text(`${pos.amount} ${pos.position?.unit || ''}`, colX + colWidths[3] / 2, yPos + 4, { align: 'center' });
+      
+      colX += colWidths[3];
+      pdf.rect(colX, yPos, colWidths[4], rowHeight); // Total column
+      pdf.text(this.formatCurrency(pos.lineTotal), colX + colWidths[4] - 2, yPos + 4, { align: 'right' });
+      
       yPos += rowHeight;
     });
 
-    // Totals section
-    yPos += 8; // Better spacing after table
+    // Totals section - improved spacing
+    yPos += 4; // Reduced spacing after table
     const nettoBetrag = this.calculateInvoiceNetto(invoice);
     const mwst = invoice.type === 'D' ? nettoBetrag * 0.2 : 0;
     const anzahlungNetto = invoice.depositAmount ? (invoice.depositAmount / 1.2) : 0;
@@ -247,32 +269,32 @@ export class PdfService {
       pdf.text('Zahlbar nach Erhalt der Rechnung', x, yPos);
     }
 
-    // Align totals with the info text baseline
+    // Align totals with the info text baseline - increased gap
     let totalsYPos = infoTextYPos;
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', invoice.type === 'D' ? 'normal' : 'bold');
-    pdf.text('Nettobetrag:', x + width - 60, totalsYPos);
+    pdf.text('Nettobetrag:', x + width - 55, totalsYPos); // More space (was -60, now -55)
     pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, totalsYPos, { align: 'right' });
-    totalsYPos += 5;
+    totalsYPos += 4;
 
     if (invoice.type === 'D') {
       pdf.setFont('helvetica', 'normal');
-      pdf.text('zzgl. 20% MwSt.:', x + width - 60, totalsYPos);
+      pdf.text('zzgl. 20% MwSt.:', x + width - 55, totalsYPos); // More space
       pdf.text(this.formatCurrency(mwst), x + width - 2, totalsYPos, { align: 'right' });
-      totalsYPos += 5;
+      totalsYPos += 4;
 
       if (invoice.depositAmount > 0) {
-        pdf.text(`- Anzahlung vom ${this.formatDate(invoice.depositPaidOn)}:`, x + width - 90, totalsYPos);
+        pdf.text(`- Anzahlung vom ${this.formatDate(invoice.depositPaidOn)}:`, x + width - 95, totalsYPos); // More space for date
         pdf.text(this.formatCurrency(anzahlungNetto), x + width - 2, totalsYPos, { align: 'right' });
-        totalsYPos += 5;
+        totalsYPos += 4;
 
-        pdf.text('- Umsatzsteuer Anzahlung:', x + width - 60, totalsYPos);
+        pdf.text('- Umsatzsteuer Anzahlung:', x + width - 70, totalsYPos); // More space
         pdf.text(this.formatCurrency(anzahlungMwst), x + width - 2, totalsYPos, { align: 'right' });
-        totalsYPos += 5;
+        totalsYPos += 4;
       }
 
       pdf.setFont('helvetica', 'bold');
-      pdf.text(invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:', x + width - 60, totalsYPos);
+      pdf.text(invoice.depositAmount > 0 ? 'Restbetrag:' : 'Betrag:', x + width - 55, totalsYPos);
       pdf.text(this.formatCurrency(restbetrag), x + width - 2, totalsYPos, { align: 'right' });
     }
 
@@ -301,41 +323,62 @@ export class PdfService {
   }
 
   private drawContractTable(pdf: jsPDF, contract: Contract, x: number, y: number, width: number): void {
-    const colWidths = [15, 90, 25, 20, 25];
+    const colWidths = [12, 90, 22, 20, 22]; // Match invoice table
     let yPos = y;
 
-    // Table header
-    pdf.setFillColor(200, 200, 200);
-    pdf.rect(x, yPos, width, 7, 'F');
+    // Table header - use #cbcbcb background color (203, 203, 203)
+    pdf.setFillColor(203, 203, 203);
+    pdf.setDrawColor(0, 0, 0); // Black borders
+    pdf.setLineWidth(0.5); // Thicker border to match old CSS
+    pdf.rect(x, yPos, width, 6, 'FD'); // Fill and Draw
     
-    pdf.setFontSize(9); // Reduced from 10 to 9
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Pos', x + 2, yPos + 5);
-    pdf.text('Beschreibung', x + colWidths[0] + 2, yPos + 5);
-    pdf.text('Einzelpreis', x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
-    pdf.text('Anzahl', x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
-    pdf.text('Gesamtpreis', x + width - 2, yPos + 5, { align: 'right' });
+    
+    // Pos column - centered
+    pdf.text('Pos', x + colWidths[0] / 2, yPos + 4, { align: 'center' });
+    // Description - left aligned
+    pdf.text('Beschreibung', x + colWidths[0] + 2, yPos + 4);
+    // Einzelpreis - right aligned
+    pdf.text('Einzelpreis', x + colWidths[0] + colWidths[1] + colWidths[2] - 2, yPos + 4, { align: 'right' });
+    // Anzahl - centered
+    pdf.text('Anzahl', x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 4, { align: 'center' });
+    // Gesamtpreis - right aligned
+    pdf.text('Gesamtpreis', x + width - 2, yPos + 4, { align: 'right' });
 
-    yPos += 7;
-    pdf.rect(x, y, width, 7);
+    yPos += 6;
 
-    // Table rows
+    // Draw individual cell borders for each row
     pdf.setFont('helvetica', 'normal');
     contract.positions?.forEach((pos, index) => {
-      const rowHeight = 7;
+      const rowHeight = 6;
+      let colX = x;
       
-      pdf.text((index + 1).toString(), x + colWidths[0] / 2, yPos + 5, { align: 'center' });
-      pdf.text(pos.position?.text || '', x + colWidths[0] + 2, yPos + 5);
-      pdf.text(this.formatCurrency(pos.position?.price || 0), x + colWidths[0] + colWidths[1] + colWidths[2], yPos + 5, { align: 'right' });
-      pdf.text(`${pos.amount} ${pos.position?.unit || ''}`, x + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] / 2, yPos + 5, { align: 'center' });
-      pdf.text(this.formatCurrency((pos.amount || 0) * (pos.position?.price || 0)), x + width - 2, yPos + 5, { align: 'right' });
+      // Draw all cell borders
+      pdf.rect(colX, yPos, colWidths[0], rowHeight); // Pos column
+      pdf.text((index + 1).toString(), colX + colWidths[0] / 2, yPos + 4, { align: 'center' });
       
-      pdf.rect(x, yPos, width, rowHeight);
+      colX += colWidths[0];
+      pdf.rect(colX, yPos, colWidths[1], rowHeight); // Description column
+      pdf.text(pos.position?.text || '', colX + 2, yPos + 4);
+      
+      colX += colWidths[1];
+      pdf.rect(colX, yPos, colWidths[2], rowHeight); // Price column
+      pdf.text(this.formatCurrency(pos.position?.price || 0), colX + colWidths[2] - 2, yPos + 4, { align: 'right' });
+      
+      colX += colWidths[2];
+      pdf.rect(colX, yPos, colWidths[3], rowHeight); // Quantity column
+      pdf.text(`${pos.amount} ${pos.position?.unit || ''}`, colX + colWidths[3] / 2, yPos + 4, { align: 'center' });
+      
+      colX += colWidths[3];
+      pdf.rect(colX, yPos, colWidths[4], rowHeight); // Total column
+      pdf.text(this.formatCurrency((pos.amount || 0) * (pos.position?.price || 0)), colX + colWidths[4] - 2, yPos + 4, { align: 'right' });
+      
       yPos += rowHeight;
     });
 
-    // Totals
-    yPos += 8; // Better spacing after table
+    // Totals - improved spacing
+    yPos += 4; // Reduced spacing after table
     const nettoBetrag = this.calculateContractNetto(contract);
     const mwst = nettoBetrag * 0.2;
     const gesamtBetrag = nettoBetrag + mwst;
@@ -344,19 +387,19 @@ export class PdfService {
     pdf.setFontSize(9);
     pdf.text('Dieses Angebot ist 10 Tage lang gültig', x, yPos);
 
-    // Align totals with the info text baseline
+    // Align totals with the info text baseline - increased gap
     let totalsYPos = infoTextYPos;
-    pdf.setFontSize(9); // Reduced from 10 to 9
-    pdf.text('Nettobetrag:', x + width - 60, totalsYPos);
+    pdf.setFontSize(9);
+    pdf.text('Nettobetrag:', x + width - 55, totalsYPos); // More space
     pdf.text(this.formatCurrency(nettoBetrag), x + width - 2, totalsYPos, { align: 'right' });
-    totalsYPos += 5;
+    totalsYPos += 4;
 
-    pdf.text('zzgl. 20% MwSt.:', x + width - 60, totalsYPos);
+    pdf.text('zzgl. 20% MwSt.:', x + width - 55, totalsYPos); // More space
     pdf.text(this.formatCurrency(mwst), x + width - 2, totalsYPos, { align: 'right' });
-    totalsYPos += 5;
+    totalsYPos += 4;
 
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Gesamtbetrag:', x + width - 60, totalsYPos);
+    pdf.text('Gesamtbetrag:', x + width - 55, totalsYPos); // More space
     pdf.text(this.formatCurrency(gesamtBetrag), x + width - 2, totalsYPos, { align: 'right' });
 
     // Footer
@@ -425,29 +468,50 @@ export class PdfService {
     return `${contractNum}_Angebot_${surname}_${firstname}_${date}.pdf`;
   }
 
-  private getLogoDataUrl(): string {
-    // Base64 encoded logo - this is a simple approach
-    // In a production environment, you might load this from the assets folder
-    // For now, we'll return the path and jsPDF will handle loading it
-    return '/assets/images/logo_v1.png';
+  /**
+   * Load image and convert to base64 data URL
+   */
+  private loadImageAsDataUrl(path: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous'; // Handle CORS
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL('image/png');
+          resolve(dataUrl);
+        } else {
+          reject(new Error('Failed to get canvas context'));
+        }
+      };
+      
+      img.onerror = (error) => {
+        console.error('Failed to load image:', error);
+        reject(new Error(`Failed to load image: ${path}`));
+      };
+      
+      img.src = path;
+    });
   }
 
   /**
-   * Add logo to PDF by loading it as an image element first
+   * Add logo to PDF by loading it as base64 first
    */
-  private addLogoToPdf(pdf: jsPDF, x: number, y: number, width: number, height: number): void {
+  private async addLogoToPdf(pdf: jsPDF, x: number, y: number, width: number, height: number): Promise<void> {
     try {
-      // Use relative path from the Angular assets folder
-      // The path should work when the app is served
-      const logoPath = 'assets/images/logo_v1.png';
-      
-      // jsPDF will attempt to load the image from the path
-      // Note: This works in the browser context where assets are accessible
-      pdf.addImage(logoPath, 'PNG', x, y, width, height);
+      // Load logo from assets and convert to base64
+      const logoDataUrl = await this.loadImageAsDataUrl('assets/images/logo_v1.png');
+      pdf.addImage(logoDataUrl, 'PNG', x, y, width, height);
     } catch (error) {
       console.error('Failed to load logo:', error);
       // Draw a placeholder rectangle if logo fails to load
       pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(0.2);
       pdf.rect(x, y, width, height);
     }
   }
