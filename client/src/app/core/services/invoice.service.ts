@@ -25,4 +25,15 @@ export class InvoiceService {
   create(invoice: any): Observable<Invoice> {
     return this.http.post<Invoice>(this.apiUrl, invoice);
   }
+
+  /**
+   * Generate and download PDF for an invoice
+   * @param id Invoice ID
+   * @returns Observable of Blob containing the PDF
+   */
+  generatePdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/pdf`, {
+      responseType: 'blob'
+    });
+  }
 }
