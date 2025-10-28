@@ -95,6 +95,11 @@ public class CustomerBusinessLogic : ICustomerBusinessLogic
         _logger.LogInformation("Customer {CustomerId} deleted", customerId);
     }
 
+    public async Task<int> GetCustomersCountAsync()
+    {
+        return await _customerDataAccess.GetCustomersCountAsync();
+    }
+
     private static CustomerDto MapToDto(CustomerEntity customer)
     {
         return new CustomerDto

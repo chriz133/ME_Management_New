@@ -52,4 +52,9 @@ public class TransactionDataAccess : ITransactionDataAccess
     {
         return await _context.Transactions.AnyAsync(t => t.TransactionId == transactionId);
     }
+
+    public async Task<int> GetTransactionsCountAsync()
+    {
+        return await _context.Transactions.CountAsync();
+    }
 }

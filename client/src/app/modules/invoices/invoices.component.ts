@@ -300,7 +300,7 @@ export class InvoicesComponent implements OnInit {
 
   loadInvoices(): void {
     this.loading = true;
-    this.invoiceService.getAll().subscribe({
+    this.invoiceService.getSummary().subscribe({
       next: (data: Invoice[]) => {
         this.invoices = data;
         this.loading = false;

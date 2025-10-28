@@ -18,6 +18,10 @@ export class TransactionService {
     return this.http.get<Transaction[]>(this.apiUrl);
   }
 
+  getCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.apiUrl}/count`);
+  }
+
   getById(id: number): Observable<Transaction> {
     return this.http.get<Transaction>(`${this.apiUrl}/${id}`);
   }

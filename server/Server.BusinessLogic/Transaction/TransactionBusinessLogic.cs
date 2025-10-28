@@ -91,4 +91,9 @@ public class TransactionBusinessLogic : ITransactionBusinessLogic
             Medium = transaction.Medium
         };
     }
+
+    public async Task<int> GetTransactionsCountAsync()
+    {
+        return await _transactionDataAccess.GetTransactionsCountAsync();
+    }
 }

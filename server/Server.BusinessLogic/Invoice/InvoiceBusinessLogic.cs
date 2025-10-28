@@ -190,4 +190,37 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
             }).ToList() ?? new List<InvoicePositionDto>()
         };
     }
+
+    public async Task<int> GetInvoicesCountAsync()
+    {
+        return await _invoiceDataAccess.GetInvoicesCountAsync();
+    }
+
+    public async Task<IEnumerable<InvoiceSummaryDto>> GetAllInvoicesSummaryAsync()
+    {
+        var invoices = await _invoiceDataAccess.GetAllInvoicesSummaryAsync();
+        return invoices.Select(MapToSummaryDto);
+    }
+
+    private static InvoiceSummaryDto MapToSummaryDto(InvoiceEntity invoice)
+    {
+        return new InvoiceSummaryDto
+        {
+            InvoiceId = invoice.InvoiceId,
+            CreatedAt = invoice.CreatedAt,
+            CustomerId = invoice.CustomerId,
+            StartedAt = invoice.StartedAt,
+            FinishedAt = invoice.FinishedAt,
+            DepositAmount = invoice.DepositAmount,
+            DepositPaidOn = invoice.DepositPaidOn,
+            Type = invoice.Type,
+            Customer = invoice.Customer == null ? null : new CustomerSummaryDto
+            {
+                CustomerId = invoice.Customer.CustomerId,
+                FullName = $"{invoice.Customer.Firstname} {invoice.Customer.Surname}".Trim()
+            },
+            PositionCount = invoice.InvoicePositions?.Count ?? 0,
+            TotalAmount = invoice.InvoicePositions?.Sum(ip => ip.Amount * (ip.Position?.Price ?? 0)) ?? 0
+        };
+    }
 }

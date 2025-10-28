@@ -11,4 +11,5 @@ public interface ICustomerBusinessLogic
     Task<CustomerDto> CreateCustomerAsync(CreateCustomerRequest request);
     Task<CustomerDto> UpdateCustomerAsync(int customerId, UpdateCustomerRequest request);
     Task DeleteCustomerAsync(int customerId);
+    Task<int> GetCustomersCountAsync();
 }

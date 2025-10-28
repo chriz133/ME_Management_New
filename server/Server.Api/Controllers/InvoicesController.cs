@@ -40,6 +40,42 @@ public class InvoicesController : ControllerBase
     }
 
     /// <summary>
+    /// Get all invoices with summary data (optimized for list views)
+    /// </summary>
+    [HttpGet("summary")]
+    public async Task<ActionResult<IEnumerable<InvoiceSummaryDto>>> GetInvoicesSummary()
+    {
+        try
+        {
+            var invoices = await _invoiceBusinessLogic.GetAllInvoicesSummaryAsync();
+            return Ok(invoices);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching invoices summary");
+            return StatusCode(500, new { message = "Error fetching invoices summary", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get count of all invoices
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetInvoicesCount()
+    {
+        try
+        {
+            var count = await _invoiceBusinessLogic.GetInvoicesCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching invoices count");
+            return StatusCode(500, new { message = "Error fetching invoices count", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get invoice by ID
     /// </summary>
     [HttpGet("{id}")]

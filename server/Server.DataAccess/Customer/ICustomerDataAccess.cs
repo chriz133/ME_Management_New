@@ -12,4 +12,5 @@ public interface ICustomerDataAccess
     Task<bool> CustomerExistsAsync(int customerId);
     Task<IEnumerable<ContractEntity>> GetCustomerContractsAsync(int customerId);
     Task<IEnumerable<InvoiceEntity>> GetCustomerInvoicesAsync(int customerId);
+    Task<int> GetCustomersCountAsync();
 }

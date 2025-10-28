@@ -91,4 +91,19 @@ public class InvoiceDataAccess : IInvoiceDataAccess
     {
         return await _context.InvoicesDb.AnyAsync(i => i.InvoiceId == invoiceId);
     }
+
+    public async Task<int> GetInvoicesCountAsync()
+    {
+        return await _context.InvoicesDb.CountAsync();
+    }
+
+    public async Task<IEnumerable<InvoiceEntity>> GetAllInvoicesSummaryAsync()
+    {
+        return await _context.InvoicesDb
+            .Include(i => i.Customer)
+            .Include(i => i.InvoicePositions)
+                .ThenInclude(ip => ip.Position)
+            .OrderByDescending(i => i.CreatedAt)
+            .ToListAsync();
+    }
 }

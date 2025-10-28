@@ -18,6 +18,14 @@ export class ContractService {
     return this.http.get<Contract[]>(this.apiUrl);
   }
 
+  getSummary(): Observable<Contract[]> {
+    return this.http.get<Contract[]>(`${this.apiUrl}/summary`);
+  }
+
+  getCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.apiUrl}/count`);
+  }
+
   getById(id: number): Observable<Contract> {
     return this.http.get<Contract>(`${this.apiUrl}/${id}`);
   }
