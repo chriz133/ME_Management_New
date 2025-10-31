@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ContractService } from '../../../core/services/contract.service';
 import { Contract } from '../../../core/models/contract.model';
+import { PdfService } from '../../../core/services/pdf.service';
 
 /**
  * Contract detail component
@@ -33,6 +34,12 @@ import { Contract } from '../../../core/models/contract.model';
       <div class="back-button-container">
         <button pButton label="Zurück zu Angeboten" icon="pi pi-arrow-left" 
                 class="p-button-text" (click)="goBack()"></button>
+        <button pButton label="PDF Ansehen" icon="pi pi-eye" 
+                class="p-button-info" (click)="viewPdf()" 
+                [disabled]="!contract" style="margin-left: 1rem;"></button>
+        <button pButton label="PDF Herunterladen" icon="pi pi-download" 
+                class="p-button-success" (click)="downloadPdf()" 
+                [disabled]="!contract" style="margin-left: 0.5rem;"></button>
       </div>
 
       <p-card *ngIf="loading">
@@ -316,6 +323,7 @@ export class ContractDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly pdfService = inject(PdfService);
 
   contract: Contract | null = null;
   loading = false;
@@ -362,6 +370,46 @@ export class ContractDetailComponent implements OnInit {
     if (this.contract) {
       this.router.navigate(['/invoices/create'], { 
         queryParams: { contractId: this.contract.contractId } 
+      });
+    }
+  }
+
+  async viewPdf(): Promise<void> {
+    if (!this.contract) return;
+    
+    try {
+      await this.pdfService.viewContractPdf(this.contract);
+      this.messageService.add({ 
+        severity: 'success', 
+        summary: 'PDF', 
+        detail: 'PDF wird in neuem Tab angezeigt' 
+      });
+    } catch (error) {
+      console.error('Error viewing PDF:', error);
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Fehler', 
+        detail: 'PDF konnte nicht angezeigt werden' 
+      });
+    }
+  }
+
+  async downloadPdf(): Promise<void> {
+    if (!this.contract) return;
+    
+    try {
+      await this.pdfService.generateContractPdf(this.contract);
+      this.messageService.add({ 
+        severity: 'success', 
+        summary: 'PDF', 
+        detail: 'PDF wurde erfolgreich heruntergeladen' 
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Fehler', 
+        detail: 'PDF konnte nicht heruntergeladen werden' 
       });
     }
   }

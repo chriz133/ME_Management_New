@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { DatabaseInfo } from '../models/system.model';
+import { DatabaseInfo, PdfSettings } from '../models/system.model';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -19,5 +19,12 @@ export class SystemService {
    */
   getDatabaseInfo(): Observable<DatabaseInfo> {
     return this.http.get<DatabaseInfo>(`${this.apiUrl}/database-info`);
+  }
+
+  /**
+   * Get PDF save path settings
+   */
+  getPdfSettings(): Observable<PdfSettings> {
+    return this.http.get<PdfSettings>(`${this.apiUrl}/pdf-settings`);
   }
 }

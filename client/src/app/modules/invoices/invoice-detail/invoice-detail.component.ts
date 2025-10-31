@@ -10,6 +10,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { Invoice } from '../../../core/models/invoice.model';
 import { ToastService } from '../../../core/services/toast.service';
+import { PdfService } from '../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-invoice-detail',
@@ -26,12 +27,26 @@ import { ToastService } from '../../../core/services/toast.service';
   ],
   template: `
     <div class="invoice-detail p-4">
-      <div class="mb-4">
+      <div class="mb-4 flex gap-2">
         <p-button
           icon="pi pi-arrow-left"
           label="Zurück"
           [text]="true"
           (onClick)="goBack()"
+        />
+        <p-button
+          icon="pi pi-eye"
+          label="PDF Ansehen"
+          severity="info"
+          (onClick)="viewPdf()"
+          [disabled]="!invoice"
+        />
+        <p-button
+          icon="pi pi-download"
+          label="PDF Herunterladen"
+          severity="success"
+          (onClick)="downloadPdf()"
+          [disabled]="!invoice"
         />
       </div>
 
@@ -242,6 +257,7 @@ export class InvoiceDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly invoiceService = inject(InvoiceService);
   private readonly toastService = inject(ToastService);
+  private readonly pdfService = inject(PdfService);
 
   invoice: Invoice | null = null;
   loading = true;
@@ -277,5 +293,29 @@ export class InvoiceDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/invoices']);
+  }
+
+  async viewPdf(): Promise<void> {
+    if (!this.invoice) return;
+    
+    try {
+      await this.pdfService.viewInvoicePdf(this.invoice);
+      this.toastService.success('PDF', 'PDF wird in neuem Tab angezeigt');
+    } catch (error) {
+      console.error('Error viewing PDF:', error);
+      this.toastService.error('Fehler', 'PDF konnte nicht angezeigt werden');
+    }
+  }
+
+  async downloadPdf(): Promise<void> {
+    if (!this.invoice) return;
+    
+    try {
+      await this.pdfService.generateInvoicePdf(this.invoice);
+      this.toastService.success('PDF', 'PDF wurde erfolgreich heruntergeladen');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      this.toastService.error('Fehler', 'PDF konnte nicht heruntergeladen werden');
+    }
   }
 }

@@ -16,6 +16,10 @@ public class SystemController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<SystemController> _logger;
 
+    // Default PDF save paths
+    private const string DefaultInvoiceSavePath = "./PDFs/Invoices";
+    private const string DefaultContractSavePath = "./PDFs/Contracts";
+
     public SystemController(IConfiguration configuration, ILogger<SystemController> logger)
     {
         _configuration = configuration;
@@ -67,6 +71,37 @@ public class SystemController : ControllerBase
     }
 
     /// <summary>
+    /// Get PDF save path settings.
+    /// </summary>
+    [HttpGet("pdf-settings")]
+    [ProducesResponseType(typeof(PdfSettingsResponse), StatusCodes.Status200OK)]
+    public ActionResult<PdfSettingsResponse> GetPdfSettings()
+    {
+        try
+        {
+            var invoicePath = _configuration["PdfSettings:InvoiceSavePath"] ?? DefaultInvoiceSavePath;
+            var contractPath = _configuration["PdfSettings:ContractSavePath"] ?? DefaultContractSavePath;
+
+            _logger.LogDebug("Retrieved PDF settings successfully");
+
+            return Ok(new PdfSettingsResponse
+            {
+                InvoiceSavePath = invoicePath,
+                ContractSavePath = contractPath
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving PDF settings");
+            return Ok(new PdfSettingsResponse
+            {
+                InvoiceSavePath = DefaultInvoiceSavePath,
+                ContractSavePath = DefaultContractSavePath
+            });
+        }
+    }
+
+    /// <summary>
     /// Extract a value from a connection string by key.
     /// Handles values that may contain '=' characters.
     /// </summary>
@@ -96,4 +131,13 @@ public class DatabaseInfoResponse
 {
     public string DatabaseName { get; set; } = string.Empty;
     public string ServerAddress { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Response model for PDF settings.
+/// </summary>
+public class PdfSettingsResponse
+{
+    public string InvoiceSavePath { get; set; } = string.Empty;
+    public string ContractSavePath { get; set; } = string.Empty;
 }
