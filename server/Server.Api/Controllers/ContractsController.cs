@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.BusinessLogic.Contract;
+using Server.BusinessLogic.Pdf;
 using Server.BusinessObjects.DTOs;
 
 namespace Server.Api.Controllers;
@@ -11,13 +12,16 @@ namespace Server.Api.Controllers;
 public class ContractsController : ControllerBase
 {
     private readonly IContractBusinessLogic _contractBusinessLogic;
+    private readonly IPdfService _pdfService;
     private readonly ILogger<ContractsController> _logger;
 
     public ContractsController(
         IContractBusinessLogic contractBusinessLogic,
+        IPdfService pdfService,
         ILogger<ContractsController> logger)
     {
         _contractBusinessLogic = contractBusinessLogic;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -36,6 +40,42 @@ public class ContractsController : ControllerBase
         {
             _logger.LogError(ex, "Error fetching contracts");
             return StatusCode(500, new { message = "Error fetching contracts", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get all contracts with summary data (optimized for list views)
+    /// </summary>
+    [HttpGet("summary")]
+    public async Task<ActionResult<IEnumerable<ContractSummaryDto>>> GetContractsSummary()
+    {
+        try
+        {
+            var contracts = await _contractBusinessLogic.GetAllContractsSummaryAsync();
+            return Ok(contracts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching contracts summary");
+            return StatusCode(500, new { message = "Error fetching contracts summary", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get count of all contracts
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetContractsCount()
+    {
+        try
+        {
+            var count = await _contractBusinessLogic.GetContractsCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching contracts count");
+            return StatusCode(500, new { message = "Error fetching contracts count", error = ex.Message });
         }
     }
 
@@ -64,21 +104,21 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
-    /// Update contract acceptance status (requires User or Admin role)
+    /// Update contract (requires User or Admin role)
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,User")]
-    public async Task<ActionResult> UpdateContract(int id, [FromBody] UpdateContractRequest request)
+    public async Task<ActionResult<ContractDto>> UpdateContract(int id, [FromBody] UpdateContractRequest request)
     {
         try
         {
-            await _contractBusinessLogic.UpdateContractAsync(id, request.Accepted);
+            var contractDto = await _contractBusinessLogic.UpdateContractAsync(id, request);
             _logger.LogInformation("Contract {ContractId} updated by user", id);
-            return Ok(new { message = "Contract updated successfully" });
+            return Ok(contractDto);
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Contract {ContractId} not found", id);
+            _logger.LogWarning(ex, "Contract {ContractId} not found or validation error", id);
             return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
@@ -160,12 +200,32 @@ public class ContractsController : ControllerBase
             return StatusCode(500, new { message = "Error converting contract to invoice", error = ex.Message });
         }
     }
-}
 
-/// <summary>
-/// Request model for updating contract
-/// </summary>
-public class UpdateContractRequest
-{
-    public bool Accepted { get; set; }
+    /// <summary>
+    /// Generate and download PDF for a contract
+    /// </summary>
+    [HttpGet("{id}/pdf")]
+    public async Task<IActionResult> GetContractPdf(int id)
+    {
+        try
+        {
+            var contract = await _contractBusinessLogic.GetContractByIdAsync(id);
+            if (contract == null)
+            {
+                return NotFound(new { message = $"Contract with ID {id} not found" });
+            }
+
+            var pdfBytes = await _pdfService.GenerateContractPdfAsync(id);
+            
+            var customerName = $"{contract.Customer?.Surname}_{contract.Customer?.Firstname}".Replace(" ", "_");
+            var fileName = $"{id:D5}_Angebot_{customerName}_{contract.CreatedAt:yyyy-MM-dd}.pdf";
+            
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating PDF for contract {ContractId}", id);
+            return StatusCode(500, new { message = "Error generating PDF", error = ex.Message });
+        }
+    }
 }

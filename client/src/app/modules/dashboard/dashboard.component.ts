@@ -376,9 +376,9 @@ export class DashboardComponent implements OnInit {
 
   loadStats(): void {
     // Load customers count
-    this.customerService.getAll().subscribe({
+    this.customerService.getCount().subscribe({
       next: (data) => {
-        this.stats.customers = data.length;
+        this.stats.customers = data.count;
         this.loading.customers = false;
       },
       error: () => {
@@ -387,9 +387,9 @@ export class DashboardComponent implements OnInit {
     });
 
     // Load invoices count
-    this.invoiceService.getAll().subscribe({
+    this.invoiceService.getCount().subscribe({
       next: (data) => {
-        this.stats.invoices = data.length;
+        this.stats.invoices = data.count;
         this.loading.invoices = false;
       },
       error: () => {
@@ -398,9 +398,9 @@ export class DashboardComponent implements OnInit {
     });
 
     // Load contracts count
-    this.contractService.getAll().subscribe({
+    this.contractService.getCount().subscribe({
       next: (data) => {
-        this.stats.contracts = data.length;
+        this.stats.contracts = data.count;
         this.loading.contracts = false;
       },
       error: () => {
@@ -409,9 +409,9 @@ export class DashboardComponent implements OnInit {
     });
 
     // Load transactions count
-    this.transactionService.getAll().subscribe({
+    this.transactionService.getCount().subscribe({
       next: (data) => {
-        this.stats.transactions = data.length;
+        this.stats.transactions = data.count;
         this.loading.transactions = false;
       },
       error: () => {

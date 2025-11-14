@@ -10,7 +10,6 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ContractService } from '../../../core/services/contract.service';
 import { Contract } from '../../../core/models/contract.model';
-import { PdfService } from '../../../core/services/pdf.service';
 
 /**
  * Contract detail component
@@ -323,7 +322,6 @@ export class ContractDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
-  private readonly pdfService = inject(PdfService);
 
   contract: Contract | null = null;
   loading = false;
@@ -378,11 +376,27 @@ export class ContractDetailComponent implements OnInit {
     if (!this.contract) return;
     
     try {
-      await this.pdfService.viewContractPdf(this.contract);
-      this.messageService.add({ 
-        severity: 'success', 
-        summary: 'PDF', 
-        detail: 'PDF wird in neuem Tab angezeigt' 
+      this.contractService.generatePdf(this.contract.contractId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'PDF', 
+            detail: 'PDF wird in neuem Tab angezeigt' 
+          });
+          
+          // Clean up the URL after a short delay
+          setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        },
+        error: (error) => {
+          console.error('Error viewing PDF:', error);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Fehler', 
+            detail: 'PDF konnte nicht angezeigt werden' 
+          });
+        }
       });
     } catch (error) {
       console.error('Error viewing PDF:', error);
@@ -398,11 +412,36 @@ export class ContractDetailComponent implements OnInit {
     if (!this.contract) return;
     
     try {
-      await this.pdfService.generateContractPdf(this.contract);
-      this.messageService.add({ 
-        severity: 'success', 
-        summary: 'PDF', 
-        detail: 'PDF wurde erfolgreich heruntergeladen' 
+      this.contractService.generatePdf(this.contract.contractId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          
+          // Create filename
+          const customerName = `${this.contract!.customer?.surname}_${this.contract!.customer?.firstname}`.replace(/ /g, '_');
+          const date = new Date(this.contract!.createdAt).toISOString().split('T')[0];
+          a.download = `${this.contract!.contractId.toString().padStart(5, '0')}_Angebot_${customerName}_${date}.pdf`;
+          
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'PDF', 
+            detail: 'PDF wurde erfolgreich heruntergeladen' 
+          });
+        },
+        error: (error) => {
+          console.error('Error downloading PDF:', error);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Fehler', 
+            detail: 'PDF konnte nicht heruntergeladen werden' 
+          });
+        }
       });
     } catch (error) {
       console.error('Error downloading PDF:', error);

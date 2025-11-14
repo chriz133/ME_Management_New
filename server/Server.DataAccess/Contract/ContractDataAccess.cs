@@ -95,4 +95,18 @@ public class ContractDataAccess : IContractDataAccess
     {
         await _context.SaveChangesAsync();
     }
+
+    public async Task<int> GetContractsCountAsync()
+    {
+        return await _context.ContractsDb.CountAsync();
+    }
+
+    public async Task<IEnumerable<ContractEntity>> GetAllContractsSummaryAsync()
+    {
+        return await _context.ContractsDb
+            .Include(c => c.Customer)
+            .Include(c => c.ContractPositions)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+    }
 }

@@ -41,4 +41,23 @@ export class PositionService {
     };
     return this.http.post<Position>(this.apiUrl, requestData);
   }
+
+  /**
+   * Update an existing position
+   */
+  update(id: number, position: { text: string; price: number; unit: string }): Observable<Position> {
+    const requestData = {
+      Text: position.text,
+      Price: position.price,
+      Unit: position.unit
+    };
+    return this.http.put<Position>(`${this.apiUrl}/${id}`, requestData);
+  }
+
+  /**
+   * Delete a position
+   */
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

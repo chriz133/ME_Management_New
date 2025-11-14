@@ -10,7 +10,6 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { Invoice } from '../../../core/models/invoice.model';
 import { ToastService } from '../../../core/services/toast.service';
-import { PdfService } from '../../../core/services/pdf.service';
 
 @Component({
   selector: 'app-invoice-detail',
@@ -257,7 +256,6 @@ export class InvoiceDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly invoiceService = inject(InvoiceService);
   private readonly toastService = inject(ToastService);
-  private readonly pdfService = inject(PdfService);
 
   invoice: Invoice | null = null;
   loading = true;
@@ -299,8 +297,20 @@ export class InvoiceDetailComponent implements OnInit {
     if (!this.invoice) return;
     
     try {
-      await this.pdfService.viewInvoicePdf(this.invoice);
-      this.toastService.success('PDF', 'PDF wird in neuem Tab angezeigt');
+      this.invoiceService.generatePdf(this.invoice.invoiceId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          this.toastService.success('PDF', 'PDF wird in neuem Tab angezeigt');
+          
+          // Clean up the URL after a short delay
+          setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        },
+        error: (error) => {
+          console.error('Error viewing PDF:', error);
+          this.toastService.error('Fehler', 'PDF konnte nicht angezeigt werden');
+        }
+      });
     } catch (error) {
       console.error('Error viewing PDF:', error);
       this.toastService.error('Fehler', 'PDF konnte nicht angezeigt werden');
@@ -311,8 +321,29 @@ export class InvoiceDetailComponent implements OnInit {
     if (!this.invoice) return;
     
     try {
-      await this.pdfService.generateInvoicePdf(this.invoice);
-      this.toastService.success('PDF', 'PDF wurde erfolgreich heruntergeladen');
+      this.invoiceService.generatePdf(this.invoice.invoiceId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          
+          // Create filename
+          const customerName = `${this.invoice!.customer?.surname}_${this.invoice!.customer?.firstname}`.replace(/ /g, '_');
+          const date = new Date(this.invoice!.createdAt).toISOString().split('T')[0];
+          a.download = `${this.invoice!.invoiceId.toString().padStart(5, '0')}_Rechnung_${customerName}_${date}.pdf`;
+          
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          this.toastService.success('PDF', 'PDF wurde erfolgreich heruntergeladen');
+        },
+        error: (error) => {
+          console.error('Error downloading PDF:', error);
+          this.toastService.error('Fehler', 'PDF konnte nicht heruntergeladen werden');
+        }
+      });
     } catch (error) {
       console.error('Error downloading PDF:', error);
       this.toastService.error('Fehler', 'PDF konnte nicht heruntergeladen werden');
