@@ -34,13 +34,13 @@ public class PdfService : IPdfService
     // Logo path - uses absolute path from repository root
     private static readonly string LOGO_PATH = Path.GetFullPath(
         Path.Combine(
-            Directory.GetCurrentDirectory(), 
-            "..", "..", "..", "client", "src", "assets", "images", "logo_v1.png"
+            AppContext.BaseDirectory!,
+            "..", "..", "..", "..", "..", "client", "src", "assets", "images", "logo_v1.png"
         )
     );
 
     // Gentler color scheme - different colors for invoices and contracts
-    private static readonly Color INVOICE_COLOR = Color.FromHex("#60a5fa"); // Gentler blue for invoices
+    private static readonly Color INVOICE_COLOR = Color.FromHex("#ff6f47"); // Gentler blue for invoices
     private static readonly Color CONTRACT_COLOR = Color.FromHex("#34d399"); // Gentler green for contracts
     private static readonly Color GRAY_LIGHT = Color.FromHex("#f3f4f6");
     private static readonly Color GRAY_MEDIUM = Color.FromHex("#9ca3af");
@@ -121,16 +121,17 @@ public class PdfService : IPdfService
     {
         container.Column(column =>
         {
+            column.Item().Row(row =>
+            {
+                if (File.Exists(LOGO_PATH))
+                {
+                    row.ConstantItem(100).Image(LOGO_PATH).FitWidth();
+                    column.Spacing(10);// Spacer
+                }
+            });
             // Top section with logo, company and customer info
             column.Item().Row(row =>
             {
-                // Logo (if exists)
-                if (File.Exists(LOGO_PATH))
-                {
-                    row.ConstantItem(50).Height(50).Image(LOGO_PATH);
-                    row.ConstantItem(10); // Spacer
-                }
-
                 // Left: Company info
                 row.RelativeItem().Column(leftColumn =>
                 {
@@ -307,16 +308,16 @@ public class PdfService : IPdfService
                 var anzahlungMwst = invoice.DepositAmount > 0 ? (decimal)invoice.DepositAmount - anzahlungNetto : 0;
                 var restbetrag = invoice.Type == "D" ? nettoBetrag + mwst - (decimal)invoice.DepositAmount : nettoBetrag;
 
-                // Nettobetrag
-                summaryColumn.Item().Row(row =>
-                {
-                    row.RelativeItem().Text("Nettobetrag:").FontSize(10);
-                    row.ConstantItem(100).AlignRight().Text($"€ {nettoBetrag:N2}").FontSize(10);
-                });
-
                 // MwSt for Dienstleistung
                 if (invoice.Type == "D")
                 {
+                    // Nettobetrag
+                    summaryColumn.Item().Row(row =>
+                    {
+                        row.RelativeItem().Text("Nettobetrag:").FontSize(10);
+                        row.ConstantItem(100).AlignRight().Text($"€ {nettoBetrag:N2}").FontSize(10);
+                    });
+
                     summaryColumn.Item().PaddingTop(4).Row(row =>
                     {
                         row.RelativeItem().Text("zzgl. 20% MwSt.:").FontSize(10);
