@@ -160,7 +160,7 @@ import { ConfirmationService } from 'primeng/api';
               <td class="text-right">
                 <div class="flex flex-column align-items-end">
                   <span class="font-bold text-lg text-primary">{{ invoice.totalAmount | currency:'EUR':'symbol':'1.2-2':'de' }}</span>
-                  <span class="text-xs text-600">{{invoice.positions?.length || 0}} Positionen</span>
+                  <span class="text-xs text-600">{{invoice.positionCount}} Positionen</span>
                 </div>
               </td>
               <td class="text-center">

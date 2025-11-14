@@ -33,6 +33,12 @@ import { Contract } from '../../../core/models/contract.model';
       <div class="back-button-container">
         <button pButton label="Zurück zu Angeboten" icon="pi pi-arrow-left" 
                 class="p-button-text" (click)="goBack()"></button>
+        <button pButton label="PDF Ansehen" icon="pi pi-eye" 
+                class="p-button-info" (click)="viewPdf()" 
+                [disabled]="!contract" style="margin-left: 1rem;"></button>
+        <button pButton label="PDF Herunterladen" icon="pi pi-download" 
+                class="p-button-success" (click)="downloadPdf()" 
+                [disabled]="!contract" style="margin-left: 0.5rem;"></button>
       </div>
 
       <p-card *ngIf="loading">
@@ -362,6 +368,87 @@ export class ContractDetailComponent implements OnInit {
     if (this.contract) {
       this.router.navigate(['/invoices/create'], { 
         queryParams: { contractId: this.contract.contractId } 
+      });
+    }
+  }
+
+  async viewPdf(): Promise<void> {
+    if (!this.contract) return;
+    
+    try {
+      this.contractService.generatePdf(this.contract.contractId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'PDF', 
+            detail: 'PDF wird in neuem Tab angezeigt' 
+          });
+          
+          // Clean up the URL after a short delay
+          setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        },
+        error: (error) => {
+          console.error('Error viewing PDF:', error);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Fehler', 
+            detail: 'PDF konnte nicht angezeigt werden' 
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error viewing PDF:', error);
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Fehler', 
+        detail: 'PDF konnte nicht angezeigt werden' 
+      });
+    }
+  }
+
+  async downloadPdf(): Promise<void> {
+    if (!this.contract) return;
+    
+    try {
+      this.contractService.generatePdf(this.contract.contractId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          
+          // Create filename
+          const customerName = `${this.contract!.customer?.surname}_${this.contract!.customer?.firstname}`.replace(/ /g, '_');
+          const date = new Date(this.contract!.createdAt).toISOString().split('T')[0];
+          a.download = `${this.contract!.contractId.toString().padStart(5, '0')}_Angebot_${customerName}_${date}.pdf`;
+          
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'PDF', 
+            detail: 'PDF wurde erfolgreich heruntergeladen' 
+          });
+        },
+        error: (error) => {
+          console.error('Error downloading PDF:', error);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Fehler', 
+            detail: 'PDF konnte nicht heruntergeladen werden' 
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Fehler', 
+        detail: 'PDF konnte nicht heruntergeladen werden' 
       });
     }
   }

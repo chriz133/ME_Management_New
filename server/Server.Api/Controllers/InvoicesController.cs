@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.BusinessLogic.Invoice;
+using Server.BusinessLogic.Pdf;
 using Server.BusinessObjects.DTOs;
 
 namespace Server.Api.Controllers;
@@ -11,13 +12,16 @@ namespace Server.Api.Controllers;
 public class InvoicesController : ControllerBase
 {
     private readonly IInvoiceBusinessLogic _invoiceBusinessLogic;
+    private readonly IPdfService _pdfService;
     private readonly ILogger<InvoicesController> _logger;
 
     public InvoicesController(
         IInvoiceBusinessLogic invoiceBusinessLogic,
+        IPdfService pdfService,
         ILogger<InvoicesController> logger)
     {
         _invoiceBusinessLogic = invoiceBusinessLogic;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -120,6 +124,34 @@ public class InvoicesController : ControllerBase
         {
             _logger.LogError(ex, "Error creating invoice");
             return StatusCode(500, new { message = "Error creating invoice", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Generate and download PDF for an invoice
+    /// </summary>
+    [HttpGet("{id}/pdf")]
+    public async Task<IActionResult> GetInvoicePdf(int id)
+    {
+        try
+        {
+            var invoice = await _invoiceBusinessLogic.GetInvoiceByIdAsync(id);
+            if (invoice == null)
+            {
+                return NotFound(new { message = $"Invoice with ID {id} not found" });
+            }
+
+            var pdfBytes = await _pdfService.GenerateInvoicePdfAsync(id);
+            
+            var customerName = $"{invoice.Customer?.Surname}_{invoice.Customer?.Firstname}".Replace(" ", "_");
+            var fileName = $"{id:D5}_Rechnung_{customerName}_{invoice.CreatedAt:yyyy-MM-dd}.pdf";
+            
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating PDF for invoice {InvoiceId}", id);
+            return StatusCode(500, new { message = "Error generating PDF", error = ex.Message });
         }
     }
 

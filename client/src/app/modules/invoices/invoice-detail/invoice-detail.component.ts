@@ -26,12 +26,26 @@ import { ToastService } from '../../../core/services/toast.service';
   ],
   template: `
     <div class="invoice-detail p-4">
-      <div class="mb-4">
+      <div class="mb-4 flex gap-2">
         <p-button
           icon="pi pi-arrow-left"
           label="Zurück"
           [text]="true"
           (onClick)="goBack()"
+        />
+        <p-button
+          icon="pi pi-eye"
+          label="PDF Ansehen"
+          severity="info"
+          (onClick)="viewPdf()"
+          [disabled]="!invoice"
+        />
+        <p-button
+          icon="pi pi-download"
+          label="PDF Herunterladen"
+          severity="success"
+          (onClick)="downloadPdf()"
+          [disabled]="!invoice"
         />
       </div>
 
@@ -277,5 +291,62 @@ export class InvoiceDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/invoices']);
+  }
+
+  async viewPdf(): Promise<void> {
+    if (!this.invoice) return;
+    
+    try {
+      this.invoiceService.generatePdf(this.invoice.invoiceId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          this.toastService.success('PDF', 'PDF wird in neuem Tab angezeigt');
+          
+          // Clean up the URL after a short delay
+          setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        },
+        error: (error) => {
+          console.error('Error viewing PDF:', error);
+          this.toastService.error('Fehler', 'PDF konnte nicht angezeigt werden');
+        }
+      });
+    } catch (error) {
+      console.error('Error viewing PDF:', error);
+      this.toastService.error('Fehler', 'PDF konnte nicht angezeigt werden');
+    }
+  }
+
+  async downloadPdf(): Promise<void> {
+    if (!this.invoice) return;
+    
+    try {
+      this.invoiceService.generatePdf(this.invoice.invoiceId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          
+          // Create filename
+          const customerName = `${this.invoice!.customer?.surname}_${this.invoice!.customer?.firstname}`.replace(/ /g, '_');
+          const date = new Date(this.invoice!.createdAt).toISOString().split('T')[0];
+          a.download = `${this.invoice!.invoiceId.toString().padStart(5, '0')}_Rechnung_${customerName}_${date}.pdf`;
+          
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          this.toastService.success('PDF', 'PDF wurde erfolgreich heruntergeladen');
+        },
+        error: (error) => {
+          console.error('Error downloading PDF:', error);
+          this.toastService.error('Fehler', 'PDF konnte nicht heruntergeladen werden');
+        }
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      this.toastService.error('Fehler', 'PDF konnte nicht heruntergeladen werden');
+    }
   }
 }

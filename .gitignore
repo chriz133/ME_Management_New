@@ -56,7 +56,7 @@ project.nuget.cache
 *.db-wal
 *.mdf
 *.ldf
-
+*._*
 # =========================
 # Angular / Node.js
 # =========================
