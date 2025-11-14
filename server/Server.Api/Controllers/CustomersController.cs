@@ -38,6 +38,24 @@ public class CustomersController : ControllerBase
     }
 
     /// <summary>
+    /// Get count of all customers
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetCustomersCount()
+    {
+        try
+        {
+            var count = await _customerBusinessLogic.GetCustomersCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching customers count");
+            return StatusCode(500, new { message = "Error fetching customers count", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get customer by ID
     /// </summary>
     [HttpGet("{id}")]
@@ -113,6 +131,55 @@ public class CustomersController : ControllerBase
         {
             _logger.LogError(ex, "Error creating customer");
             return StatusCode(500, new { message = "Error creating customer", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update an existing customer (requires Admin or User role)
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<CustomerDto>> UpdateCustomer(int id, [FromBody] UpdateCustomerRequest request)
+    {
+        try
+        {
+            var customerDto = await _customerBusinessLogic.UpdateCustomerAsync(id, request);
+            return Ok(customerDto);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Customer {CustomerId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating customer {CustomerId}", id);
+            return StatusCode(500, new { message = "Error updating customer", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete a customer (requires Admin role only)
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> DeleteCustomer(int id)
+    {
+        try
+        {
+            await _customerBusinessLogic.DeleteCustomerAsync(id);
+            _logger.LogInformation("Customer {CustomerId} deleted by admin", id);
+            return Ok(new { message = "Customer deleted successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Customer {CustomerId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting customer {CustomerId}", id);
+            return StatusCode(500, new { message = "Error deleting customer", error = ex.Message });
         }
     }
 }

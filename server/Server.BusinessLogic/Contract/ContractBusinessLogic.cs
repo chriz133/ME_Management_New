@@ -103,17 +103,88 @@ public class ContractBusinessLogic : IContractBusinessLogic
         return MapToDto(contractWithRelations!);
     }
 
-    public async Task UpdateContractAsync(int contractId, bool accepted)
+    public async Task<ContractDto> UpdateContractAsync(int contractId, UpdateContractRequest request)
     {
-        var contract = await _contractDataAccess.GetContractByIdAsync(contractId);
+        var contract = await _contractDataAccess.GetContractWithPositionsAsync(contractId);
         if (contract == null)
         {
             throw new ArgumentException($"Contract with ID {contractId} not found");
         }
 
-        contract.Accepted = accepted;
+        // Verify customer exists
+        var customerExists = await _contractDataAccess.CustomerExistsAsync(request.CustomerId);
+        if (!customerExists)
+        {
+            throw new ArgumentException($"Customer with ID {request.CustomerId} not found");
+        }
+
+        // Update contract fields
+        contract.CustomerId = request.CustomerId;
+        contract.Accepted = request.Accepted;
+
+        // Remove existing positions
+        if (contract.ContractPositions != null)
+        {
+            contract.ContractPositions.Clear();
+        }
+        else
+        {
+            contract.ContractPositions = new List<ContractPosition>();
+        }
+
+        // Add new positions
+        foreach (var positionRequest in request.Positions)
+        {
+            PositionEntity? position;
+
+            // Check if we need to create a new position or use an existing one
+            if (positionRequest.PositionId.HasValue && positionRequest.PositionId.Value > 0)
+            {
+                // Use existing position
+                position = await _contractDataAccess.GetPositionByIdAsync(positionRequest.PositionId.Value);
+                if (position == null)
+                {
+                    throw new ArgumentException($"Position with ID {positionRequest.PositionId} not found");
+                }
+            }
+            else
+            {
+                // Create new position inline
+                if (string.IsNullOrWhiteSpace(positionRequest.Text) || 
+                    !positionRequest.Price.HasValue || 
+                    string.IsNullOrWhiteSpace(positionRequest.Unit))
+                {
+                    throw new ArgumentException("Position data (Text, Price, Unit) is required when PositionId is not provided");
+                }
+
+                position = new PositionEntity
+                {
+                    Text = positionRequest.Text,
+                    Price = positionRequest.Price.Value,
+                    Unit = positionRequest.Unit
+                };
+                
+                position = await _contractDataAccess.CreatePositionAsync(position);
+            }
+
+            // Create contract position linking
+            var contractPosition = new ContractPosition
+            {
+                Position = position,
+                Amount = (double)positionRequest.Amount
+            };
+
+            contract.ContractPositions.Add(contractPosition);
+        }
+
+        // Update the contract
         await _contractDataAccess.UpdateContractAsync(contract);
         _logger.LogInformation("Contract {ContractId} updated", contractId);
+
+        // Fetch the complete contract with relationships
+        var contractWithRelations = await _contractDataAccess.GetContractByIdAsync(contractId);
+        
+        return MapToDto(contractWithRelations!);
     }
 
     public async Task DeleteContractAsync(int contractId)
@@ -187,6 +258,34 @@ public class ContractBusinessLogic : IContractBusinessLogic
                     Unit = cp.Position.Unit
                 }
             }).ToList() ?? new List<ContractPositionDto>()
+        };
+    }
+
+    public async Task<int> GetContractsCountAsync()
+    {
+        return await _contractDataAccess.GetContractsCountAsync();
+    }
+
+    public async Task<IEnumerable<ContractSummaryDto>> GetAllContractsSummaryAsync()
+    {
+        var contracts = await _contractDataAccess.GetAllContractsSummaryAsync();
+        return contracts.Select(MapToSummaryDto);
+    }
+
+    private static ContractSummaryDto MapToSummaryDto(ContractEntity contract)
+    {
+        return new ContractSummaryDto
+        {
+            ContractId = contract.ContractId,
+            CreatedAt = contract.CreatedAt,
+            Accepted = contract.Accepted,
+            CustomerId = contract.CustomerId,
+            Customer = contract.Customer == null ? null : new CustomerSummaryDto
+            {
+                CustomerId = contract.Customer.CustomerId,
+                FullName = $"{contract.Customer.Firstname} {contract.Customer.Surname}".Trim()
+            },
+            PositionCount = contract.ContractPositions?.Count ?? 0
         };
     }
 }

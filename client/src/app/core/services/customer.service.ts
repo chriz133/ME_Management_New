@@ -20,6 +20,10 @@ export class CustomerService {
     return this.http.get<Customer[]>(this.apiUrl);
   }
 
+  getCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.apiUrl}/count`);
+  }
+
   getById(id: number): Observable<Customer> {
     return this.http.get<Customer>(`${this.apiUrl}/${id}`);
   }
@@ -34,5 +38,13 @@ export class CustomerService {
 
   create(customer: Partial<Customer>): Observable<Customer> {
     return this.http.post<Customer>(this.apiUrl, customer);
+  }
+
+  update(id: number, customer: Partial<Customer>): Observable<Customer> {
+    return this.http.put<Customer>(`${this.apiUrl}/${id}`, customer);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

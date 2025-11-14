@@ -10,6 +10,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { Invoice } from '../../core/models/invoice.model';
 import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-invoices',
@@ -108,7 +110,7 @@ import { ToastService } from '../../core/services/toast.service';
               <th>Typ</th>
               <th>Anzahlung</th>
               <th class="text-right">Betrag</th>
-              <th class="text-center" style="width: 100px;">Aktionen</th>
+              <th class="text-center" style="width: 150px;">Aktionen</th>
             </tr>
           </ng-template>
 
@@ -170,6 +172,26 @@ import { ToastService } from '../../core/services/toast.service';
                   (onClick)="viewInvoice(invoice)"
                   pTooltip="Details anzeigen"
                   tooltipPosition="left"
+                />
+                <p-button
+                  *ngIf="canEdit"
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="warn"
+                  (onClick)="editInvoice(invoice); $event.stopPropagation()"
+                  pTooltip="Bearbeiten"
+                  tooltipPosition="top"
+                />
+                <p-button
+                  *ngIf="canDelete"
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="deleteInvoice(invoice); $event.stopPropagation()"
+                  pTooltip="Löschen"
+                  tooltipPosition="right"
                 />
               </td>
             </tr>
@@ -258,9 +280,19 @@ export class InvoicesComponent implements OnInit {
   private readonly invoiceService = inject(InvoiceService);
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   invoices: Invoice[] = [];
   loading = true;
+
+  get canEdit(): boolean {
+    return this.authService.canEdit();
+  }
+
+  get canDelete(): boolean {
+    return this.authService.canDelete();
+  }
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -268,7 +300,7 @@ export class InvoicesComponent implements OnInit {
 
   loadInvoices(): void {
     this.loading = true;
-    this.invoiceService.getAll().subscribe({
+    this.invoiceService.getSummary().subscribe({
       next: (data: Invoice[]) => {
         this.invoices = data;
         this.loading = false;
@@ -294,5 +326,37 @@ export class InvoicesComponent implements OnInit {
 
   navigateToCreate(): void {
     this.router.navigate(['/invoices/create']);
+  }
+
+  editInvoice(invoice: Invoice): void {
+    // Navigate to the edit page
+    this.router.navigate(['/invoices', invoice.invoiceId, 'edit']);
+  }
+
+  deleteInvoice(invoice: Invoice): void {
+    if (!this.canDelete) {
+      this.toastService.error('Keine Berechtigung', 'Nur Administratoren können Rechnungen löschen');
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Möchten Sie die Rechnung #${invoice.invoiceId} wirklich löschen?`,
+      header: 'Löschen bestätigen',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Ja, löschen',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.invoiceService.delete(invoice.invoiceId).subscribe({
+          next: () => {
+            this.toastService.success('Erfolg', 'Rechnung wurde gelöscht');
+            this.loadInvoices();
+          },
+          error: () => {
+            this.toastService.error('Fehler', 'Rechnung konnte nicht gelöscht werden');
+          }
+        });
+      }
+    });
   }
 }

@@ -44,6 +44,42 @@ public class InvoicesController : ControllerBase
     }
 
     /// <summary>
+    /// Get all invoices with summary data (optimized for list views)
+    /// </summary>
+    [HttpGet("summary")]
+    public async Task<ActionResult<IEnumerable<InvoiceSummaryDto>>> GetInvoicesSummary()
+    {
+        try
+        {
+            var invoices = await _invoiceBusinessLogic.GetAllInvoicesSummaryAsync();
+            return Ok(invoices);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching invoices summary");
+            return StatusCode(500, new { message = "Error fetching invoices summary", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get count of all invoices
+    /// </summary>
+    [HttpGet("count")]
+    public async Task<ActionResult<EntityCountDto>> GetInvoicesCount()
+    {
+        try
+        {
+            var count = await _invoiceBusinessLogic.GetInvoicesCountAsync();
+            return Ok(new EntityCountDto { Count = count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching invoices count");
+            return StatusCode(500, new { message = "Error fetching invoices count", error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get invoice by ID
     /// </summary>
     [HttpGet("{id}")]
@@ -116,6 +152,55 @@ public class InvoicesController : ControllerBase
         {
             _logger.LogError(ex, "Error generating PDF for invoice {InvoiceId}", id);
             return StatusCode(500, new { message = "Error generating PDF", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update an existing invoice (requires Admin or User role)
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<InvoiceDto>> UpdateInvoice(int id, [FromBody] UpdateInvoiceRequest request)
+    {
+        try
+        {
+            var invoiceDto = await _invoiceBusinessLogic.UpdateInvoiceAsync(id, request);
+            return Ok(invoiceDto);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invoice {InvoiceId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating invoice {InvoiceId}", id);
+            return StatusCode(500, new { message = "Error updating invoice", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete an invoice (requires Admin role only)
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> DeleteInvoice(int id)
+    {
+        try
+        {
+            await _invoiceBusinessLogic.DeleteInvoiceAsync(id);
+            _logger.LogInformation("Invoice {InvoiceId} deleted by admin", id);
+            return Ok(new { message = "Invoice deleted successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invoice {InvoiceId} not found", id);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting invoice {InvoiceId}", id);
+            return StatusCode(500, new { message = "Error deleting invoice", error = ex.Message });
         }
     }
 }

@@ -18,6 +18,14 @@ export class InvoiceService {
     return this.http.get<Invoice[]>(this.apiUrl);
   }
 
+  getSummary(): Observable<Invoice[]> {
+    return this.http.get<Invoice[]>(`${this.apiUrl}/summary`);
+  }
+
+  getCount(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.apiUrl}/count`);
+  }
+
   getById(id: number): Observable<Invoice> {
     return this.http.get<Invoice>(`${this.apiUrl}/${id}`);
   }
@@ -35,5 +43,13 @@ export class InvoiceService {
     return this.http.get(`${this.apiUrl}/${id}/pdf`, {
       responseType: 'blob'
     });
+  }
+
+  update(id: number, invoice: any): Observable<Invoice> {
+    return this.http.put<Invoice>(`${this.apiUrl}/${id}`, invoice);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

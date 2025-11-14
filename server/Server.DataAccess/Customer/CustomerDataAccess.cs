@@ -53,4 +53,26 @@ public class CustomerDataAccess : ICustomerDataAccess
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task<CustomerEntity> UpdateCustomerAsync(CustomerEntity customer)
+    {
+        _context.CustomersDb.Update(customer);
+        await _context.SaveChangesAsync();
+        return customer;
+    }
+
+    public async Task DeleteCustomerAsync(int customerId)
+    {
+        var customer = await _context.CustomersDb.FindAsync(customerId);
+        if (customer != null)
+        {
+            _context.CustomersDb.Remove(customer);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<int> GetCustomersCountAsync()
+    {
+        return await _context.CustomersDb.CountAsync();
+    }
 }
