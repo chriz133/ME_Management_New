@@ -1,42 +1,28 @@
 services:
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: memanagement-mssql-dev
+  mysql:
+    image: mysql:8.0
+    container_name: memanagement-mysql-dev
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong!Passw0rd
-      - MSSQL_PID=Developer
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: firmaDB
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpassword
     ports:
-      - "1433:1433"
+      - "3306:3306"
     volumes:
-      - mssql-data:/var/opt/mssql
-      - ./server/Server.DataAccess/dump/mssql:/docker-entrypoint-initdb.d:ro
+      - mysql-data:/var/lib/mysql
+      - ./server/Server.DataAccess/dump:/docker-entrypoint-initdb.d:ro
     networks:
       - memanagement-network
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "YourStrong!Passw0rd" -Q "SELECT 1" || exit 1
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
       interval: 10s
       timeout: 3s
       retries: 10
-      start_period: 10s
-    command: >
-      /bin/bash -c "
-      /opt/mssql/bin/sqlservr &
-      MSSQL_PID=$$!
-      echo 'Waiting for SQL Server to start...'
-      sleep 30s
-      for script in /docker-entrypoint-initdb.d/*.sql; do
-        if [ -f \"$$script\" ]; then
-          echo \"Executing $$script...\"
-          /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$$SA_PASSWORD\" -i \"$$script\"
-        fi
-      done
-      echo 'Database initialization complete!'
-      wait $$MSSQL_PID
-      "
+      start_period: 30s
 
 volumes:
-  mssql-data:
+  mysql-data:
     driver: local
 
 networks:

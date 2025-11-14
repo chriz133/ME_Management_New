@@ -1,11 +1,11 @@
 @echo off
-REM MSSQL Dev Server Quick Start Script for Windows
-REM This script helps you manage the local MSSQL development server
+REM MySQL Dev Server Quick Start Script for Windows
+REM This script helps you manage the local MySQL development server
 
 setlocal enabledelayedexpansion
 
 set COMPOSE_FILE=docker-compose.dev.yml
-set CONTAINER_NAME=memanagement-mssql-dev
+set CONTAINER_NAME=memanagement-mysql-dev
 
 if "%1"=="" goto :help
 if "%1"=="help" goto :help
@@ -24,18 +24,18 @@ echo.
 goto :help
 
 :help
-echo MSSQL Development Server Management Script
+echo MySQL Development Server Management Script
 echo.
 echo Usage: %0 [command]
 echo.
 echo Commands:
-echo   start       - Start the MSSQL server
-echo   stop        - Stop the MSSQL server
-echo   restart     - Restart the MSSQL server
+echo   start       - Start the MySQL server
+echo   stop        - Stop the MySQL server
+echo   restart     - Restart the MySQL server
 echo   status      - Check server status
 echo   logs        - View server logs
 echo   reset       - Remove and recreate the server (deletes all data!)
-echo   connect     - Connect to the database using sqlcmd
+echo   connect     - Connect to the database using mysql client
 echo   help        - Show this help message
 echo.
 goto :eof
@@ -57,15 +57,16 @@ goto :eof
 call :check_docker
 if %ERRORLEVEL% neq 0 exit /b 1
 
-echo Starting MSSQL development server...
-docker-compose -f %COMPOSE_FILE% up -d
+echo Starting MySQL development server...
+docker compose -f %COMPOSE_FILE% up -d
 echo.
 echo Server is starting. This may take a minute...
 echo Connection details:
-echo   Server: localhost,1433
+echo   Server: localhost:3306
 echo   Database: firmaDB
-echo   Username: sa
-echo   Password: YourStrong!Passw0rd
+echo   Username: devuser
+echo   Password: devpassword
+echo   Root Password: rootpassword
 echo.
 echo Run '%0 logs' to view initialization progress
 echo Run '%0 status' to check if the server is ready
@@ -75,8 +76,8 @@ goto :eof
 call :check_docker
 if %ERRORLEVEL% neq 0 exit /b 1
 
-echo Stopping MSSQL development server...
-docker-compose -f %COMPOSE_FILE% stop
+echo Stopping MySQL development server...
+docker compose -f %COMPOSE_FILE% stop
 echo Server stopped
 goto :eof
 
@@ -84,8 +85,8 @@ goto :eof
 call :check_docker
 if %ERRORLEVEL% neq 0 exit /b 1
 
-echo Restarting MSSQL development server...
-docker-compose -f %COMPOSE_FILE% restart
+echo Restarting MySQL development server...
+docker compose -f %COMPOSE_FILE% restart
 echo Server restarted
 goto :eof
 
@@ -93,9 +94,9 @@ goto :eof
 call :check_docker
 if %ERRORLEVEL% neq 0 exit /b 1
 
-echo MSSQL Development Server Status:
+echo MySQL Development Server Status:
 echo ================================
-docker-compose -f %COMPOSE_FILE% ps
+docker compose -f %COMPOSE_FILE% ps
 echo.
 
 docker ps --filter "name=%CONTAINER_NAME%" --filter "status=running" | find "%CONTAINER_NAME%" >nul
@@ -110,9 +111,9 @@ goto :eof
 call :check_docker
 if %ERRORLEVEL% neq 0 exit /b 1
 
-echo Showing MSSQL server logs (press Ctrl+C to exit)...
+echo Showing MySQL server logs (press Ctrl+C to exit)...
 echo ==================================================
-docker-compose -f %COMPOSE_FILE% logs -f mssql
+docker compose -f %COMPOSE_FILE% logs -f mysql
 goto :eof
 
 :reset
@@ -126,8 +127,8 @@ if /i not "%CONFIRM%"=="yes" (
     goto :eof
 )
 
-echo Removing MSSQL server and data...
-docker-compose -f %COMPOSE_FILE% down -v
+echo Removing MySQL server and data...
+docker compose -f %COMPOSE_FILE% down -v
 echo Server removed
 echo.
 echo Starting fresh server...
@@ -144,7 +145,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo Connecting to database...
-echo Connecting to firmaDB as sa...
+echo Connecting to firmaDB as devuser...
 echo (Type 'exit' or press Ctrl+D to quit)
-docker exec -it %CONTAINER_NAME% /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "YourStrong!Passw0rd" -d firmaDB
+docker exec -it %CONTAINER_NAME% mysql -u devuser -pdevpassword firmaDB
 goto :eof
