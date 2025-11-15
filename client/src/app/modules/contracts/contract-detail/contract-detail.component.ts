@@ -29,7 +29,7 @@ import { Contract } from '../../../core/models/contract.model';
   ],
   providers: [MessageService],
   template: `
-    <div class="contract-detail-container" [@fadeIn]>
+    <div class="contract-detail-container">
       <div class="back-button-container">
         <button pButton label="Zurück zu Angeboten" icon="pi pi-arrow-left" 
                 class="p-button-text" (click)="goBack()"></button>
@@ -314,8 +314,7 @@ import { Contract } from '../../../core/models/contract.model';
         text-align: right;
       }
     }
-  `],
-  animations: []
+  `]
 })
 export class ContractDetailComponent implements OnInit {
   private readonly contractService = inject(ContractService);
