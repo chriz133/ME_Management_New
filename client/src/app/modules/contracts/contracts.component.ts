@@ -36,7 +36,7 @@ import { Contract } from '../../core/models/contract.model';
   ],
   providers: [MessageService, ConfirmationService],
   template: `
-    <div class="contracts-container" [@fadeIn]>
+    <div class="contracts-container">
       <p-card>
         <ng-template pTemplate="header">
           <div class="card-header">
@@ -240,8 +240,7 @@ import { Contract } from '../../core/models/contract.model';
       display: block;
       margin-bottom: 1rem;
     }
-  `],
-  animations: []
+  `]
 })
 export class ContractsComponent implements OnInit {
   private readonly contractService = inject(ContractService);
