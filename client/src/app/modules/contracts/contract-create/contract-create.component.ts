@@ -324,13 +324,13 @@ import { Customer } from '../../../core/models/customer.model';
     .total-label {
       font-size: 1.25rem;
       font-weight: 600;
-      color: white;
+      color: gray;
     }
 
     .total-amount {
       font-size: 1.75rem;
       font-weight: 700;
-      color: white;
+      color: gray;
     }
 
     .button-group {

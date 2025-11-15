@@ -108,7 +108,7 @@ import { Contract } from '../../core/models/contract.model';
                 {{ contract.createdAt | date: 'dd.MM.yyyy' }}
               </td>
               <td>
-                <p-tag [value]="(contract.positions?.length || 0) + ' Pos.'" severity="secondary"></p-tag>
+                <p-tag [value]="(contract.positionCount) + ' Pos.'" severity="secondary"></p-tag>
               </td>
               <td>
                 <p-tag *ngIf="contract.accepted" value="Akzeptiert" severity="success" icon="pi pi-check"></p-tag>

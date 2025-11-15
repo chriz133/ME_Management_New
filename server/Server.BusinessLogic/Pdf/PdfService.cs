@@ -252,7 +252,7 @@ public class PdfService : IPdfService
                     columns.ConstantColumn(40); // Pos
                     columns.RelativeColumn(4); // Description
                     columns.ConstantColumn(80); // Unit Price
-                    columns.ConstantColumn(60); // Quantity
+                    columns.ConstantColumn(100); // Quantity
                     columns.ConstantColumn(90); // Total
                 });
 
