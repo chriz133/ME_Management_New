@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { PasswordModule } from 'primeng/password';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { ImageModule } from 'primeng/image';
+
 
 /**
  * Login screen component.
@@ -20,16 +22,16 @@ import { ToastService } from '../../core/services/toast.service';
     ReactiveFormsModule,
     InputTextModule,
     ButtonModule,
-    PasswordModule
+    PasswordModule,
+    ImageModule
   ],
   template: `
     <div class="login-wrapper">
       <div class="login-card">
         <div class="login-left">
           <div class="brand-icon">
-            <i class="pi pi-building"></i>
+            <p-image src="assets/images/logo_v1.png" alt="Image" width="250" class="colorized" />
           </div>
-          <h1 class="brand-title">ME Management</h1>
           <p class="brand-subtitle">Geschäftsverwaltungssystem</p>
         </div>
 
@@ -135,11 +137,9 @@ import { ToastService } from '../../core/services/toast.service';
     }
 
     .brand-icon {
-      width: 100px;
-      height: 100px;
+      width: 300px;
+      height: 150px;
       margin-bottom: 2rem;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -149,6 +149,10 @@ import { ToastService } from '../../core/services/toast.service';
     .brand-icon i {
       font-size: 3rem;
       color: white;
+    }
+
+    .colorized {
+      filter: invert(85%) sepia(10%) saturate(1000%) hue-rotate(200deg);
     }
 
     .brand-title {
@@ -161,7 +165,7 @@ import { ToastService } from '../../core/services/toast.service';
     .brand-subtitle {
       font-size: 1.125rem;
       margin: 0;
-      color: rgba(255, 255, 255, 0.95);
+      color: rgba(230, 230, 230, 0.95);
       font-weight: 400;
       line-height: 1.6;
     }

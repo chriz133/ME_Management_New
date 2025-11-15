@@ -252,7 +252,7 @@ public class PdfService : IPdfService
                     columns.ConstantColumn(40); // Pos
                     columns.RelativeColumn(4); // Description
                     columns.ConstantColumn(80); // Unit Price
-                    columns.ConstantColumn(60); // Quantity
+                    columns.ConstantColumn(80); // Quantity
                     columns.ConstantColumn(90); // Total
                 });
 
@@ -425,16 +425,18 @@ public class PdfService : IPdfService
     {
         container.Column(column =>
         {
+            column.Item().Row(row =>
+            {
+                if (File.Exists(LOGO_PATH))
+                {
+                    row.ConstantItem(100).Image(LOGO_PATH).FitWidth();
+                    column.Spacing(10);// Spacer
+                }
+            });
+            
             // Top section with logo, company and customer info
             column.Item().Row(row =>
             {
-                // Logo (if exists)
-                if (File.Exists(LOGO_PATH))
-                {
-                    row.ConstantItem(50).Height(50).Image(LOGO_PATH);
-                    row.ConstantItem(10); // Spacer
-                }
-
                 // Left: Company info
                 row.RelativeItem().Column(leftColumn =>
                 {
