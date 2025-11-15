@@ -130,8 +130,57 @@ public class InvoiceBusinessLogic : IInvoiceBusinessLogic
         invoice.DepositPaidOn = request.DepositPaidOn ?? invoice.DepositPaidOn;
         invoice.Type = request.Type;
 
-        // Note: For simplicity, we're not updating positions in this implementation
-        // A full implementation would handle adding/removing/updating positions
+        // Update positions - clear existing and add new ones
+        invoice.InvoicePositions?.Clear();
+        if (invoice.InvoicePositions == null)
+        {
+            invoice.InvoicePositions = new List<InvoicePosition>();
+        }
+
+        // Process each position from the request
+        foreach (var positionRequest in request.Positions)
+        {
+            PositionEntity? position;
+
+            // Check if we need to create a new position or use an existing one
+            if (positionRequest.PositionId.HasValue && positionRequest.PositionId.Value > 0)
+            {
+                // Use existing position
+                position = await _invoiceDataAccess.GetPositionByIdAsync(positionRequest.PositionId.Value);
+                if (position == null)
+                {
+                    throw new ArgumentException($"Position with ID {positionRequest.PositionId} not found");
+                }
+            }
+            else
+            {
+                // Create new position inline
+                if (string.IsNullOrWhiteSpace(positionRequest.Text) || 
+                    !positionRequest.Price.HasValue || 
+                    string.IsNullOrWhiteSpace(positionRequest.Unit))
+                {
+                    throw new ArgumentException("Position data (Text, Price, Unit) is required when PositionId is not provided");
+                }
+
+                position = new PositionEntity
+                {
+                    Text = positionRequest.Text,
+                    Price = positionRequest.Price.Value,
+                    Unit = positionRequest.Unit
+                };
+                
+                position = await _invoiceDataAccess.CreatePositionAsync(position);
+            }
+
+            // Create invoice position linking
+            var invoicePosition = new InvoicePosition
+            {
+                Position = position,
+                Amount = (double)positionRequest.Amount
+            };
+
+            invoice.InvoicePositions.Add(invoicePosition);
+        }
 
         var updatedInvoice = await _invoiceDataAccess.UpdateInvoiceAsync(invoice);
         _logger.LogInformation("Invoice {InvoiceId} updated", updatedInvoice.InvoiceId);
