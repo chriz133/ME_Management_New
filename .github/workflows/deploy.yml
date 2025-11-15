@@ -1,0 +1,99 @@
+name: Deploy to Apache Server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted  # Use self-hosted runner in local network
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Build .NET API
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore .NET dependencies
+        run: dotnet restore server/MEManagement.sln
+
+      - name: Build .NET API
+        run: dotnet build server/MEManagement.sln --configuration Release --no-restore
+
+      - name: Publish .NET API
+        run: dotnet publish server/Server.Api/Server.Api.csproj --configuration Release --output ./publish/api --no-restore
+
+      # Build Angular App
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install Angular dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Build Angular app
+        run: npm run build
+        working-directory: client
+
+      # Deploy to Apache Server
+      - name: Deploy .NET API
+        run: |
+          # Stop the service
+          sudo systemctl stop memanagement-api || true
+          
+          # Backup current deployment
+          if [ -d /var/www/memanagement-api ]; then
+            sudo cp -r /var/www/memanagement-api /var/www/memanagement-api.backup.$(date +%Y%m%d_%H%M%S)
+          fi
+          
+          # Deploy new version
+          sudo mkdir -p /var/www/memanagement-api
+          sudo cp -r ./publish/api/* /var/www/memanagement-api/
+          
+          # Set permissions
+          sudo chown -R www-data:www-data /var/www/memanagement-api
+          sudo chmod -R 755 /var/www/memanagement-api
+          
+          # Create PDF directories if they don't exist
+          sudo mkdir -p /var/www/memanagement-api/PDFs/Invoices
+          sudo mkdir -p /var/www/memanagement-api/PDFs/Contracts
+          sudo chown -R www-data:www-data /var/www/memanagement-api/PDFs
+          
+          # Start the service
+          sudo systemctl start memanagement-api
+          sudo systemctl status memanagement-api --no-pager
+
+      - name: Deploy Angular App
+        run: |
+          # Backup current deployment
+          if [ -d /var/www/memanagement-app ]; then
+            sudo cp -r /var/www/memanagement-app /var/www/memanagement-app.backup.$(date +%Y%m%d_%H%M%S)
+          fi
+          
+          # Deploy new version
+          sudo mkdir -p /var/www/memanagement-app
+          sudo rm -rf /var/www/memanagement-app/*
+          sudo cp -r ./client/dist/client/browser/* /var/www/memanagement-app/
+          
+          # Set permissions
+          sudo chown -R www-data:www-data /var/www/memanagement-app
+          sudo chmod -R 755 /var/www/memanagement-app
+          
+          # Reload Apache
+          sudo systemctl reload apache2
+
+      - name: Cleanup old backups (keep last 5)
+        run: |
+          cd /var/www
+          sudo ls -t memanagement-api.backup.* 2>/dev/null | tail -n +6 | xargs -r sudo rm -rf
+          sudo ls -t memanagement-app.backup.* 2>/dev/null | tail -n +6 | xargs -r sudo rm -rf
