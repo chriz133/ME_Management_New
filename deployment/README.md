@@ -2,6 +2,17 @@
 
 This directory contains all the necessary configuration files for deploying the ME Management application to an Apache web server.
 
+## 🧪 Testing Before Production
+
+**Want to test the deployment locally first?**
+
+Use Docker to simulate your server environment:
+```bash
+./deployment/test-deployment.sh
+```
+
+See [DOCKER_TESTING.md](DOCKER_TESTING.md) for complete testing guide.
+
 ## Files in this Directory
 
 ### 1. `memanagement-api.service`
@@ -42,6 +53,21 @@ This script will:
 - Configure systemd service
 - Set up Apache virtual host
 - Configure firewall
+
+### 4. `test-deployment.sh`
+Script for testing deployment setup locally using Docker.
+
+**Usage:**
+```bash
+./test-deployment.sh
+```
+
+See [DOCKER_TESTING.md](DOCKER_TESTING.md) for details.
+
+### 5. Docker Testing Files
+- `Dockerfile.test` - Docker image for simulating Apache server
+- `docker-compose.test.yml` - Docker Compose configuration for test environment
+- `DOCKER_TESTING.md` - Complete guide for Docker-based testing
 
 ## Quick Start
 

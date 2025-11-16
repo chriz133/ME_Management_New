@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Simulated Apache server for testing deployment
+  test-server:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.test
+    container_name: memanagement-test-server
+    ports:
+      - "8080:80"  # Map to port 8080 on host to avoid conflicts
+    volumes:
+      # Mount deployment directories for testing
+      - ./test-data/api:/var/www/memanagement-api
+      - ./test-data/app:/var/www/memanagement-app
+      # Mount logs for debugging
+      - ./test-logs:/var/log/apache2
+    networks:
+      - memanagement-test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MySQL database (already exists in your setup)
+  # Reuse your existing MySQL configuration
+  mysql:
+    image: mysql:8.0
+    container_name: memanagement-test-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: firmaDB
+      MYSQL_USER: chriz
+      MYSQL_PASSWORD: test_password
+    ports:
+      - "3307:3306"  # Map to 3307 to avoid conflicts with local MySQL
+    volumes:
+      - mysql-test-data:/var/lib/mysql
+    networks:
+      - memanagement-test
+
+networks:
+  memanagement-test:
+    driver: bridge
+
+volumes:
+  mysql-test-data:
