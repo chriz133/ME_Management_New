@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5000/api'
+  apiUrl: '/api'  // Relative path - uses same domain with Apache reverse proxy
 };

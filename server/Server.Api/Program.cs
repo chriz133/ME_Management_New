@@ -79,12 +79,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:4200",  // Angular default port
-                "http://localhost:4201",  // Alternative port
-                "http://localhost:4202",  // Alternative port
-                "http://127.0.0.1:4200"   // Localhost alias
-              )
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+            ?? new[] { "http://localhost:4200" };
+        
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()

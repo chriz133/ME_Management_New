@@ -126,3 +126,11 @@ temp/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# =========================
+# Docker Testing
+# =========================
+
+# Docker test data and logs
+deployment/test-data/
+deployment/test-logs/

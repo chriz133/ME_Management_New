@@ -1,0 +1,50 @@
+# Dockerfile for testing deployment setup locally
+# This simulates an Apache server environment for testing the CI/CD deployment
+
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Apache, .NET 8 runtime, and other dependencies
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    wget \
+    curl \
+    ca-certificates \
+    sudo \
+    systemctl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install .NET 8 Runtime
+RUN wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && apt-get install -y dotnet-runtime-8.0 aspnetcore-runtime-8.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable Apache modules
+RUN a2enmod proxy proxy_http proxy_wstunnel rewrite ssl
+
+# Create application directories
+RUN mkdir -p /var/www/memanagement-api \
+    && mkdir -p /var/www/memanagement-app \
+    && chown -R www-data:www-data /var/www/memanagement-api \
+    && chown -R www-data:www-data /var/www/memanagement-app
+
+# Copy deployment configuration files
+COPY deployment/apache-memanagement.conf /etc/apache2/sites-available/
+COPY deployment/memanagement-api.service /etc/systemd/system/
+
+# Update ServerName in Apache config to use localhost
+RUN sed -i 's/ServerName memanagement.local/ServerName localhost/g' /etc/apache2/sites-available/apache-memanagement.conf
+
+# Enable the site and disable default
+RUN a2ensite apache-memanagement.conf && a2dissite 000-default.conf
+
+# Expose ports
+EXPOSE 80 443
+
+# Start Apache in foreground
+CMD ["apachectl", "-D", "FOREGROUND"]
